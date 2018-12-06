@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "C:\\workFile\\noApp\\android\\app\\build\\intermediates\\res\\merged\\debug\\xml\\preferences.xml",
+        "source": "C:\\Users\\jun.chen\\.gradle\\caches\\transforms-1\\files-1.1\\react-native-0.55.4.aar\\7e20939e364734842632510c4f672e52\\res\\xml\\preferences.xml"
+    },
+    {
+        "merged": "C:\\workFile\\noApp\\android\\app\\build\\intermediates\\res\\merged\\debug\\xml\\provider_paths.xml",
+        "source": "C:\\workFile\\noApp\\android\\app\\src\\main\\res\\xml\\provider_paths.xml"
+    }
+]

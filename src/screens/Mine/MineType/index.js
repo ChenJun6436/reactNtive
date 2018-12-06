@@ -1,0 +1,81 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    TouchableHighlight
+} from 'react-native';
+@navigatorDecorator
+export default class ListItem extends Component {
+    render() {
+        return (
+            <View style={styles.container}>
+                <View style={styles.row}>
+                    <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                        onPress={() => {
+                            this.props.userType(1, '农户')
+                            this.pop();
+                        }}>
+                        <Text style={{ color: 'green', overflow: 'hidden', flex: 6, fontSize: 16 }} numberOfLines={1}>农户</Text>
+                    </TouchableHighlight>
+                </View>
+                <View style={{ height: 6 }}></View>
+                <View style={styles.row}>
+                    <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                        onPress={() => {
+                            this.props.userType(2, '合作社')
+                            this.pop();
+                        }}>
+                        <Text style={{ color: 'green', overflow: 'hidden', flex: 6, fontSize: 16 }} numberOfLines={1}>合作社</Text>
+                    </TouchableHighlight>
+
+                </View >
+                <View style={{ height: 6 }}></View>
+                <View style={styles.row}>
+                    <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                        onPress={() => {
+                            this.props.userType(3, '企业')
+                            this.pop();
+                        }}>
+                        <Text style={{ color: 'green', overflow: 'hidden', flex: 6, fontSize: 16 }} numberOfLines={1}>企业</Text>
+                    </TouchableHighlight>
+
+                </View >
+                <View style={{ height: 6 }}></View>
+                <View style={styles.row}>
+                    <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                        onPress={() => {
+                            this.props.userType(4, '其他')
+                            this.pop();
+                        }}>
+                        <Text style={{ color: 'green', overflow: 'hidden', flex: 6, fontSize: 16 }} numberOfLines={1}>其他</Text>
+                    </TouchableHighlight>
+
+                </View >
+                <View style={{ height: 6 }}></View>
+            </View >
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderColor: '#d9d9d9',
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        borderBottomWidth: 1,
+        borderBottomColor: '#cccccc',
+        height: 40,
+        lineHeight: 40,
+        paddingHorizontal: 10,
+    }
+});

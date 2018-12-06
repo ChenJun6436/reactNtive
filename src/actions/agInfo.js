@@ -1,0 +1,56 @@
+import * as AcountService from '../services/account';
+import * as AgInfoServer from '../services/agInfo';
+import AgInfoStore from '../stores/agInfo';
+
+//获取农技所有信息
+export async function getAg({ input }) {
+    const { data, msg, success } = await AgInfoServer.getAg(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data };
+}
+
+//获取农技资讯详情
+export async function getAgDetail({ input }) {
+    const { data, msg, success } = await AgInfoServer.getAgDetail(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data };
+}
+
+//获取评论
+export async function getAgComment({ input }) {
+    const { data, msg, success } = await AgInfoServer.getAgComment(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data };
+}
+
+//添加评论
+export async function addComment({ input }) {
+    const { data, msg, success } = await AgInfoServer.addComment(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data };
+}
+//获取回复
+export async function getCommentDetail({ input }) {
+    const { data, msg, success } = await AgInfoServer.getCommentDetail(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data };
+}
+//添加回复
+export async function addReply({ input }) {
+    const { data, msg, success } = await AgInfoServer.addReply(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data };
+}
+//添加状态
+export async function actionRecord({ input }) {
+    const { data, msg, success } = await AgInfoServer.actionRecord(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data };
+}

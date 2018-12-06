@@ -1,0 +1,83 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ScrollView,
+  Dimensions,
+  TouchableWithoutFeedback,
+  ProgressBarAndroid,
+  TouchableHighlight
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar ,WingBlank } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import BrTag from '../baseComon/BrTag.js'
+import ImgLeftText2Right from '../baseComon/ImgLeftText2Right.js'
+import TextTopImgBottom from '../baseComon/TextTopImgBottom.js'
+import LoadMoreList from '../baseComon/LoadMoreList.js'
+import * as AgInfoAction from 'root/src/actions/agInfo'
+import * as purchasePaperAction from 'root/src/actions/account';
+const { connect } = require('remx');
+let pageIndex = 1;
+let pageSize = 3;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+});
+
+
+@navigatorDecorator
+class AgInfo extends Component {
+  constructor(props: {}) {
+    super(props);
+    this.state = {
+      AgInfoList: null
+    }
+    const { App, navigator, Message } = this.props;
+  }
+
+  componentWillMount() {
+    
+  }
+  //查看农技资讯详情
+  _lookDetailInfo(id){
+    this.pushPage({
+      component: {
+        ...Global.Screens.AgInfoDetail,
+        passProps: { id }
+      }
+    });
+  }
+  
+  render() {
+    let a = 'root/img/ZFbanner.jpg'
+    return (
+      <View style={styles.container}>
+        <LoadMoreList
+          ref={ref => this.moreListInst = ref}
+          getData={AgInfoAction.getAg}
+          searchParams={{ contentType: 1 }}
+          rowItem={(data) => {
+            const nowImg = data.attachments
+            if(nowImg.length>=3){
+              return <TextTopImgBottom content={data} click={()=>{this._lookDetailInfo(data.id)}} key={data}/>
+            }else{
+              return <ImgLeftText2Right content={data} click={()=>{this._lookDetailInfo(data.id)}} key={data}/>
+            }
+          }}
+        />
+      </View>
+    );
+  }
+}
+function mapStateToProps() {
+  return {
+    menuList: store.getMenuList()
+  };
+}
+
+module.exports = connect(mapStateToProps)(AgInfo);
+

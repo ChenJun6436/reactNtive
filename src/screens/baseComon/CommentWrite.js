@@ -1,0 +1,175 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  TextInput,
+  KeyboardAvoidingView
+} from 'react-native';
+import { WingBlank } from 'antd-mobile-rn'
+import AgStore from 'root/src/stores/agInfo';
+import Icon from 'react-native-vector-icons/Feather';
+import * as AgInfoAction from 'root/src/actions/agInfo'
+import { Button, Grid, Carousel, SearchBar, Checkbox, InputItem } from 'antd-mobile-rn'
+// import { SIGFPE } from 'constants';
+const { connect } = require('remx');
+const CheckboxItem = Checkbox.CheckboxItem;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+});
+@navigatorDecorator
+export default class CommentWrite extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+    this.state = {
+      content: '',
+      nowReply: '',
+      nowType: 0, //当前的状态 评论：0， 回复评论：1 ， 回复回复：2
+    }
+  }
+  componentWillMount() {
+    if (this.props.type == 1) {
+      this.setState({
+        nowType: 1,
+        content: '',
+      })
+    }
+    if (this.props.type == 0) {
+      const user = this.props.user
+      this.state.isCollected = user.isCollected
+    }
+  }
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.replyUser && this.props.replyUser != nextProps.replyUser) {
+      this.inputRef.focus();
+      this.setState({
+        nowType: 2,
+      })
+      if (this.props.id == nextProps.replyUser.id) {
+        this.setState({
+          content: '',
+          nowType: 1,
+        })
+      }
+      if (this.props.nowType == 0) {
+        this.setState({
+          content: '',
+          nowType: 0,
+        })
+      }
+    }
+  }
+  _onPressButton = () => {
+    const next = Global.Screens[this.props.url]
+    this.pushPage({
+      component: next
+    })
+  }
+  _trunClick = () => {
+
+  }
+  //收藏
+  actionRecord = (action, target, id) => {
+    AgInfoAction.actionRecord({
+      input: {
+        actionType: action,//1-点赞2-不喜欢3-收藏4-分享5-转
+        targetType: target,//目标类型1-内容2-评论3-回复
+        targetId: id,//目标id
+      }
+    }).then(({ suc, data }) => {
+      this.setState({
+        isCollected: !this.state.isCollected,
+      })
+    })
+  }
+  //发送评论
+  _send = () => {
+    if (this.state.content.length > 0) {
+      const vm = this
+      if (this.state.nowType == 0) {
+        AgInfoAction.addComment({ input: { contentId: this.props.id, content: this.state.content } }).then(({ suc, data }) => {
+          //刷新页面
+          if(vm.props.fresh){
+            vm.props.fresh(vm.props.id,true)
+          }
+          vm.setState({
+            content: ''
+          })
+        })
+      }
+      if (this.state.nowType == 1) {
+        AgInfoAction.addReply({ input: { commentId: this.props.id, content: this.state.content } }).then(({ suc, data }) => {
+          //刷新页面
+          if(vm.props.fresh){
+            vm.props.fresh()
+          }
+          this.setState({
+            content: ''
+          })
+        })
+      }
+      if (this.state.nowType == 2) {
+        AgInfoAction.addReply({ input: { commentId: this.props.id, parentId: this.props.replyUser.id, toUserName: this.props.replyUser.createName, content: this.state.content } }).then(({ suc, data }) => {
+          //刷新页面
+          if(vm.props.fresh){
+            vm.props.fresh()
+          }
+          this.setState({
+            content: ''
+          })
+        })
+      }
+    } else {
+      MyToast.info('评论内容不能为空');
+    }
+  }
+  render() {
+    const user = this.props.replyUser ? this.props.replyUser : null;
+    return (
+      // bottom: 0,position:'absolute',
+      <View style={{ bottom: 0, position: 'absolute', backgroundColor: '#fff', width: '100%'}}>
+        <View style={{ flexDirection: 'row', paddingTop: 5, paddingBottom: 5, paddingLeft: 5, paddingRight: 5, justifyContent: 'space-between', backgroundColor: '#fff', borderColor: '#e3e3e3', borderBottomWidth: 1, borderTopWidth: 1 }}>
+          <View style={{ height: 40, width: this.props.type == 0 ? '75%' : 300, borderColor: '#e3e3e3', borderWidth: 1, borderRadius: 15, flexDirection: 'row' }}>
+            {user ? (
+              <Text numberOfLines={1} style={{ fontSize: 14, lineHeight: 40, maxWidth: 100 }}>回复：{user.createName} </Text>
+            ) : null}
+            <InputItem
+              onChangeText={(content) => this.setState({ content })}
+              value={this.state.content}
+              style={{ height: 40, width: 220, marginLeft: 15 }}
+              ref={el => this.inputRef = el}
+            />
+          </View>
+          {/* {this.props.type == 0 ? (
+            <TouchableOpacity onPress={() => { this.actionRecord(3, 1, this.props.user.id) }}>
+              <Text style={{ marginLeft: 10, fontSize: 13, lineHeight: 20, color: this.state.isCollected ? '#999' : 'red' }}>
+                <Icon name='star' size={30} style={{ lineHeight: 45 }} />
+              </Text>
+            </TouchableOpacity>
+          ) : null} */}
+          <Button type="primary" onClick={this._send} style={{ height: 40, width: '20%' }}>发送</Button>
+        </View>
+        {this.props.reSend?(
+          <View>
+            <CheckboxItem key="disabled" data-seed="logId" >
+              <Text style={{ fontSize: 15, lineHeight: 20 }}>同时转发</Text>
+            </CheckboxItem>
+          </View>
+        ):(null)}
+      </View>
+    );
+  }
+}
+function mapStateToProps() {
+  return {
+    replyUser: AgStore.getReplyUser()
+  };
+}
+module.exports = connect(mapStateToProps)(CommentWrite);

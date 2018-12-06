@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "C:\\workFile\\noApp\\android\\app\\build\\intermediates\\res\\merged\\debug\\color-v11\\abc_background_cache_hint_selector_material_light.xml",
+        "source": "C:\\Users\\jun.chen\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\87a89d00437508370c8112cf2cd22fb3\\res\\color-v11\\abc_background_cache_hint_selector_material_light.xml"
+    },
+    {
+        "merged": "C:\\workFile\\noApp\\android\\app\\build\\intermediates\\res\\merged\\debug\\color-v11\\abc_background_cache_hint_selector_material_dark.xml",
+        "source": "C:\\Users\\jun.chen\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\87a89d00437508370c8112cf2cd22fb3\\res\\color-v11\\abc_background_cache_hint_selector_material_dark.xml"
+    }
+]
