@@ -1,0 +1,60 @@
+import * as CommonService from '../services/mine';
+
+//获取土地种植养殖列表
+export async function GetPlantList( input ) {
+    const { data, msg, success } = await CommonService.GetPlantList(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true, data, msg };
+}
+
+//保存土地种植养殖列表
+export async function AddPlant({ input }) {
+    const { data, msg, success } = await CommonService.AddPlant(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true, data, msg };
+}
+
+//新增发布
+export async function AddPublish({ input }) {
+    console.log(input)
+    const { data, msg, success } = await CommonService.AddPublish(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true, data, msg };
+}
+//获取发布
+export async function GetPublish({ input }) {
+    const { data, msg, success } = await CommonService.GetPublish(input)
+    console.log(data)
+    if (!success)
+        return { suc: false };
+    return { suc: true, data, msg };
+}
+//删除发布
+export async function DeletePublish( input ) {
+    const { data, msg, success } = await CommonService.DeletePublish(input)
+    console.log(data)
+    if (!success)
+        return { suc: false };
+    return { suc: true, data, msg };
+}
+//发布详情
+export async function PublishDetail( input ) {
+    console.log(input)
+    const { data, msg, success } = await CommonService.PublishDetail(input)
+    console.log(data)
+    if (!success)
+        return { suc: false };
+    return { suc: true, data, msg };
+}
+//发布状态
+export async function SetPublish({ input }) {
+    const { data, msg, success } = await CommonService.SetPublish(input)
+    console.log(data)
+    if (!success)
+        return { suc: false };
+    return { suc: true, data, msg };
+}
+

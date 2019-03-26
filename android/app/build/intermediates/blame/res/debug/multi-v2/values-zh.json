@@ -4,7 +4,7 @@
             "outputFile": "C:\\workFile\\noApp\\android\\app\\build\\intermediates\\res\\merged\\debug\\values-zh\\values-zh.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\jun.chen\\.gradle\\caches\\transforms-1\\files-1.1\\ucrop-2.2.2-native.aar\\eac67a81ddcc70187a4ca57fc5c4ebb7\\res\\values-zh\\values-zh.xml",
+                    "source": "C:\\Users\\jun.chen.YOONOP\\.gradle\\caches\\transforms-1\\files-1.1\\ucrop-2.2.2-native.aar\\49f028ec9e86fd537463b8abfcc9fa5f\\res\\values-zh\\values-zh.xml",
                     "from": {
                         "startLines": "2,3,4",
                         "startColumns": "4,4,4",
@@ -19,7 +19,7 @@
             "outputFile": "C:\\workFile\\noApp\\android\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-zh\\values-zh.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\jun.chen\\.gradle\\caches\\transforms-1\\files-1.1\\ucrop-2.2.2-native.aar\\eac67a81ddcc70187a4ca57fc5c4ebb7\\res\\values-zh\\values-zh.xml",
+                    "source": "C:\\Users\\jun.chen.YOONOP\\.gradle\\caches\\transforms-1\\files-1.1\\ucrop-2.2.2-native.aar\\49f028ec9e86fd537463b8abfcc9fa5f\\res\\values-zh\\values-zh.xml",
                     "from": {
                         "startLines": "2,3,4",
                         "startColumns": "4,4,4",

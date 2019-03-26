@@ -1,0 +1,147 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    TouchableOpacity,
+    Dimensions,
+    TouchableHighlight
+} from 'react-native';
+import { List, InputItem, Button, SwipeAction } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import * as PortraitAction from 'root/src/actions/farmersPortrait';
+
+@navigatorDecorator
+export default class ERPDiagnosis extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            storeName: ''
+        }
+
+    }
+    render() {
+        // const content = this.props.content
+        let content = {
+            img: require('root/img/ZFbanner2.jpg'),
+            name: 'XX农资店',
+            browse: 12,
+            distance: 2.2,
+            address: '乐山市嘉州大道258号'
+        }
+        return (
+            <ScrollView style={styles.container}>
+                <View style={styles.search}>
+                    <Button style={{ height: 40, width: '20%' }} onClick={this.setVisible}><Text style={{ fontWeight: 'bold', color: '#999999' }} >筛选</Text></Button>
+                    <InputItem
+                        style={{ height: 40, width: '80%', backgroundColor: 'transparent', borderBottomWidth: 1, borderColor: '#bbbbbb', }}
+                        clear
+                        value={this.state.storeName}
+                        onChange={(value: any) => {
+                            this.setState({
+                                storeName: value,
+                            });
+                        }}
+                        labelNumber={2}
+                        placeholder='请输入用户名'
+                        placeholderTextColor='#999999'
+                    >
+                        <Icon
+                            name='search'
+                            color='#999999'
+                            size={25}
+                        />
+                    </InputItem>
+                </View>
+                <View>
+                    <LoadMoreList
+                        ref={ref => this.moreListInst = ref}
+                        getData={PortraitAction.getStoreByMember}
+                        searchParams={{ storeId: this.state.storeId }}
+                        rowItem={(data) => {
+                            return <SwipeAction autoClose style={{ backgroundColor: 'transparent', flex: 1 }} right={[
+                                {
+                                    text: '详情',
+                                    onPress: () => {
+                                        this.pushPage({
+                                            component: {
+                                                ...Global.Screens.ERPDiagnosisDetail,
+                                                // title: data.name
+                                            }
+                                        });
+                                    },
+                                    style: { backgroundColor: 'orange', color: 'white' },
+                                }
+                            ]} >
+                                <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                                    onPress={() => {
+                                        this.pushPage({
+                                            component: {
+                                                passProps: { id: data.id },
+                                                ...Global.Screens.ERPDiagnosisDetail,
+                                                options: {
+                                                    topBar: {
+                                                        title: {
+                                                            text: data.name
+                                                        }
+                                                    }
+                                                },
+                                            }
+                                        });
+                                    }}>
+                                    <View style={styles.row} >
+                                        <View style={{ width: '30%', height: 120 }}>
+                                            <Image
+                                                // source={require('root/img/ZFbanner3.jpg')}
+                                                source={content.img}
+                                                style={{ width: '100%', height: '100%' }}
+                                            />
+                                        </View>
+                                        <View style={{ marginLeft: 15, width: '60%' }}>
+                                            <Text style={{ lineHeight: 20, fontSize: 18, fontWeight: 'bold' }}>{content.name}</Text>
+                                            {/* <Text style={{ lineHeight: 20 }}>热销产品</Text> */}
+                                        </View>
+                                    </View>
+                                </TouchableHighlight>
+                            </SwipeAction>
+                        }}
+                    />
+                </View>
+
+            </ScrollView>
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderColor: '#d9d9d9',
+    },
+    row: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginTop: 10,
+        justifyContent: 'flex-start',
+        paddingBottom: 10,
+        alignItems: 'center',
+        borderBottomWidth: 0.3,
+        borderBottomColor: '#ccc'
+    },
+    search: {
+        // flex: 1,
+        justifyContent: 'center',
+        // alignItems: 'center',
+        flexDirection: 'row',
+        margin: 10,
+    },
+});

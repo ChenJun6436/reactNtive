@@ -1,0 +1,319 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ScrollView,
+  Dimensions,
+  TouchableWithoutFeedback,
+  ProgressBarAndroid
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar, WingBlank } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import BrTag from '../baseComon/BrTag.js'
+import moment from "moment/moment"
+import storage from 'react-native-sync-storage';
+import ImgLeftText2Right from '../baseComon/ImgLeftText2Right.js'
+import VideoTopText2Bottom from '../baseComon/VideoTopText2Bottom'
+import * as AgInfoAction from 'root/src/actions/agInfo'
+const { connect } = require('remx');
+let pageIndex = 1;
+let pageSize = 3;
+
+@navigatorDecorator
+class Home extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+    this.state = {
+      AgInfoList: 'loading',
+      AgInfoZhongList: 'loading',
+      AgInfoYangList: [],
+      weatherData: null,
+      cityName: storage.get('cityName')
+    }
+  }
+  componentWillMount() {
+    //获取天气
+    this.getWether()
+    //获取农业资讯的前4条
+    AgInfoAction.getAg({ input: { pageIndex, pageSize: 4, contentType: 1 } }).then(({ suc, data }) => {
+      this.setState({
+        AgInfoList: data
+      })
+    })
+    // 获取种植微课的前4条
+    AgInfoAction.getAg({ input: { pageIndex, pageSize: 4, contentType: 2 } }).then(({ suc, data }) => {
+      this.setState({
+        AgInfoZhongList: data
+      })
+    })
+    ////获取养植微课的前4条
+    // AgInfoAction.getAg({ input: { pageIndex, pageSize: 2, contentType: 3 } }).then(({ suc, data }) => {
+    //   this.setState({
+    //     AgInfoYangList: data
+    //   })
+    // })
+  }
+  componentDidMount() {
+    //requestPermission();
+    // AgInfoAction.getAg({input: {pageIndex,pageSize,type: 1}}).then(({ suc, data })=>{
+    //   console.log(data)
+    //   // this.setState({
+    //   //   AgInfoList: data
+    //   // })
+    // })
+  }
+  //查看农技资讯详情
+  _lookDetailInfo(id){
+    this.pushPage({
+      component: {
+        ...Global.Screens.AgInfoDetail,
+        passProps: { id }
+      }
+    });
+  }
+  //查看更多农技资讯
+  _moreInfo(type){
+    if(type == 1){
+      this.pushPage({
+        component: {
+          ...Global.Screens.AgInfo
+        }
+      });
+    }else if(type == 2){
+      this.pushPage({
+        component: {
+          ...Global.Screens.AgMic
+        }
+      });
+    }
+  }
+  _lookDetailMic(id){
+    this.pushPage({
+      component: {
+        ...Global.Screens.AgMicDetail,
+        passProps: { id }
+      }
+    });
+  }
+  //获取当前城市天气
+  getWether() {
+    const vm = this
+    this.getNetData('http://wthrcdn.etouch.cn/weather_mini?city=' + '犍为')
+    .then((data) => {
+      console.log(222222222222222)
+      if (data.status == 1000) {
+      console.log(data)
+        vm.setState({
+          weatherData: data.data.forecast[0],
+          weatherStatus: false
+        })
+      } else {
+        vm.setState({
+          weatherData: null,
+          weatherStatus: false
+        })
+      }
+    })
+    .catch((data) => {
+      console.log(3333333333333333)
+      console.log(data)
+      // reject(ErrorDeal.getError(data.code));
+    })
+  }
+  //网络数据
+  //获取网络数据
+  getNetData = (url) => {
+    //  
+    return new Promise((resolve, reject) => {
+      fetch(url).then((response) => response.json())
+          .then((responseData) => {
+              resolve(responseData);
+          })
+          .catch((error) => {
+              console.log(error)
+              // reject(ErrorDeal.getError(NetWork_Error))
+          })
+          .done()
+    })
+}
+  render() {
+    let data = [
+      {
+        icon: <Image source={require('root/img/product.png')} style={styles.icon} />,
+        text: '农业资讯'
+      },
+      {
+        icon: <Image source={require('root/img/unit.png')} style={styles.icon} />,
+        text: '农技微课'
+      },
+      {
+        icon: <Image source={require('root/img/yao.png')} style={styles.icon} />,
+        text: '农技论坛'
+      },
+      {
+        icon: <Image source={require('root/img/check.png')} style={styles.icon} />,
+        text: '积分商城'
+      },
+    ]
+    let a = 'root/img/product.png'
+    let weather = this.state.weatherData
+    if(weather){
+      this.highC = weather.high.split(' ')[1]
+      this.lowC = weather.low.split(' ')[1] 
+    }
+    console.log(weather)
+    return (
+      <ScrollView style={styles.container}>
+        <WingBlank size='sm'>
+          <View style={{ flexDirection: 'row' }}>
+            {
+              weather?(
+                <View style={{ width: 120, flexDirection: 'row', backgroundColor: '#eee' }}>
+                  <View>
+                    <Text style={{ fontSize: 12,lineHeight:20 }}>{this.lowC +'~'+ this.highC}</Text>
+                    <Text style={{ fontSize: 12, textAlign: 'center' }}>{weather.type}</Text>
+                  </View>
+                  <View style={{ paddingLeft:5 }}>
+                  {/* this.state.cityName */}
+                    <Text numberOfLines={1} style={{ fontSize: 17,lineHeight:40, textAlign: 'center',width:60}}>犍为</Text>
+                  </View>
+                </View>
+              ):<ProgressBarAndroid/>
+            }
+            <View style={{ flex: 1, backgroundColor: '#f6f6f6' }}><SearchBar style={{ backgroundColor: '#f6f6f6' }} /></View>
+          </View>
+        </WingBlank>
+        <View>
+          <Carousel autoplay infinite >
+            <View>
+              <Image
+                source={require('root/img/ZFbanner.jpg')}
+                style={styles.imgStyle}
+              />
+            </View>
+            <View>
+              <Image
+                source={require('root/img/ZFbanner2.jpg')}
+                style={styles.imgStyle}
+              />
+            </View>
+            <View>
+              <Image
+                source={require('root/img/ZFbanner3.jpg')}
+                style={styles.imgStyle}
+              />
+            </View>
+          </Carousel>
+        </View>
+
+        <View style={{ backgroundColor: 'white', width: '100%', flex: 1, justifyContent: 'center', height: 100 }}>
+          <Grid data={data} columnNum={4} hasLine={false} onClick={(el, index) => {
+            switch (index) {
+              //农资产品
+              case 0: this.pushPage({
+                component: {
+                  ...Global.Screens.AgInfo
+                }
+              })
+                break;
+              //经营单位
+              case 1: this.pushPage({
+                component: {
+                  ...Global.Screens.AgMic
+                }
+              });
+                break;
+              //生产企业
+              case 2: this.pushPage(Constants.Screens.Enterprise_SCREEN);
+                break;
+              //禁限用药
+              case 3: this.pushPage({
+                ...Constants.Screens.Limit_SCREEN, topTabs: [{ screenId: Constants.Screens.LimitListTab_SCREEN.screen, title: "禁用药", passProps: { type: 0 } }, { screenId: Constants.Screens.LimitListTab_SCREEN.screen, title: "限用药", passProps: { type: 1 } }]
+              });
+            }
+          }} />
+        </View>
+        <BrTag color={'red'} title={'农业资讯'} click={()=>{this._moreInfo(1)}} url={this.state.AgInfoList == 'loading'?false:true} />
+        {
+          this.state.AgInfoList != 'loading' && this.state.AgInfoList?(
+            this.state.AgInfoList.length > 0?(this.state.AgInfoList.map((item, index) => {
+                if (index == 0){
+                  return <ImgLeftText2Right click={()=>{this._lookDetailInfo(item.id)}} key={item} content={item} />
+                }
+                else{
+                  <ImgLeftText2Right  click={()=>{this._lookDetailInfo(item.id)}} key={item}  content={item}/>
+                }
+              })
+            ):(<View><Text style={{marginLeft:'50%',lineHeight:50}}>暂无数据</Text></View>)
+          ):(<ProgressBarAndroid />)
+        }
+        <BrTag color={'green'} title={'农技微课'} click={()=>{this._moreInfo(2)}} url={this.state.AgInfoZhongList == 'loading'?false:true} />
+        <WingBlank size='sm'>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 10, justifyContent: 'space-between' ,paddingBottom:10}}>
+          {
+            this.state.AgInfoZhongList != 'loading' && this.state.AgInfoZhongList?(
+              this.state.AgInfoZhongList.length > 0?(this.state.AgInfoZhongList.map((item, index) => {
+                  return  <View style={{width:'45%'}}  key={item}>
+                    <VideoTopText2Bottom size={'sm'} click={()=>{this._lookDetailMic(item.id)}} content={item} />   
+                  </View>   
+                })
+              ):(<View><Text style={{marginLeft:'50%',lineHeight:50}}>暂无数据</Text></View>)
+            ):(<ProgressBarAndroid />)
+          }
+        </View>
+        </WingBlank>
+      </ScrollView>
+    );
+  }
+}
+function mapStateToProps() {
+  return {
+    // menuList: store.getMenuList()
+  };
+}
+
+module.exports = connect(mapStateToProps)(Home);
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  wrapper: {
+    backgroundColor: '#fff',
+  },
+  text: {
+    color: '#fff',
+    fontSize: 36,
+  },
+  icon: {
+    width: 55,
+    height: 55
+  },
+  title: {
+    fontSize: 16,
+    color: 'white',
+    width: '100%',
+    position: 'absolute',
+    top: 15,
+    zIndex: 999,
+    textAlign: 'center'
+  },
+  user: {
+    position: 'absolute',
+    top: 14,
+    left: 15,
+    zIndex: 1000,
+  },
+  imgStyle: {
+    // 设置宽度
+    width: Dimensions.get('window').width,
+    // 设置高度
+    height: 180,
+    // 设置图片填充模式
+    resizeMode: 'stretch'
+  }
+});

@@ -1,0 +1,558 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace, Checkbox, Accordion,  } from 'antd-mobile-rn';
+import * as MineAction from 'root/src/actions/product';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { bold } from 'ansi-colors';
+import moment from 'moment';
+import CropStore from 'root/src/stores/crop';
+const CheckboxItem = Checkbox.CheckboxItem;
+const AgreeItem = Checkbox.AgreeItem;
+const { connect } = require('remx');
+const Item = List.Item;
+let initData = {
+    plantName: '',
+    area: '',
+    period: '',
+    year: new Date(),
+    outPut: '',
+    iscurrent: true,
+    unit: "亩"
+}
+let initError = {
+    plantName: false,
+    area: false,
+    period: false,
+}
+let model = null
+let breedName = null
+
+@navigatorDecorator
+class ProductRecoveryAdd extends Component {
+    constructor(props) {
+        super(props);
+        this.loading = false
+        this.pickList = []
+        this.state = {
+            cropState: '',
+            cropList: [],
+            landList: [],
+            landState: '',
+            baseList: [],
+            baseState: '',
+            weatherList: [],
+            weatherState: '',
+            quantity: '',
+            pickDay: new Date(),
+            remark: '',
+            pickPeopleList: [],
+            pickPeopleState: [],
+            tag : '标准品'
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                title: {
+                    text: this.props.id?'编辑采收':'新增采收'
+                },
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+        if(this.loading){
+            return false
+        }
+        let nowName = false
+        let nowError = this.state.plantError
+        const ret=/^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/;
+        
+        if(!this.state.cropState){
+            nowName = true
+            MyToast.info('请选择采收作物');
+        }else if(!this.state.quantity){
+            nowName = true
+            MyToast.info('请填写采收重量');
+        }else if( !ret.test(this.state.quantity ) ){
+            nowName = true
+            MyToast.info('采收重量应大于0，且最多两位小数的数字');
+        }
+        this.state.pickPeopleState.forEach((i, index) => {
+            if(!ret.test(i.workDay) ){
+                nowName = true
+                MyToast.info('投入工时应大于0，且最多两位小数的数字');
+            }
+        }) 
+        if (nowName) {
+            return false
+        } else {
+            this.loading = true
+            let newPeople = []
+            this.state.pickPeopleState.forEach((i, index) => {
+                newPeople[index] = {}
+                newPeople[index].staffId = i.id
+                newPeople[index].staffName = i.name
+                newPeople[index].staffPhone = i.phone
+                newPeople[index].workDays = i.workDay
+                newPeople[index].id = ''
+                if(i.editorId){
+                    newPeople[index].id = i.editorId
+                }
+            })
+            let pickDay = moment(this.state.pickDay).format('YYYY-MM-DD');
+            let postData = {
+                itemStaff: newPeople,
+                weather: this.state.weatherState[0],
+                // plantBaseId: this.state.baseState[0],
+                // plantBaseLandId: this.state.landState[0],
+                remark: this.state.remark,
+                tag: this.state.tag,
+                quantity: this.state.quantity,
+                pickDay,
+                breedName: this.state.cropState[1] ? this.state.cropState[1].split('*')[1] : null,
+                breedId: this.state.cropState[1] ? this.state.cropState[1].split('*')[0] : null,
+                cropId: this.state.cropState[0] ? this.state.cropState[0].split('*')[0] : null,
+                cropName: this.state.cropState[0] ? this.state.cropState[0].split('*')[2] : null,
+                gardenLandCropId: this.state.cropState[0] ? this.state.cropState[0].split('*')[1] : null,
+            }
+            if (this.props.id) {
+                postData.id = this.props.id
+                MineAction.EditProductRecovery({ input: postData }).then((data) => {
+                    if (data.suc == 1) {
+                        MyToast.success('编辑成功');
+                    
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.ProductRecovery,
+                                }
+                            });
+                        }, 2000)
+                    } else {
+                        this.loading = false
+                        MyToast.info('编辑失败，请稍后再试');
+                    }
+                })
+            } else {
+                MineAction.AddProductRecovery({ input: postData }).then((data) => {
+                    if (data.suc == 1) {
+                        MyToast.success('新增成功');
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.ProductRecovery,
+                                }
+                            });
+                        }, 2000)
+                    } else {
+                        this.loading = false
+                        MyToast.info('新增失败，请稍后再试');
+                    }
+                })
+            }
+        }
+    }
+    componentWillMount() {
+        if (this.props.id) {
+            MineAction.GetProductRecovery(this.props.id).then((data) => {
+                if (data.suc) {
+                    let model = data.data
+                    if (model.plantBaseId) {
+                        this.GetAllLand(data.data.plantBaseId)
+                    }
+                    this.getData()
+                    this.pickList = model.itemStaff
+                    let nowPickWorker = []
+                    this.pickList.forEach((o)=>{
+                        nowPickWorker.push(o)
+                    })
+                    this.setState({
+                        cropState: [model.cropId + '*' + model.gardenLandCropId + '*' + model.cropName, model.breedId + '*' + model.breedName],
+                        baseState: [model.plantBaseId + ''],
+                        landState: [model.plantBaseLandId + ''],
+                        pickDay: new Date(model.pickDay),
+                        pickPeopleState: nowPickWorker,
+                        quantity: model.quantity + '',
+                        remark: model.remark + '',
+                        tag: model.tag + '',
+                        weatherState: [model.weather + '']
+                    })
+                } else {
+                    MyToast.info('数据获取失败，稍后尝试');
+                }
+            })
+        } else {
+            this.getData()
+        }
+    }
+    getData() {
+        //获取天气
+        MineAction.GetAllWeather().then((data) => {
+            if (data.suc) {
+                let model = data.data
+                let arrInt = []
+                model.forEach((i, index) => {
+                    arrInt[index] = {}
+                    arrInt[index].label = i.enumName + ''
+                    arrInt[index].value = i.enumValue + ''
+                });
+                this.setState({
+                    weatherList: arrInt,
+                })
+            } else {
+                MyToast.info('天气获取失败，稍后尝试');
+            }
+        })
+        //获取所有工人
+        MineAction.GetAllPeople(1).then((data) => {
+            if (data.suc) {
+                let model = data.data
+                let nowSelect = []
+                model.forEach((i) => {
+                    i.workDay = ''
+                    if(this.props.id){
+                        this.pickList.forEach((o) => {
+                            if(i.id == o.staffId){
+                                i.select = 1
+                                i.workDay = o.workDays + ''
+                                i.editorId = o.id
+                                nowSelect.push(i)
+                            }
+                        })
+                    }
+                })
+                this.setState({
+                    pickPeopleList: model,
+                    pickPeopleState: nowSelect
+                })
+            } else {
+                MyToast.info('客户获取失败，稍后尝试');
+            }
+        })
+        this.GetAllCrop()
+        //获取所有基地
+        MineAction.GetAllBase().then((data) => {
+            if (data.suc) {
+                let model = data.data
+                let arrInt = []
+                model.forEach((i, index) => {
+                    arrInt[index] = {}
+                    arrInt[index].label = i.name + ''
+                    arrInt[index].value = i.id + ''
+                });
+                this.setState({
+                    baseList: arrInt,
+                })
+            } else {
+                MyToast.info('基地获取失败，稍后尝试');
+            }
+        })
+        //获取所有园区
+        MineAction.GetAllGarden().then((data) => {
+            if (data.suc) {
+                let model = data.data
+                let arrInt = []
+                model.forEach((i, index) => {
+                    arrInt[index] = {}
+                    arrInt[index].label = i.name + ''
+                    arrInt[index].value = i.id + ''
+                });
+                this.setState({
+                    gardenList: arrInt,
+                })
+            } else {
+                MyToast.info('园区获取失败，稍后尝试');
+            }
+        })
+    }
+    //多选工人
+    onChange = (val) => {
+        let haveId = false
+        let nowIndex = 0
+        let oldData = this.state.pickPeopleState
+        oldData.forEach((i,index)=>{
+            if(val.id == i.id || val.id == i.editorId){
+                haveId = true
+                nowIndex = index
+            }else{
+            }
+        })
+        if(haveId){
+            oldData.splice(nowIndex, 1);
+        }else{
+            oldData.push(val)
+        }
+        this.setState({
+            pickPeopleState: oldData
+        })
+       
+    }
+    //获取所有作物
+    GetAllCrop(base, land) {
+        this.setState({
+            cropState: '',
+            cropList: []
+        })
+        let postData = {
+            plantBaseId: base ? base : '',
+            plantBaseLandId: land ? land : '',
+        }
+        MineAction.GetAllCrop(postData).then((data) => {
+            if (data.suc) {
+                let model = data.data
+                model.forEach((i, index) => {
+                    i.value = i.value + '*' + i.id + '*' + i.label
+                    i.children.forEach((o, ind) => {
+                        o.value = o.value + '*' + o.label
+                    })
+                });
+                this.setState({
+                    cropList: model,
+                })
+            } else {
+                MyToast.info('作物获取失败，稍后尝试');
+            }
+        })
+    }
+    GetAllLand(id) {
+        this.setState({
+            landState: '',
+            landList: []
+        })
+        //获取所有地块
+        MineAction.GetAllLand(id).then((data) => {
+            if (data.suc) {
+                let model = data.data
+                let arrInt = []
+                model.forEach((i, index) => {
+                    arrInt[index] = {}
+                    arrInt[index].label = i.landName + ''
+                    arrInt[index].value = i.id + ''
+                });
+                this.setState({
+                    landList: arrInt,
+                })
+            } else {
+                MyToast.info('地块获取失败，稍后尝试');
+            }
+        })
+    }
+    onErrorClick = () => {
+        MyToast.info('请填写正确的信息，且不能为空');
+    }
+    render() {
+        
+        return (
+            <ScrollView style={{ backgroundColor: '#f5f5f5' }}>
+                <View>
+                    <List>
+                        <DatePicker
+                            value={this.state.pickDay}
+                            mode="date"
+                            minDate={new Date('2018-01-01')}
+                            onChange={(text) => {
+                                this.setState({
+                                    pickDay: text
+                                })
+                            }}
+                            format="YYYY-MM-DD"
+                        >
+                            <Item arrow="horizontal" >采收时间</Item>
+                        </DatePicker>
+                    </List>
+                    <List>
+                        <Picker
+                            disabled={this.props.id}
+                            registerNumber="基地"
+                            data={this.state.baseList}
+                            cols={1}
+                            value={this.state.baseState}
+                            onOk={(val) => {
+                                this.setState({ baseState: val })
+                                this.GetAllLand(val[0])
+                                this.GetAllCrop(val[0], null)
+                            }}
+                            style={{ color: '#000' }}
+                        >
+                            <Item><Text style={{ fontSize: 17, color: '#000' }}>基地</Text></Item>
+                        </Picker>
+                    </List>
+                    {this.state.baseState || this.props.id ? (
+                        <List>
+                            <Picker
+                                disabled={this.props.id}
+                                registerNumber="区块"
+                                data={this.state.landList}
+                                cols={1}
+                                value={this.state.landState}
+                                onOk={(val) => {
+                                    this.setState({ landState: val })
+                                    this.GetAllCrop(this.state.baseState[0], val[0])
+                                }}
+                                style={{ color: '#000' }}
+                            >
+                                <Item><Text style={{ fontSize: 17, color: '#000' }}>区块</Text></Item>
+                            </Picker>
+                        </List>
+                    ) : (null)}
+                    <List>
+                        <Picker
+                            disabled={this.props.id}
+                            registerNumber="作物品种"
+                            data={this.state.cropList}
+                            cols={2}
+                            value={this.state.cropState}
+                            onOk={
+                                (val) => {
+                                    this.setState({ cropState: val })
+                                }
+                            }
+                            style={{ color: '#000' }}
+                        >
+                            <Item><Text style={{ fontSize: 17, color: '#000' }}>作物品种</Text></Item>
+                        </Picker>
+                    </List>
+                    <List>
+                        <InputItem
+                            labelNumber={10}
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    quantity: text
+                                })
+                            }}
+                            type={'number'}
+                            textAlign="right"
+                            extra={'kg'}
+                            error={this.state.registerNumberError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="数量"
+                            value={this.state.quantity}
+                        >数量（千克）
+                        </InputItem>
+                    </List>
+                    <List>
+                        <Accordion defaultActiveKey="1">
+                            <Accordion.Panel header="采收人员">
+                                <List>
+                                    {this.state.pickPeopleList.map((i, ind) => (
+                                        <CheckboxItem key={i.id} defaultChecked={i.select == 1}  onChange={() => this.onChange(i)}>
+                                            {i.name}
+                                            <InputItem
+                                                labelNumber={8}
+                                                textAlign="right"
+                                                clear
+                                                extra={'天'}
+                                                onChangeText={(text) => {
+                                                    let oldState = this.state.pickPeopleList
+                                                    oldState[ind].workDay = text
+                                                    this.setState({
+                                                        pickPeopleList: oldState
+                                                    })
+                                                }}
+                                                type={'number'}
+                                                error={this.state.registerNumberError}
+                                                onErrorClick={this.onErrorClick}
+                                                maxLength={50}
+                                                placeholder="请输入工时"
+                                                value={this.state.pickPeopleList[ind].workDay}
+                                            >投入工时（天）
+                                            </InputItem>
+                                        </CheckboxItem>
+                                    ))}
+                                </List>
+                            </Accordion.Panel>
+                        </Accordion>
+                    </List>
+                    <List>
+                        <Picker
+                            registerNumber="天气状况"
+                            data={this.state.weatherList}
+                            cols={1}
+                            value={this.state.weatherState}
+                            onOk={
+                                (val) => {
+                                    this.setState({ weatherState: val })
+                                }
+                            }
+                            style={{ color: '#000' }}
+                        >
+                            <Item><Text style={{ fontSize: 17, color: '#000' }}>天气状况</Text></Item>
+                        </Picker>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    tag: text
+                                })
+                            }}
+                            error={this.state.remarkError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="标签"
+                            value={this.state.tag}
+                        >标签
+                        </InputItem>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    remark: text
+                                }, () => {
+                                    if (!this.state.remark) {
+                                        this.setState({
+                                            remarkError: true
+                                        })
+                                    } else {
+                                        this.setState({
+                                            remarkError: false
+                                        })
+                                    }
+                                })
+                            }}
+                            error={this.state.remarkError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="输入备注"
+                            value={this.state.remark}
+                        >备注
+                        </InputItem>
+                    </List>
+                </View>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+        clickCrop: CropStore.getClickCrop(),
+    };
+}
+
+module.exports = connect(mapStateToProps)(ProductRecoveryAdd);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

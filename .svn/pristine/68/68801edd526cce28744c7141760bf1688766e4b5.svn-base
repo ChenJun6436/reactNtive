@@ -1,0 +1,132 @@
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    TouchableOpacity,
+    Modal,
+    Dimensions,
+    TouchableHighlight
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button } from 'antd-mobile-rn';
+import * as AccountAction from 'root/src/actions/account';
+const { connect } = require('remx');
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+@navigatorDecorator
+class SearchSolution extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            classificCode: null,
+            search: '',
+            typeList: [{ label: '全部', value: null }, { label: '已读', value: 1 }, { label: '未读', value: 2 }],
+            focusList: [{ label: '全部', value: null }, { label: '已关注', value: true }, { label: '未关注', value: false }],
+            focus: null,
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed({ buttonId }) {
+        let input = {
+            focus: this.state.focus,
+            search: this.state.search,
+            state: this.state.classificCode
+        }
+        this.pushPage({
+            component: {
+                ...Global.Screens.SolSearchList,
+                passProps: { input: input },
+            }
+        });
+    }
+    //选择状态
+    selectType = (value) => {
+        this.setState({
+            classificCode: value
+        })
+    }
+    //选择关注
+    selectFocus = (value) => {
+        this.setState({
+            focus: value
+        })
+    }
+    render() {
+        return (
+            <View style={styles.confirm}>
+                <View style={styles.box}>
+                    <List>
+                        <InputItem
+                            clear
+                            onChangeText={text => this.setState({ search: text })}
+                            placeholder="请输入方案名/关键字搜索"
+                            value={this.state.search}
+                            labelNumber={9}
+                        >
+                        </InputItem>
+                    </List>
+                    <View style={styles.searchBtn}>
+                        {
+                            this.state.typeList && this.state.typeList.length > 0 ? this.state.typeList.map((item, index) => {
+                                return <Button key={index} style={[styles.searchBtns, { backgroundColor: this.state.classificCode == item.value ? 'green' : '#fff', }]} value={item.value} onClick={() => this.selectType(item.value)}><Text style={{ color: this.state.classificCode == item.value ? '#fff' : '#222' }}>{item.label}</Text></Button>
+                            }) : <Text>暂无数据</Text>
+                        }
+                    </View>
+                    <View style={styles.searchBtn}>
+                        {
+                            this.state.focusList && this.state.focusList.length > 0 ? this.state.focusList.map((item, index) => {
+                                return <Button key={index} style={[styles.searchBtns, { backgroundColor: this.state.focus == item.value ? 'blue' : '#fff', }]} value={item.value} onClick={() => this.selectFocus(item.value)}><Text style={{ color: this.state.focus == item.value ? '#fff' : '#222' }}>{item.label}</Text></Button>
+                            }) : <Text>暂无数据</Text>
+                        }
+                    </View>
+                </View>
+            </View>
+        );
+    }
+}
+function mapStateToProps() {
+
+}
+module.exports = connect(mapStateToProps)(SearchSolution);
+const styles = StyleSheet.create({
+    confirm: {
+        backgroundColor: 'rgba(141,141,141,0.5)',
+        padding: 15,
+        height: SCREEN_HEIGHT,
+        width: SCREEN_WIDTH
+    },
+    searchBtn: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        flex: 1,
+        width: '100%',
+        marginTop: 10,
+        justifyContent: 'space-between',
+        marginBottom: 100
+    },
+    searchBtns: {
+        width: '49%',
+        marginTop: 10,
+    },
+    foot: {
+        borderTopWidth: StyleSheet.hairlineWidth,
+        borderTopColor: 'black',
+        flexDirection: 'row',
+    },
+    btn: {
+        fontSize: 16,
+        width: SCREEN_WIDTH * 0.5,
+        textAlign: 'center',
+        lineHeight: 40,
+        // backgroundColor: 'green',
+        // color: '#fff',
+        // textAlign: 'center'
+    }
+});

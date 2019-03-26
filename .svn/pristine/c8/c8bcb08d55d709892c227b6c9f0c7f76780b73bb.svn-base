@@ -1,0 +1,135 @@
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    Dimensions,
+    ScrollView,
+    Image,
+    WebView
+} from 'react-native';
+// import { inject, observer } from 'mobx-react/native';
+import { SearchBar, WhiteSpace, WingBlank, List, Button, InputItem, Carousel } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import DetailItem from 'root/src/screens/baseComon/DetailItem.js';
+import * as SolutionAction from 'root/src/actions/solution';
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const Item = List.Item;
+const HTML = `
+<!DOCTYPE html>\n
+<html>
+  <head>
+    <title>Hello Static World</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=320, user-scalable=no">
+    <style type="text/css">
+      body {
+        margin: 0;
+        padding: 0;
+        font: 62.5% arial, sans-serif;
+        background: #ccc;
+      }
+      h1 {
+        padding: 45px;
+        margin: 0;
+        text-align: center;
+        color: #33f;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Hello Static World</h1>
+  </body>
+</html>
+`;
+@loadingDecorator @navigatorDecorator
+export default class SolutionDetail extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            model: {},
+        }
+        // Navigation.mergeOptions(this.props.componentId, {
+        //     topBar: {
+        //         rightButtons: [{
+        //             confirmRightBtn, text: '上传图片'
+        //         }]
+        //     }
+        // });
+        // Navigation.events().bindComponent(this);
+
+    }
+    // navigationButtonPressed({ buttonId }) {
+    //     this.pushPage({
+    //         component: {
+    //             ...Global.Screens.ERPUploadImage,
+    //             passProps: { pestId: this.state.model.id, pestName: this.state.model.pest, plantName: this.state.model.crop }
+    //         }
+    //     });
+
+    // }
+    componentWillMount() {
+        SolutionAction.GetDetail({ id: this.props.id }).then((data) => {
+            if (data.data && data.data.length != 0)
+                this.setState({ model: data.data })
+            else {
+                MyToast.info('暂无数据！稍后尝试');
+            }
+            this.setState({ loading: false })
+        })
+    }
+    render() {
+        let model = this.state.model ? this.state.model : {};
+        console.log(model)
+        return (
+            <ScrollView style={{ backgroundColor: '#f2f2f2', position: 'relative', height: SCREEN_HEIGHT }}>
+                <View style={styles.search}>
+                    {
+                        model.defaultImgUrl ?
+                            <Image
+                                key={item}
+                                source={{ uri: model.defaultImgUrl }}
+                                style={styles.imgStyle}
+                            />
+                            : <Image
+                                source={require('root/img/nopic.gif')}
+                                style={styles.imgStyle}
+                            />
+                    }
+                </View>
+                <View style={styles.container}>
+                    <DetailItem title="标题" content={model.title} />
+                    <DetailItem title="类型" content={model.messageTypeName} />
+                    <DetailItem title="推送单位" content={model.sendUnit} />
+                    <DetailItem title="备注" content={model.messageContentRemark} top={8} />
+                    <DetailItem title="内容" content={model.messageContent} top={8} />
+                    <WebView
+                        style={{
+                            // backgroundColor: BGWASH,
+                            height: 100,
+                        }}
+                        source={{ html: HTML }}
+                        scalesPageToFit={true}
+                    />
+                </View>
+            </ScrollView >
+        )
+    }
+}
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        marginBottom: 10,
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 180,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    },
+});

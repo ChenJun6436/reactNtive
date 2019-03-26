@@ -1,0 +1,150 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    TouchableOpacity,
+    Dimensions,
+    TouchableHighlight
+} from 'react-native';
+import { List, InputItem, Button, SwipeAction } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import DiagnosisList from 'root/src/screens/baseComon/DiagnosisList';
+import * as DiagnosisAction from 'root/src/actions/diagnosis';
+const { connect } = require('remx');
+@navigatorDecorator
+class ERPDiagnosis extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            storeName: '',
+            classificCode: '',
+            search: ''
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    {
+                        id: 'search',
+                        icon: iconsMap['search'],
+                        color: '#fff',
+                        fontSize: 16,
+                    }
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed({ buttonId }) {
+        this.pushPage({
+            component: {
+                ...Global.Screens.ERPDiaDetailSearch,
+                passProps: { searchFn: this.searchFn },
+            }
+        });
+    }
+
+    refresh = () => {
+        this.moreListInst._onRefresh();
+    }
+    searchFn = (item) => {
+        this.setState({
+            classificCode: item.classificCode,
+            search: item.search
+        }, this.refresh)
+    }
+    render() {
+        // const content = this.props.content
+        let content = {
+            img: require('root/img/ZFbanner2.jpg'),
+            name: 'XX农资店',
+            browse: 12,
+            distance: 2.2,
+            address: '乐山市嘉州大道258号'
+        }
+        return (
+            <ScrollView style={styles.container}>            
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', }}>
+                    <LoadMoreList
+                        ref={ref => this.moreListInst = ref}
+                        getData={this.state.search ? DiagnosisAction.GetPlantPest : DiagnosisAction.GetPlantByLivingMatter}
+                        searchParams={{ classificCode: this.state.classificCode, search: this.state.search }}
+                        rowItem={(data) => {
+                            return <SwipeAction autoClose style={{ backgroundColor: 'transparent', flex: 1 }} right={[
+                                {
+                                    text: '详情',
+                                    onPress: () => {
+                                        this.pushPage({
+                                            component: {
+                                                ...Global.Screens.ERPDiagnosisDetail,
+                                                // title: data.name
+                                            }
+                                        });
+                                    },
+                                    style: { backgroundColor: 'orange', color: 'white' },
+                                }
+                            ]} >
+                                <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                                    onPress={() => {
+                                        this.pushPage({
+                                            component: {
+                                                passProps: { id: data.id },
+                                                ...Global.Screens.ERPDiagnosisDetail,
+                                                options: {
+                                                    topBar: {
+                                                        title: {
+                                                            text: data.name
+                                                        }
+                                                    }
+                                                },
+                                            }
+                                        });
+                                    }}>
+                                    <DiagnosisList content={data} />
+                                </TouchableHighlight>
+                            </SwipeAction>
+                        }}
+                    />
+                </View>
+
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    // return {
+    // };
+}
+module.exports = connect(mapStateToProps)(ERPDiagnosis);
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderColor: '#d9d9d9',
+    },
+    row: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginTop: 10,
+        justifyContent: 'flex-start',
+        paddingBottom: 10,
+        alignItems: 'center',
+        borderBottomWidth: 0.3,
+        borderBottomColor: '#ccc'
+    },
+    search: {
+        // flex: 1,
+        justifyContent: 'center',
+        // alignItems: 'center',
+        flexDirection: 'row',
+        margin: 10,
+    },
+});

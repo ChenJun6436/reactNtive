@@ -1,0 +1,232 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    // Button,
+    ScrollView,
+    TextInput,
+    Alert,
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button } from 'antd-mobile-rn';
+import * as AccountAction from 'root/src/actions/account';
+import * as CommonAction from 'root/src/actions/common';
+import * as EnumsAction from 'root/src/actions/enums';
+import store from 'root/src/stores/account';
+const Item = List.Item;
+
+@navigatorDecorator
+export default class EditUserInfo extends Component {
+    static get options() {
+        return {
+            topBar: {
+                rightButtons: [
+                    {
+                        id: 'comfirm',
+                        title: '跳过',
+                        color: '#fff'
+                    }
+                ],
+            }
+        };
+    }
+    constructor(props) {
+        super(props);
+        this.state = {
+            files2: [],
+            id: '',
+            userName: '',
+            avatar: '',
+            email: '',
+            address: '',
+            provinceCode: '',
+            provinceName: '',
+            cityCode: '',
+            cityName: '',
+            townCode: '',
+            townName: '',
+            countyCode: '',
+            countyName: '',
+            regionId: '',
+            regionName: '',
+            sex: '',
+            birthDate: '',
+            idCardNumber: '',
+            userType: '',
+            plantingCrop: '',
+            plantingArea: '',
+            plantingYield: '',
+            nextYearPlant: '',
+        }
+        Navigation.events().registerNativeEventListener((event, params) => {
+            if (event === "buttonPressed" && params && params.buttonId === "comfirm") {
+                Global.Navigate.startIndexScreen()
+            }
+        });
+    }
+    stepHome = () => {
+        this.state.id = this.props.userId
+        this.state.birthDate = new Date(this.state.birthDate);
+        this.state.sex = this.state.sex[0]
+        AccountAction.modifyUser({ input: this.state }).then((suc) => {
+            debugger;
+            if (suc.suc) {
+                Global.Navigate.startIndexScreen()
+            }
+        })
+    }
+    handleFile2Change = (files2) => {
+        var formData = new FormData();
+        formData.append('avatar', files2);
+        CommonAction.UploadImg({ input: formData }).then((suc) => {
+            if (suc.suc) {
+                // Global.Navigate.startIndexScreen()
+                console.log(suc)
+            }
+        })
+        this.setState({
+            files2,
+        });
+    }
+    getAears = (data) => {
+        if (data) {
+            this.setState({
+                provinceCode: data.regionId[0],
+                provinceName: data.regionName[0],
+                cityCode: data.regionId[1],
+                cityName: data.regionName[1],
+                townCode: data.regionId[2],
+                townName: data.regionName[2],
+                countyCode: data.regionId[3],
+                countyName: data.regionName[3],
+                regionId: data.regionId.join('/'),
+                regionName: data.regionName.join(','),
+                address: data.address
+            })
+        }
+    }
+    userType = (type, name) => {
+        this.setState({
+            userType: type,
+            typeName: name
+        })
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#F5FCFF' }}>
+                <View style={{ alignItems: 'center', padding: 15 }}>
+                    <ImagePicker
+                        length="1"
+                        onChange={this.handleFile2Change}
+                        files={this.state.files2}
+                    />
+                </View>
+                <List>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ userName: text })}
+                        placeholder="姓名"
+                        value={this.state.userName}
+                    >姓名
+                    </InputItem>
+                    <Picker
+                        data={[{ value: '男', label: '男' }, { value: '女', label: '女' }]}
+                        cols={1}
+                        onChange={text => this.setState({ sex: text })}
+                        value={this.state.sex}>
+                        <Item arrow="horizontal">性别</Item>
+                    </Picker>
+                    <DatePicker
+                        value={this.state.birthDate ? new Date(this.state.birthDate) : null}
+                        mode="date"
+                        minDate={new Date('1918-01-01')}
+                        onChange={text => this.setState({ birthDate: text })}
+                        format="YYYY-MM-DD"
+                    >
+                        <Item arrow="horizontal" >出生日期</Item>
+                    </DatePicker>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ idCardNumber: text })}
+                        placeholder="身份证号"
+                        value={this.state.idCardNumber}
+                        labelNumber={9}
+                    >身份证号
+                    </InputItem>
+
+
+                    <Item arrow="horizontal" wrap extra={this.state.typeName} onClick={() => {
+                        this.pushPage({
+                            component: {
+                                ...Global.Screens.UserType,
+                                passProps: { userType: this.userType },
+                            }
+                        })
+                    }}>用户类型</Item>
+
+                    <Item arrow="horizontal" wrap extra={this.state.regionName} onClick={() => {
+                        this.pushPage({
+                            component: {
+                                ...Global.Screens.UserRegion,
+                                passProps: { getAears: this.getAears },
+                            }
+                        })
+                    }}>所在区域</Item>
+
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ plantingCrop: text })}
+                        placeholder="请输入主栽品、主养殖"
+                        value={this.state.plantingCrop}
+                        labelNumber={9}
+                    >主栽（养）品
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ nextYearPlant: text })}
+                        placeholder="请输入计划主栽品、主养殖"
+                        value={this.state.nextYearPlant}
+                        labelNumber={9}
+                    >明年计划主栽（养）品
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ plantingArea: text })}
+                        placeholder="请输入土地面积"
+                        value={this.state.plantingArea}
+                        labelNumber={9}
+                    >土地面积
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ plantingYield: text })}
+                        placeholder="请输入产量"
+                        value={this.state.plantingYield}
+                        labelNumber={9}
+                    >产量
+                    </InputItem>
+                </List>
+                <View style={{ marginVertical: 10, width: '100%', alignItems: 'center', }}>
+                    <Button
+                        style={{ height: 40, width: '90%', backgroundColor: 'green', borderWidth: 2, borderColor: 'white', borderRadius: 5 }}
+                        onClick={this.stepHome}
+                    >
+                        <Text style={{ fontWeight: 'bold', color: 'white' }}>下一步</Text>
+                    </Button>
+                </View>
+            </ScrollView>
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    userId: store.getUserId()
+});

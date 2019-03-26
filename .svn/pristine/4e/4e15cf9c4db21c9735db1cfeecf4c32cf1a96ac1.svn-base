@@ -1,0 +1,169 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    // Button,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableOpacity
+} from 'react-native';
+import { List, InputItem, Picker, Button, Accordion, SwipeAction } from 'antd-mobile-rn';
+import * as MARAction from 'root/src/actions/medicationRecord'
+import * as LandAction from 'root/src/actions/land'
+import moment from 'moment';
+import CropStore from 'root/src/stores/crop';
+import pesticidesStore from 'root/src/stores/pesticides';
+import DetailItem from 'root/src/screens/baseComon/DetailItem.js';
+const { connect } = require('remx');
+const Item = List.Item;
+
+@navigatorDecorator
+class AddOrEdit extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            areasData: [],
+            regionId: [],
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+
+    }
+    navigationButtonPressed({ buttonId }) {
+        if (!this.state.unitName) {
+            MyToast.info('请填写单位名称')
+            return false
+        }
+        let input = {
+            id: this.props.id,
+            unitName: this.state.unitName,
+            preventTime: moment(this.state.preventTime).format('YYYY-MM-DD'),
+            preventAddress: this.state.preventAddress[0],
+            crops: this.props.cropsList,
+            usageWay: this.state.usageWay.join(','),
+            area: this.state.area,
+            pesticides: this.props.goodsData.map(x => { x.madeTimeStr = null; return x; }),
+            safeDays: this.state.safeDays,
+            effects: this.state.effects.join(','),
+            safeComment: this.state.safeComment.join(','),
+            isRecycled: this.state.isRecycled[0] == 'true' ? true : false,
+        }
+        // alert(JSON.stringify(input))
+
+        if (this.props.isEdit) {
+            MARAction.Update({ input: input }).then((suc) => {
+                if (suc.suc) {
+                    MyToast.success('编辑成功！')
+                    this.props.refresh && this.props.refresh()
+                    this.pop()
+                }
+                else {
+
+                }
+            })
+        }
+        else {
+            MARAction.Add({ input: input }).then((suc) => {
+                if (suc.suc) {
+                    MyToast.success('新增成功！')
+                    this.props.refresh && this.props.refresh()
+                    this.pop()
+                }
+            })
+        }
+
+
+    }
+    componentWillMount() {
+        const areasData = getAreas()
+        this.setState({ areasData })
+        
+    }
+    format = (value) => {
+        if (value && value.length > 0) {
+            this.regionName = value
+            return value.join(',')
+        }
+    }
+    render() {
+        let goodsData = this.props.goodsData;
+        let crops = this.props.cropsList;
+        return (
+            <ScrollView style={{ backgroundColor: '#F5FCFF' }}>
+                <List>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        type='number'
+                        onChange={text => this.setState({ safeDays: text })}
+                        placeholder="基地规模（亩）"
+                        value={this.state.safeDays}
+                        labelNumber={9}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>基地规模（亩）</Text>
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChange={text => this.setState({ unitName: text })}
+                        placeholder="基地认证名称"
+                        value={this.state.unitName}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>基地认证名称</Text>
+                    </InputItem>
+                    <Picker
+                        style={{ height: 40, width: '100%', backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: '#999', }}
+                        title="选择地区"
+                        data={this.state.areasData}
+                        cols={4}
+                        value={this.state.regionId}
+                        format={this.format}
+                        onChange={(v: any) => this.setState({ regionId: v })}
+                        onOk={(v: any) => this.setState({ regionId: v })}
+                    >
+                        <CustomChildren>省/市/区</CustomChildren>
+                    </Picker>
+                    <Item arrow="horizontal" wrap extra={<Text style={{ color: 'gray' }}>{this.state.typeName}</Text>}
+                        onClick={() => {
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.ChooseAddress,
+                                    passProps: { userType: this.userType },
+                                }
+                            })
+                        }}><Text style={{ color: 'gray' }}>基地地址</Text></Item>
+                </List>
+            </ScrollView>
+        );
+    }
+}
+const CustomChildren = (props: any) => (
+    <TouchableOpacity onPress={props.onClick}>
+        <View
+            style={{ height: 36, paddingLeft: 15, flexDirection: 'row', alignItems: 'center' }}
+        >
+            <Text style={{ flex: 1 }}>{props.children}</Text>
+            <Text style={{ textAlign: 'right', color: '#888', marginRight: 15 }}>{props.extra}</Text>
+        </View>
+    </TouchableOpacity>
+);
+function mapStateToProps() {
+    return {
+
+    };
+}
+
+module.exports = connect(mapStateToProps)(AddOrEdit);
+const styles = StyleSheet.create({
+
+});

@@ -1,0 +1,9 @@
+import * as StoreService from '../services/crop';
+
+//新增关注作物
+export async function AddAttentionCrop({ input }) {
+    const { data, msg, success, dataExtend } = await StoreService.AddAttentionCrop(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data, dataExtend };
+}

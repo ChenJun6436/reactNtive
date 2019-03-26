@@ -1,0 +1,23 @@
+import * as DataService from '../services/dataAuthentication';
+
+// 获取基地列表
+export async function getBaseList({ input }) {
+    const { data, msg, success, totalCount } = await DataService.getBaseList(input)
+    if (!success)
+        return { suc: false, msg };
+    return { data, totalCount };
+}
+// 获取企业情况-详情
+export async function GetEnterpriseSituation( input ) {
+    const { data, msg, success } = await DataService.GetEnterpriseSituation(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data };
+}
+// 获取企业情况-列表
+export async function GetEnterpriseList( input ) {
+    const { data, msg, success,totalCount } = await DataService.GetEnterpriseList(input)
+    if (!success)
+        return { suc: false, msg };
+    return {  data, totalCount };
+}

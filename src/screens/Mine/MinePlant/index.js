@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace } from 'antd-mobile-rn';
 import * as MineAction from 'root/src/actions/mine';
-import Icon from 'react-native-vector-icons/Feather';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import { bold } from 'ansi-colors';
 import moment from 'moment';
 // import { runInThisContext } from 'vm';
@@ -22,17 +22,9 @@ const Item = List.Item;
 class MinePlant extends Component {
     constructor(props) {
         super(props);
+        this.loading = false
         this.state = {
             plantList: [
-                // {
-                //     plantName : '',
-                //     area : '',
-                //     period: '',
-                //     year: new Date(),
-                //     outPut: '',
-                //     iscurrent: true,
-                //     unit: "亩"
-                // }
             ],
             plantError: [
                 {
@@ -42,11 +34,10 @@ class MinePlant extends Component {
                 }
             ],
         }
-        console.log(this.props)
         Navigation.mergeOptions(this.props.componentId, {
             topBar: {
                 title: {
-                    text: this.props.isNow=='true'?'当前栽养品':'计划栽养品'
+                    text: this.props.isNow == 'true' ? '当前种养品' : '计划种养品'
                 },
                 rightButtons: [
                     confirmRightBtn
@@ -56,37 +47,60 @@ class MinePlant extends Component {
         Navigation.events().bindComponent(this);
     }
     navigationButtonPressed() {
+        if (this.loading) {
+            return false
+        }
+        const ret = /^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/;
         let nowName = ''
+        let nowToast = ''
         let nowError = this.state.plantError
         this.state.plantList.map((i, index) => {
             if (!i.plantName) {
                 nowName = 'plantName'
                 nowError[index][nowName] = true
-            }
-            if (!i.area) {
+                nowToast = '请填写作物名'
+            } else if (!i.area) {
                 nowName = 'area'
                 nowError[index][nowName] = true
-            }
-            if (!i.period) {
+                nowToast = '请填写面积'
+            } else if (!ret.test(i.area)) {
+                nowName = 'area'
+                nowError[index][nowName] = true
+                nowToast = '面积应大于0，且最多两位小数的数字' 
+            } else if (!i.period) {
                 nowName = 'period'
                 nowError[index][nowName] = true
+                nowToast = '请填写生长周期'
+            } else if (!ret.test(i.period)) {
+                nowName = 'period'
+                nowToast = '生长周期应大于0，且最多两位小数的数字'
+                nowError[index][nowName] = true
+            } else if (!ret.test(i.outPut)) {
+                nowName = 'outPut'
+                nowToast = '预计产量应大于0，且最多两位小数的数字'
             }
         })
+
         if (nowName) {
-            MyToast.info('请填写作物信息');
+            MyToast.info(nowToast)
             this.setState({
                 plantError: nowError
             })
         } else {
+            this.loading = true
             let plantList = this.state.plantList
             plantList.forEach(i => {
                 i.year = moment(i.yearStr).format('YYYY-MM-DD');
             });
             MineAction.AddPlant({ input: this.state.plantList }).then((data) => {
                 if (data.suc) {
-                    MyToast.info('保存成功');
+                    MyToast.success('保存成功');
+                    setTimeout(() => {
+                        this.loading = false
+                    }, 2000)
                 } else {
-                    MyToast.info('保存失败，请稍后再试');
+                    MyToast.info(data.msg)
+                    this.loading = false
                 }
             })
         }
@@ -157,7 +171,6 @@ class MinePlant extends Component {
                 plantError: nowError,
             })
         } else {
-            debugger;
             nowError[index][name] = false
             this.setState({
                 plantList: nowList,
@@ -189,7 +202,7 @@ class MinePlant extends Component {
                                                 })
                                             }}>
                                                 <View>
-                                                    <Text style={{ textAlign: 'center', fontSize: 18, color: '#000', lineHeight: 50, marginRight: 15 }}><Icon color='red' name='trash-2' size={18} /></Text>
+                                                    <Text style={{ textAlign: 'center', fontSize: 18, color: '#000', lineHeight: 50, marginRight: 15 }}><Icon color='red' name='trash' size={18} /></Text>
                                                 </View>
                                             </TouchableWithoutFeedback>
                                         )}
@@ -200,7 +213,7 @@ class MinePlant extends Component {
                                         labelNumber={7}
                                         textAlign="right"
                                         clear
-                                        onChangeText={(text) => {
+                                        onChange={(text) => {
                                             this.changeData(text, index, 'plantName')
                                         }}
                                         error={this.state.plantError[index]['plantName']}
@@ -216,7 +229,7 @@ class MinePlant extends Component {
                                         type='number'
                                         textAlign="right"
                                         clear
-                                        onChangeText={(text) => {
+                                        onChange={(text) => {
                                             this.changeData(text, index, 'area')
                                         }}
                                         error={this.state.plantError[index]['area']}
@@ -246,7 +259,7 @@ class MinePlant extends Component {
                                         type='number'
                                         textAlign="right"
                                         clear
-                                        onChangeText={(text) => {
+                                        onChange={(text) => {
                                             this.changeData(text, index, 'period')
                                         }}
                                         error={this.state.plantError[index]['period']}
@@ -263,12 +276,12 @@ class MinePlant extends Component {
                                         type='number'
                                         textAlign="right"
                                         clear
-                                        onChangeText={(text) => {
+                                        onChange={(text) => {
                                             this.changeData(text, index, 'outPut')
                                         }}
                                         placeholder="输入预计产量"
                                         value={i.outPut}
-                                        extra="kg"
+                                        extra="斤"
                                     >预计产量
                                     </InputItem>
                                 </List>

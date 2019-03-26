@@ -1,0 +1,340 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    // Button,
+    ScrollView,
+    TextInput,
+    Alert,
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button } from 'antd-mobile-rn';
+import InputWriteSelect from 'root/src/screens/baseComon/InputWriteSelect.js'
+import * as MARAction from 'root/src/actions/medicationRecord'
+import store from 'root/src/stores/account';
+import moment from 'moment';
+import CropStore from 'root/src/stores/crop';
+const { connect } = require('remx');
+const Item = List.Item;
+
+@navigatorDecorator
+class AddOrEdit extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            unitName: "",
+            preventTime: new Date(),
+            preventAddress: "123456",
+            pest: "",
+            crop: "",
+            usageWay: ["喷雾"],
+            area: 0,
+            pesticide: "",
+            registNumber: "",
+            manufacturer: "",
+            madeTime: new Date(),
+            source: "",
+            usage: 0,
+            safeDays: 0,
+            effects: ["一般"],
+            safeComment: ["无药害发生"],
+            isRecycled: true
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+
+    }
+    navigationButtonPressed({ buttonId }) {
+        this.state.preventTime = moment(this.state.preventTime).format('YYYY-MM-DD');
+        this.state.madeTime = moment(this.state.madeTime).format('YYYY-MM-DD');
+        // let input={
+        //     unitName: "",
+        //     preventTime: new Date(),
+        //     preventAddress: "",
+        //     pest: "",
+        //     crop: "",
+        //     usageWay: "",
+        //     area: 0,
+        //     pesticide: "",
+        //     registNumber: "",
+        //     manufacturer: "",
+        //     madeTime: new Date(),
+        //     source: "",
+        //     usage: 0,
+        //     safeDays: 0,
+        //     effects: "",
+        //     safeComment: "",
+        //     isRecycled: true
+        // }
+        this.state.crop = this.props.cropData.join(',');
+        this.state.pest = this.props.pestData.join(',');
+        this.state.usageWay = this.state.usageWay.join(',');
+        this.state.effects = this.state.effects.join(',');
+        this.state.safeComment = this.state.safeComment.join(',');
+        MARAction.Add({ input: this.state }).then((suc) => {
+            console.log(suc)
+            if (suc.suc) {
+                console.log(suc)
+                MyToast.success('新增成功！')
+                // Global.Navigate.startIndexScreen()
+            }
+        })
+
+    }
+    componentDidMount() {
+        MARAction.GetPesticideEffectEnum().then((data) => {
+            if (data.suc && data.data) {
+                console.log(data)
+                let comment = [];
+                let effects = [];
+                let usageWay = [];
+                if (data.data.comment && data.data.comment.length > 0) {
+                    data.data.comment.map(item => {
+                        comment.push({
+                            value: item,
+                            label: item
+                        })
+                    })
+                }
+                if (data.data.effects && data.data.effects.length > 0) {
+                    data.data.comment.map(item => {
+                        effects.push({
+                            value: item,
+                            label: item
+                        })
+                    })
+                }
+                if (data.data.usageWay && data.data.usageWay.length > 0) {
+                    data.data.usageWay.map(item => {
+                        usageWay.push({
+                            value: item,
+                            label: item
+                        })
+                    })
+                }
+
+                this.setState({
+                    comment: comment,
+                    effectsList: effects,
+                    usageWayList: usageWay
+                })
+            }
+
+            else {
+                MyToast.info('暂无数据！稍后尝试');
+            }
+            this.setState({ loading: false })
+        })
+    }
+    componentWillReceiveProps(nextProps) {
+    }
+    stepHome = () => {
+
+    }
+
+
+
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#F5FCFF' }}>
+                <List>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ unitName: text })}
+                        placeholder="单位名称"
+                        value={this.state.unitName}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>单位名称</Text>
+                    </InputItem>
+
+                    <DatePicker
+                        value={new Date(this.state.preventTime)}
+                        mode="date"
+                        minDate={new Date('1918-01-01')}
+                        maxDate={new Date()}
+                        onChange={text => this.setState({ preventTime: text })}
+                        format="YYYY-MM-DD"
+                    >
+                        <Item arrow="horizontal" ><Text style={{ color: 'gray' }}>防治日期</Text></Item>
+                    </DatePicker>
+                    <Picker
+                        data={[{ value: '0', label: '乐山' }, { value: '1', label: '四川' }]}
+                        cols={1}
+                        onChange={text => { this.setState({ preventAddress: text }) }}
+                        value={this.state.preventAddress}>
+                        <Item arrow="horizontal"><Text style={{ color: 'gray' }}>防治地点</Text></Item>
+                    </Picker>
+
+                    <InputWriteSelect _name={'作物名称'} _value={this.props.cropData} _type={'crop'} _selectCrop={() => {
+                        this.pushPage({
+                            component: {
+                                passProps: { isSelect: true, isSolo: true },
+                                ...Global.Screens.ERPDiagnosis
+                            }
+                        })
+                    }} />
+                    <InputWriteSelect _name={'病害名称'} _value={this.props.pestData} _type={'pest'} _selectCrop={() => {
+                        this.pushPage({
+                            component: {
+                                passProps: { cropName: this.props.cropData, isSelect: true, isSolo: true },
+                                ...Global.Screens.ERPDiagnosisDetail
+                            }
+                        })
+                    }} />
+                    <Picker
+                        data={this.state.usageWayList}
+                        cols={1}
+                        onChange={text => { this.setState({ usageWay: text }) }}
+                        value={this.state.usageWay}>
+                        <Item arrow="horizontal"><Text style={{ color: 'gray' }}>施药方式</Text></Item>
+                    </Picker>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        type='number'
+                        onChangeText={text => this.setState({ area: text })}
+                        placeholder="施药面积（亩）"
+                        value={this.state.area}
+                        labelNumber={9}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>施药面积（亩）</Text>
+                    </InputItem>
+                    <Item arrow="horizontal" wrap extra={<Text style={{ color: 'gray', overflow: 'hidden', textAlign: 'right' }}>{this.state.regionName}</Text>}
+                        cols={1}
+                        onClick={() => {
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.MARGoods,
+                                    // passProps: { getAears: this.getAears, regionId: this.state.reId, address: this.state.address },
+                                }
+                            })
+                        }}><Text style={{ color: 'gray' }}>用药组合</Text></Item>
+                    {/* <InputWriteSelect _name={'农药名称'} _value={this.props.pestData} _type={'pest'} _selectCrop={() => {
+                        this.pushPage({
+                            component: {
+                                passProps: { cropName: this.props.cropData, isSelect: true, isSolo: true },
+                                ...Global.Screens.PesticidesList
+                            }
+                        })
+                    }} /> */}
+                    {/* <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ pesticide: text })}
+                        placeholder="农药名称"
+                        value={this.state.pesticide}
+                        labelNumber={9}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>农药名称</Text>
+                    </InputItem> */}
+                    {/* <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ registNumber: text })}
+                        placeholder="登记证号"
+                        value={this.state.registNumber}
+                        labelNumber={9}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>登记证号</Text>
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ manufacturer: text })}
+                        placeholder="生产企业"
+                        value={this.state.manufacturer}
+                        labelNumber={9}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>生产企业</Text>
+                    </InputItem>
+
+                    <DatePicker
+                        value={new Date(this.state.madeTime)}
+                        mode="date"
+                        minDate={new Date('1918-01-01')}
+                        maxDate={new Date()}
+                        onChange={text => this.setState({ madeTime: text })}
+                        format="YYYY-MM-DD"
+                    >
+                        <Item arrow="horizontal" ><Text style={{ color: 'gray' }}>批号/生产日期</Text></Item>
+                    </DatePicker>
+
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ source: text })}
+                        placeholder="农药来源"
+                        value={this.state.source}
+                        labelNumber={9}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>农药来源</Text>
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        type='number'
+                        onChangeText={text => this.setState({ usage: text })}
+                        placeholder="用药量（亩）"
+                        value={this.state.usage}
+                        labelNumber={9}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>用药量（亩）</Text>
+                    </InputItem> */}
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ safeDays: text })}
+                        placeholder="安全间隔期（天）"
+                        value={this.state.safeDays}
+                        labelNumber={9}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>安全间隔期（天）</Text>
+                    </InputItem>
+                    <Picker
+                        data={this.state.effectsList}
+                        cols={1}
+                        onChange={text => { this.setState({ effects: text }) }}
+                        value={this.state.effects}>
+                        <Item arrow="horizontal"><Text style={{ color: 'gray' }}>防治效果</Text></Item>
+                    </Picker>
+                    <Picker
+                        data={this.state.comment}
+                        cols={1}
+                        onChange={text => { this.setState({ safeComment: text }) }}
+                        value={this.state.safeComment}>
+                        <Item arrow="horizontal"><Text style={{ color: 'gray' }}>安全性评价</Text></Item>
+                    </Picker>
+                    <Picker
+                        data={[{ value: 'true', label: '是' }, { value: 'false', label: '否' }]}
+                        cols={1}
+                        onChange={text => { this.setState({ usageWay: text }) }}
+                        value={this.state.usageWay}>
+                        <Item arrow="horizontal"><Text style={{ color: 'gray' }}>农药包装废弃物回收情况</Text></Item>
+                    </Picker>
+                </List>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+        userInfo: store.getAccount(),
+        userId: store.getUserId(),
+        cropData: CropStore.getCropData(),
+        pestData: CropStore.getPestData()
+    };
+}
+
+module.exports = connect(mapStateToProps)(AddOrEdit);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

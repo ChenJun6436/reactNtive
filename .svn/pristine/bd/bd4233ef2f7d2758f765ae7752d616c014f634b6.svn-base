@@ -1,0 +1,2 @@
+import ScollInputItem from 'root/src/screens/components/ScollInputItem.js'
+global.ScollInputItem = ScollInputItem;

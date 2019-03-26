@@ -1,0 +1,63 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ScrollView,
+  Dimensions,
+  TouchableWithoutFeedback
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar ,WingBlank, Tabs  } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import News from '../../baseComon/News.js'
+import VideoTopText2Bottom from '../../baseComon/VideoTopText2Bottom.js'
+import UserMessage from '../../baseComon/UserMessage.js'
+import LoadMoreList from '../../baseComon/LoadMoreList.js'
+import BrTagText from '../../baseComon/BrTagText.js'
+// import VideoPlayer from '../../baseComon/VideoPlayer.js'
+import * as purchasePaperAction from 'root/src/actions/account';
+import Icon from 'react-native-vector-icons/Feather';
+const { connect } = require('remx');
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+});
+
+
+@navigatorDecorator
+class AgInfoDetail extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+  }
+
+  async componentDidMount() {
+    //requestPermission();
+  }
+
+  render() { 
+    let a = 'root/img/product.png'
+    const tabs = [
+      { title: '种植微课' },
+      { title: '养殖微课' },
+    ]
+    const content = 'you are my super star ,super super super start la la la la la la la la la la la la la ,hey july don`t let me caryy, make ite better'
+    return (
+      <View style={styles.container}>
+        <News />
+        {/* <VideoPlayer/> */}
+      </View>
+    );
+  }
+}
+function mapStateToProps() {
+  return {
+    menuList: store.getMenuList()
+  };
+}
+
+module.exports = connect(mapStateToProps)(AgInfoDetail);
+

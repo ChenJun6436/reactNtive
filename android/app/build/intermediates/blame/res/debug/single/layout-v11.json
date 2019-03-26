@@ -1,26 +1,26 @@
 [
     {
         "merged": "C:\\workFile\\noApp\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout-v11\\notification_template_big_media_narrow_custom.xml",
-        "source": "C:\\Users\\jun.chen\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\87a89d00437508370c8112cf2cd22fb3\\res\\layout-v11\\notification_template_big_media_narrow_custom.xml"
+        "source": "C:\\Users\\jun.chen.YOONOP\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\5cf203fe4d4c3882c5066e07a275465d\\res\\layout-v11\\notification_template_big_media_narrow_custom.xml"
     },
     {
         "merged": "C:\\workFile\\noApp\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout-v11\\notification_template_big_media_narrow.xml",
-        "source": "C:\\Users\\jun.chen\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\87a89d00437508370c8112cf2cd22fb3\\res\\layout-v11\\notification_template_big_media_narrow.xml"
+        "source": "C:\\Users\\jun.chen.YOONOP\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\5cf203fe4d4c3882c5066e07a275465d\\res\\layout-v11\\notification_template_big_media_narrow.xml"
     },
     {
         "merged": "C:\\workFile\\noApp\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout-v11\\notification_template_big_media_custom.xml",
-        "source": "C:\\Users\\jun.chen\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\87a89d00437508370c8112cf2cd22fb3\\res\\layout-v11\\notification_template_big_media_custom.xml"
+        "source": "C:\\Users\\jun.chen.YOONOP\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\5cf203fe4d4c3882c5066e07a275465d\\res\\layout-v11\\notification_template_big_media_custom.xml"
     },
     {
         "merged": "C:\\workFile\\noApp\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout-v11\\notification_template_big_media.xml",
-        "source": "C:\\Users\\jun.chen\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\87a89d00437508370c8112cf2cd22fb3\\res\\layout-v11\\notification_template_big_media.xml"
+        "source": "C:\\Users\\jun.chen.YOONOP\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\5cf203fe4d4c3882c5066e07a275465d\\res\\layout-v11\\notification_template_big_media.xml"
     },
     {
         "merged": "C:\\workFile\\noApp\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout-v11\\notification_media_action.xml",
-        "source": "C:\\Users\\jun.chen\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\87a89d00437508370c8112cf2cd22fb3\\res\\layout-v11\\notification_media_action.xml"
+        "source": "C:\\Users\\jun.chen.YOONOP\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\5cf203fe4d4c3882c5066e07a275465d\\res\\layout-v11\\notification_media_action.xml"
     },
     {
         "merged": "C:\\workFile\\noApp\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout-v11\\notification_media_cancel_action.xml",
-        "source": "C:\\Users\\jun.chen\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\87a89d00437508370c8112cf2cd22fb3\\res\\layout-v11\\notification_media_cancel_action.xml"
+        "source": "C:\\Users\\jun.chen.YOONOP\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-25.4.0.aar\\5cf203fe4d4c3882c5066e07a275465d\\res\\layout-v11\\notification_media_cancel_action.xml"
     }
 ]

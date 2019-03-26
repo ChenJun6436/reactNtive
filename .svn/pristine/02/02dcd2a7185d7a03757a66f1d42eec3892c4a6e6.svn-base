@@ -1,0 +1,42 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    Image
+} from 'react-native';
+export default class DiagnosisList extends Component {
+    render() {
+        const content = this.props.content
+        return (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', paddingBottom: 15, paddingTop: 15, alignItems: 'center', backgroundColor: '#fff', paddingRight: 12, paddingLeft: 12, borderBottomColor: '#f1f1f1', borderBottomWidth: 0.4, width: this.props.width }}>
+                <View style={{ width: '30%', height: 120 }}>
+                    <Image
+                        source={{ uri: content.imageUrl ? content.imageUrl : 'root/img/ZFbanner3.jpg' }}
+                        style={{ width: '100%', height: '100%' }}
+                    />
+                </View>
+                <View style={{ marginLeft: 15, width: '60%' }}>
+                    <Text style={{ lineHeight: 20, fontSize: 18, fontWeight: 'bold' }}>{content.nameCn}</Text>
+                </View>
+            </View>
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderColor: '#d9d9d9',
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    }
+});

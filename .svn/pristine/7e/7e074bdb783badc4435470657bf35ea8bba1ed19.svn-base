@@ -1,0 +1,480 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableWithoutFeedback,
+    TouchableOpacity
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace } from 'antd-mobile-rn';
+import * as MineAction from 'root/src/actions/intRecord';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { bold } from 'ansi-colors';
+import moment from 'moment';
+import CropStore from 'root/src/stores/crop';
+const { connect } = require('remx');
+const Item = List.Item;
+let initData = {
+    plantName: '',
+    area: '',
+    period: '',
+    year: new Date(),
+    outPut: '',
+    iscurrent: true,
+    unit: "亩"
+}
+let initError = {
+    plantName: false,
+    area: false,
+    period: false,
+}
+let model = null
+@navigatorDecorator
+class IntBuyRecordAdd extends Component {
+    constructor(props) {
+        super(props);
+        this.loading = false
+        this.state = {
+            publishState: ['1'],
+            typeList: [{ label: '农药', value: '1' }, { label: '农肥', value: '4' }, { label: '其他', value: '9' }],
+            registerNumber: '',
+            registerNumberError: false,
+            registerName: '',
+            registerNameError: false,
+            investmentName: '',
+            spec: '',
+            specUnit: '',
+            packUnit: '',
+            quantity: '',
+            manufacturer: '',
+            saleUnity: '',
+            speckList: [],
+            speckState: '',
+            packList: [],
+            packState: '',
+            plantList: [initData],
+            plantError: [initError],
+            remark: '',
+            expirationDay: new Date(),
+            endTime: new Date(),
+            remarkError: false,
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                title: {
+                    text: this.props.id ? '编辑购买记录' : '新增购买'
+                },
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+        if(this.loading){
+            return false
+        }
+        const ret=/^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/;
+        let nowName = false
+        let nowError = this.state.plantError
+        if (!this.state.investmentName) {
+            nowName = true
+            MyToast.info('请填写投入品名称');
+        } else if (!this.state.spec) {
+            nowName = true
+            MyToast.info('请填写投入品规格');
+        } else if (!this.state.quantity) {
+            nowName = true
+            MyToast.info('请填写购买数量');
+        } else if( !ret.test(this.state.spec) ){
+            nowName = true
+            MyToast.info('规格应大于0，且最多两位小数的数字');
+        } else if( !ret.test(this.state.quantity ) ){
+            nowName = true
+            MyToast.info('购买数量应大于0，且最多两位小数的数字');
+        } 
+        if (nowName) {
+            return false
+        } else {
+            this.loading = true
+            let expirationDay = moment(this.state.expirationDay).format('YYYY-MM-DD');
+            let postData = {
+                expirationDay: expirationDay,
+                manufacturer: this.state.manufacturer,
+                saleUnity: this.state.saleUnity,
+                quantity: this.state.quantity,
+                investmentName: this.state.investmentName,
+                registerNumber: this.state.registerNumber,
+                registerName: this.state.investmentName,
+                investmentType: this.state.publishState[0],
+                remark: this.state.remark,
+                spec: this.state.spec,
+                specUnit: this.state.speckState[0],
+                packUnit : this.state.packState[0],
+            }
+            if (this.props.id) {
+                postData.id = this.props.id
+                MineAction.EditBuy({ input: postData }).then((data) => {
+                    if (data.suc == 1) {
+                        MyToast.success('编辑成功');
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.IntBuyRecord,
+                                }
+                            });
+                        }, 2000)
+                    } else {
+                        this.loading = false
+                        MyToast.info(data.msg)
+                    }
+                })
+            } else {
+                MineAction.AddBuy({ input: postData }).then((data) => {
+                    if (data.suc == 1) {
+                        MyToast.success('新增成功');
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.IntBuyRecord,
+                                }
+                            });
+                        }, 2000)
+                    } else {
+                        this.loading = false
+                        MyToast.info(data.msg)
+                    }
+                })
+            }
+        }
+    }
+    componentWillReceiveProps(next,prev){
+        //如果是选择了投入品
+        if (next.cropData && next.cropData != 'none' && next.cropData!=prev.cropData) {
+            let model = next.cropData
+            this.setState({
+                speckState:model.specUnit?[model.specUnit]:['克'],
+                packState: model.unit?[model.unit]:['箱'],
+                spec : model.specMetering?model.specMetering+'':'',
+                registerNumber : model.registerID?model.registerID:'',
+                investmentName : model.goodName?model.goodName:'',
+                registerName: model.registerName?model.registerName:'',
+                manufacturer: model.manufacturerName?model.manufacturerName:''
+            })
+        }else if(next.cropData == 'none'){
+            CropStore.setClickCrop(null)
+            MyToast.info('未扫描到相关数据');
+        }
+    }
+    componentWillMount() {
+        if (this.props.id) {
+            MineAction.GetBuy(this.props.id).then((data) => {
+                console.log(data)
+                if (data.suc) {
+                    let model = data.data
+                    this.setState({
+                        publishState: [model.investmentType + ''],
+                        registerNumber: model.registerNumber,
+                        registerName: model.registerNumber,
+                        investmentName: model.investmentName,
+                        spec: model.spec?model.spec +'':'',
+                        specUnit: model.specUnit,
+                        packUnit: model.packUnit,
+                        quantity: model.quantity + '',
+                        manufacturer: model.manufacturer,
+                        saleUnity: model.saleUnity,
+                        remark: model.remark,
+                        expirationDay: new Date(model.expirationDay) 
+                    })
+                } else {
+                    MyToast.info('数据获取失败，稍后尝试');
+                }
+            })
+        }
+        
+        //获取单位
+        MineAction.GetSpectUnit().then((data) => {
+            if (data.suc) {
+                let model = data.data
+                this.setState({
+                    speckList: model,
+                    speckState: [model[0].value]
+                })
+            } else {
+                MyToast.info('获取失败，稍后尝试');
+            }
+        })
+        //获取包装
+        MineAction.GetPackUnit().then((data) => {
+            if (data.suc) {
+                let model = data.data
+                this.setState({
+                    packList: model,
+                    packState: [model[0].value]
+                })
+            } else {
+                MyToast.info('获取失败，稍后尝试');
+            }
+        })
+
+    }
+    changeData(text, name) {
+        let nowList = this.state.plantList
+        let nowError = this.state.plantError
+        let textNew = text
+        if (text[0] == '-' && text.length > 1) {
+            textNew = ''
+        }
+    }
+    onErrorClick = () => {
+        MyToast.info('请填写正确的信息，且不能为空');
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#f5f5f5' }}>
+                <View>
+                    <List>
+                        <Picker
+                            registerNumber="投入品类型"
+                            data={this.state.typeList}
+                            cols={1}
+                            value={this.state.publishState}
+                            onOk={(val) => this.setState({ publishState: val })}
+                            style={{ color: '#000' }}
+                        >
+                            <Item><Text style={{ fontSize: 17, color: '#000' }}>类型</Text></Item>
+                        </Picker>
+                    </List>
+                    <List>
+                        <View style={{flexDirection:'row'}}>
+                            <View  style={{width:'75%'}}>
+                                <InputItem
+                                        textAlign="right"
+                                        clear
+                                        onChangeText={(text) => {
+                                            this.setState({
+                                                registerNumber: text
+                                            })
+                                        }}
+                                        error={this.state.registerNumberError}
+                                        onErrorClick={this.onErrorClick}
+                                        maxLength={50}
+                                        placeholder="登记证号"
+                                        value={this.state.registerNumber}>登记证号
+                                    </InputItem>
+                            </View>
+                            <View style={{width:'10%'}}>
+                                <TouchableOpacity onPress={() => { 
+                                    this.pushPage({
+                                        component: {
+                                            ...Global.Screens.BarcodeScanner,
+                                            passProps:{type:'buyGoods',searchType: this.state.publishState[0]},
+                                            options: {
+                                                topBar: {
+                                                    title: {
+                                                        text: '扫描二维码'
+                                                    }
+                                                },
+                                                bottomTabs: {
+                                                    visible: false,
+                                                    drawBehind: true
+                                                }
+                                            },
+                                        }
+                                    });
+                                 }}>
+                                    <Text style={{ marginLeft: 10, fontSize: 13, lineHeight: 20, color: '#3b93bf' }}>
+                                        <Icon name='qrcode' size={30} style={{ lineHeight: 45 }} />
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={{width:'10%'}}>
+                                <TouchableOpacity onPress={() => { 
+                                    this.pushPage({
+                                        component: {
+                                            ...Global.Screens.IntBuyRecordBuy,
+                                            passProps: { type: this.state.publishState[0] },
+                                        }
+                                    });
+                                 }}>
+                                    <Text style={{ marginLeft: 10, fontSize: 13, lineHeight: 20, color: '#1b926c' }}>
+                                        <Icon name='plus-square' size={30} style={{ lineHeight: 45 }} />
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    investmentName: text
+                                })
+                            }}
+                            error={this.state.registerNumberError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="名称"
+                            value={this.state.investmentName}
+                        >名称
+                        </InputItem>
+                    </List>
+                    <List>
+                        <View style={{ flexDirection: 'row' }}>
+                            <View style={{ width: '40%' }}>
+                                <InputItem
+                                    textAlign="right"
+                                    type={'number'}
+                                    clear
+                                    onChangeText={(text) => {
+                                        this.setState({
+                                            spec: text
+                                        })
+                                    }}
+                                    error={this.state.registerNumberError}
+                                    onErrorClick={this.onErrorClick}
+                                    maxLength={50}
+                                    placeholder="规格"
+                                    value={this.state.spec}
+                                    labelNumber={4}
+                                >规格包装
+                                </InputItem>
+                            </View>
+                            <View style={{ width: '30%' }}>
+                                <Picker
+                                    registerNumber="单位"
+                                    data={this.state.speckList}
+                                    cols={1}
+                                    value={this.state.speckState}
+                                    onOk={(val) => this.setState({ speckState: val })}
+                                    // style={{ color: '#000', width: '40%' }}
+                                >
+                                    <Item><Text style={{ fontSize: 17, color: '#000' }}>单位:</Text></Item>
+                                </Picker>
+                            </View>
+                            <View style={{ width: '30%' }}>
+                                <Picker
+                                    registerNumber="包装"
+                                    data={this.state.packList}
+                                    cols={1}
+                                    value={this.state.packState}
+                                    onOk={(val) => this.setState({ packState: val })}
+                                    // style={{ color: '#000', width: '40%' }}
+                                >
+                                    <Item><Text style={{ fontSize: 17, color: '#000' }}>包装:</Text></Item>
+                                </Picker>
+                            </View>
+                        </View>
+                    </List>
+
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    quantity: text
+                                })
+                            }}
+                            error={this.state.registerNumberError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="数量"
+                            type='number'
+                            value={this.state.quantity}
+                        >数量
+                        </InputItem>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    manufacturer: text
+                                })
+                            }}
+                            error={this.state.registerNumberError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="生产企业"
+                            value={this.state.manufacturer}
+                        >生产企业
+                        </InputItem>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    saleUnity: text
+                                })
+                            }}
+                            error={this.state.registerNumberError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="经销企业"
+                            value={this.state.saleUnity}
+                        >经销企业
+                        </InputItem>
+                    </List>
+                    <List>
+                        <DatePicker
+                            value={this.state.expirationDay}
+                            mode="date"
+                            minDate={new Date('2018-01-01')}
+                            onChange={(text) => {
+                                this.setState({
+                                    expirationDay: text
+                                })
+                            }}
+                            format="YYYY-MM-DD"
+                        >
+                            <Item arrow="horizontal" >有效期至</Item>
+                        </DatePicker>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    remark: text
+                                })
+                            }}
+                            error={this.state.remarkError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="输入备注"
+                            value={this.state.remark}
+                        >备注
+                        </InputItem>
+                    </List>
+                </View>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+        cropData: CropStore.getClickCrop()
+    };
+}
+
+module.exports = connect(mapStateToProps)(IntBuyRecordAdd);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

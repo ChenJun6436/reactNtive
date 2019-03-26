@@ -1,0 +1,132 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    Image,
+    Dimensions,
+    ScrollView,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { Grid } from 'antd-mobile-rn'
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    text: {
+        color: '#fff',
+        fontSize: 36,
+    },
+    icon: {
+        width: 55,
+        height: 55
+    },
+    title: {
+        fontSize: 16,
+        color: 'white',
+        width: '100%',
+        position: 'absolute',
+        top: 15,
+        zIndex: 999,
+        textAlign: 'center'
+    },
+});
+const data = [
+    {
+        icon: <Image source={require('root/img/MinePlantM.png')} style={styles.icon} />,
+        text: '企业情况',
+        route: 'EnterpriseList',
+    },
+    {
+        icon: <Image source={require('root/img/product.png')} style={styles.icon} />,
+        text: '基地',
+        route: 'Base',
+    },
+    // {
+    //     icon: <Image source={require('root/img/MedicationRecord.png')} style={styles.icon} />,
+    //     text: '地块'
+    // },
+    {
+        icon: <Image source={require('root/img/check.png')} style={styles.icon} />,
+        text: '标准园信息',
+        route: 'Garden',
+    },
+    {
+        icon: <Image source={require('root/img/MinePlant.png')} style={styles.icon} />,
+        text: '种植信息',
+        route: 'GardenCrop',
+    },
+    {
+        icon: <Image source={require('root/img/chouyang.png')} style={styles.icon} />,
+        text: '投入品购买记录',
+        route: 'IntBuyRecord',
+    },
+    {
+        icon: <Image source={require('root/img/chufa.png')} style={styles.icon} />,
+        text: '投入品使用记录',
+        route: 'IntUseRecord',
+    },
+    {
+        icon: <Image source={require('root/img/company.png')} style={styles.icon} />,
+        text: '采收记录',
+        route: 'ProductRecovery',
+    },
+    // {
+    //     icon: <Image source={require('root/img/Distinguish.png')} style={styles.icon} />,
+    //     text: '贮存记录'
+    // },
+    {
+        icon: <Image source={require('root/img/ERPUploadImage.png')} style={styles.icon} />,
+        text: '销售记录',
+        route: 'ProductSale',
+    },
+    {
+        icon: <Image source={require('root/img/FarmersPortrait.png')} style={styles.icon} />,
+        text: '管理用工记录',
+        route: 'WorkRecord',
+    },
+    {
+        icon: <Image source={require('root/img/guanzhu.png')} style={styles.icon} />,
+        text: '检测记录',
+        route: 'TestRecord',
+    },
+    {
+        icon: <Image source={require('root/img/jihuazaiyang.png')} style={styles.icon} />,
+        text: '消费者扫码记录',
+        route: 'EnterpriseList',
+    },
+]
+
+@navigatorDecorator
+
+export default class AllMenu extends Component {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+
+        };
+    }
+
+    render() {
+        return (
+            <ScrollView style={styles.container}>
+                <View style={{ backgroundColor: 'white', width: '100%', flex: 1, justifyContent: 'center' }}>
+                    <Grid data={data} columnNum={3} hasLine={false} onClick={(el, index) => {
+                        this.pushPage({
+                            component: {
+                                passProps: {},
+                                ...Global.Screens[el.route],
+                            }
+                        });
+                    }} />
+                </View>
+            </ScrollView>
+        );
+    }
+}
+
+

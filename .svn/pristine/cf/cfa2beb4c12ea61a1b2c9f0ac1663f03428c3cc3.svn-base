@@ -1,0 +1,133 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    TouchableOpacity,
+    Dimensions,
+    TouchableHighlight,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { List, InputItem, Button, SwipeAction, WhiteSpace } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import * as MineAction from 'root/src/actions/mine';
+const { connect } = require('remx');
+@navigatorDecorator
+class MinePublish extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            storeName: '',
+            classificCode: '',
+            keyword: '',
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    addRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+        this.pushPage({
+            component: {
+                passProps: { isNow: 'true' },
+                ...Global.Screens.PublishAdd,
+            }
+        });
+    }
+    refresh = () => {
+        this.moreListInst._onRefresh();
+    }
+    render() {
+        return (
+            <View style={styles.container}>
+                <LoadMoreList
+                    ref={ref => this.moreListInst = ref}
+                    getData={MineAction.GetPublish}
+                    searchParams={{ keyword: this.state.keyword }}
+                    rowItem={(item) => {
+                        return <SwipeAction autoClose style={{ backgroundColor: 'transparent', flex: 1 }} right={[
+                            {
+                                text: '删除',
+                                onPress: () => {
+                                    MineAction.DeletePublish(item.id).then((data) => {
+                                        if (data.suc) {
+                                            this.refresh()
+                                        } else {
+                                            MyToast.info('操作失败，请稍后再试');
+                                        }
+                                    })
+                                },
+                                style: { backgroundColor: 'red', color: 'white' },
+                            }
+                        ]} >
+                            <TouchableWithoutFeedback activeOpacity={0.3} underlayColor={'#eee'}
+                                onPress={() => {
+                                    this.pushPage({
+                                        component: {
+                                            passProps: { id: item.id },
+                                            ...Global.Screens.PublishDetail,
+                                        }
+                                    });
+                                }}>
+                                <View style={{ borderBottomColor: '#e3e3e3', borderBottomWidth: 1, paddingLeft: 12, paddingRight: 12, paddingTop: 10 }}>
+                                    <Text numberOfLines={2} style={{ fontSize: 17, height: 30, lineHeight: 30 }}>{item.title}</Text>
+                                    <WhiteSpace />
+                                    <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
+                                        <Text style={{ textAlign: 'right', lineHeight: 30, marginRight: 10 }}>{item.createTime}</Text>
+                                        {
+                                            item.state == 1 ? (
+                                                <Button onClick={() => {
+                                                    MineAction.SetPublish({ input: { id: item.id, state: 2 } }).then((data) => {
+                                                        if (data.suc) {
+                                                            this.refresh()
+                                                            MyToast.info('已取消发布');
+                                                        } else {
+                                                            MyToast.info('操作失败，请稍后再试');
+                                                        }
+                                                    })
+                                                }} style={{ height: 30, width: 80, borderColor: '#ff8125' }} size="small"><Text style={{ color: '#ff8125' }}>取消发布</Text></Button>
+                                            ) : (
+                                                    <Button onClick={() => {
+                                                        MineAction.SetPublish({ input: { id: item.id, state: 1 } }).then((data) => {
+                                                            if (data.suc) {
+                                                                this.refresh()
+                                                                MyToast.info('发布成功');
+                                                            } else {
+                                                                MyToast.info('发布失败，请稍后再试');
+                                                            }
+                                                        })
+                                                    }} style={{ height: 30, width: 80, borderColor: '#49a9ee' }} size="small" ><Text style={{ color: '#49a9ee' }}><Icon name='send' size={14} style={{ marginRight: 5 }} />   发布</Text></Button>
+                                                )
+                                        }
+                                    </View>
+                                    <WhiteSpace />
+                                </View>
+                            </TouchableWithoutFeedback>
+                        </SwipeAction>
+                    }}
+                />
+            </View>
+        );
+    }
+}
+function mapStateToProps() {
+    // return {
+    // };
+}
+module.exports = connect(mapStateToProps)(MinePublish);
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        // paddingTop: 60
+    },
+});

@@ -1,0 +1,132 @@
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+//进入登陆界面
+const startLoginScreen = () => {
+    Navigation.setRoot({
+        root: {
+            stack: {
+                children: [{
+                    component: Global.Screens.Login,
+                }]
+            }
+        }
+    });
+}
+
+//进入首页
+const startIndexScreen = () => {
+    iconsLoaded.then(() => {
+        Navigation.setRoot({
+            root: {
+                sideMenu: {
+                    left: {
+                        component: Global.Screens.Mine
+                    },
+                    center: {
+                        bottomTabs: {
+                            children: [{
+                                stack: {
+                                    children: [{
+                                        component: Global.Screens.Home
+                                    }],
+                                    options: {
+                                        bottomTab: {
+                                            text: '首页',
+                                            icon: iconsMap['home'],
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                stack: {
+                                    children: [{
+                                        component: Global.Screens.Test
+                                    }],
+                                    options: {
+                                        bottomTab: {
+                                            text: 'Tab 2',
+                                            icon: iconsMap['comments'],
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                stack: {
+                                    children: [{
+                                        component: Global.Screens.Test
+                                    }],
+                                    options: {
+                                        bottomTab: {
+                                            text: 'Tab 3',
+                                            icon: iconsMap['qrcode'],
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                stack: {
+                                    children: [{
+                                        component: Global.Screens.Test
+                                    }],
+                                    options: {
+                                        bottomTab: {
+                                            text: 'Tab 4',
+                                            icon: iconsMap['camera'],
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                stack: {
+                                    children: [{
+                                        component: Global.Screens.Mine
+                                    }],
+                                    options: {
+                                        bottomTab: {
+                                            text: '我的',
+                                            icon: iconsMap['user'],
+                                        }
+                                    }
+                                }
+                            }]
+                        }
+                    }
+                }
+            }
+        });
+    });
+}
+//设置导航默认样式
+const setDefaultOptions = () => {
+    Navigation.setDefaultOptions({
+        bottomTabs: {
+            titleDisplayMode: 'alwaysShow',
+        },
+        bottomTab: {
+            iconColor: '#777',
+            selectedIconColor: '#36b548',
+        },
+        topBar: {
+            height: 40,
+            background: {
+                color: '#36b548',
+                component: {
+                    alignment: 'center'
+                }
+            },
+            title: {
+                color: 'white',
+            },
+            backButton: {
+                color: 'white',
+            }
+        },
+        statusBar: {
+            backgroundColor: '#000',
+        },
+    });
+}
+export default {
+    startLoginScreen,
+    startIndexScreen,
+    setDefaultOptions
+}

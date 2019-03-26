@@ -1,0 +1,91 @@
+// @flow
+
+
+export default {
+  Login: {
+    name: 'Login',
+    options: {
+      statusBar: {
+        drawBehind: true,
+        backgroundColor: '#00000000',
+      },
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  Register: {
+    name: 'Register',
+    options: {
+      statusBar: {
+        drawBehind: true,
+        backgroundColor: '#00000000',
+      },
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  ForgetPassword: {
+    name: 'ForgetPassword',
+    options: {
+      statusBar: {
+        drawBehind: true,
+        backgroundColor: '#00000000',
+      },
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  Home: {
+    name: 'Home',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  Test: {
+    name: 'Test',
+    options: {
+      topBar: {
+        title: {
+          text: '注销页1',
+          drawBehind: true,
+          visible: false,
+          animate: false
+        }
+      }
+    }
+  },
+  Mine: {
+    name: 'Mine',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  EditUserInfo: {
+    name: 'EditUserInfo',
+    options: {
+      topBar: {
+        title: {
+          text: '完善个人信息'
+        }
+      }
+    }
+  },
+
+}

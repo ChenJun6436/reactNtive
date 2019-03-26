@@ -1,0 +1,9 @@
+import * as DataService from '../services/dataAuthentication';
+
+// 获取基地列表
+export async function getBaseList({ input }) {
+    const { data, msg, success, totalCount } = await DataService.getBaseList(input)
+    if (!success)
+        return { suc: false, msg };
+    return { data, totalCount };
+}

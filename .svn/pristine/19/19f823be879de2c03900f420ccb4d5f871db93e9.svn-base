@@ -1,0 +1,183 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    ImageBackground,
+    Dimensions,
+    Image,
+    findNodeHandle,
+    Alert,
+    AsyncStorage,
+    TouchableOpacity
+} from 'react-native';
+// import Divide from 'react-native-divide'
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { Input } from 'react-native-elements';
+import { Button, InputItem, List, Picker } from 'antd-mobile-rn';
+import requestPermission from 'root/src/utils/requestPermissions';//获取相机及其他权限
+import * as AccountAction from 'root/src/actions/account';
+const { connect } = require('remx');
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const BG_IMAGE = require('root/img/login.jpg');
+const LOGO_IMAGE = require('root/img/logo.png');
+
+const QQ_IMAGE = require('root/img/qq.png');
+const WCHAT_IMAGE = require('root/img/wChat.png');
+
+// import { district } from 'antd-mobile-demo-data';
+const CustomChildren = (props: any) => (
+    <TouchableOpacity onPress={props.onClick}>
+        <View
+            style={{ height: 36, paddingLeft: 15, flexDirection: 'row', alignItems: 'center' }}
+        >
+            <Text style={{ flex: 1 }}>{props.children}</Text>
+            <Text style={{ textAlign: 'right', color: '#888', marginRight: 15 }}>{props.extra}</Text>
+        </View>
+    </TouchableOpacity>
+);
+
+@navigatorDecorator
+export default class LoginScreen extends Component {
+    constructor(props: Props) {
+        super(props);
+
+        this.state = {
+            viewRef: null,
+            loginName: '',
+            loginPwd: '',
+            isLogin: false,
+            district: [],
+        };
+
+    }
+    componentWillMount() {
+        let keys = ["loginName", "loginPwd"];
+        let self = this;
+        AsyncStorage.multiGet(keys, function (errs, result) {
+            //如果发生错误，这里直接返回（return）防止进入下面的逻辑
+            if (errs) {
+                return;
+            }
+            self.setState({
+                loginName: (result[0][1] != null) ? result[0][1] : '',
+                loginPwd: (result[1][1] != null) ? result[1][1] : ''
+            })
+        });
+    }
+    componentDidMount() {
+        //requestPermission();
+    }
+    login = () => {
+        if (!this.state.loginName) {
+            Toast.info('请填写用户名', 3);
+            return;
+        }
+        if (!this.state.loginPwd) {
+            Toast.info('请填写密码', 3);
+            return;
+        }
+        this.setState({ submitLoading: true })
+        AccountAction.login({ input: this.state }).then(({ suc, data }) => {
+            if (suc) {
+                Global.Navigate.startIndexScreen()
+            }
+            this.setState({ submitLoading: false })
+        })
+
+    }
+
+    imageLoaded = () => {
+        this.setState({ viewRef: findNodeHandle(this.backgroundImage) });
+    }
+    render() {
+        const { Account, navigator } = this.props;
+        // const { getFieldProps } = this.props.form;
+        return (
+            <View style={styles.container}>
+                <View style={styles.loginView}>
+                    <View style={styles.loginInput}>
+                        <View style={{ marginVertical: 15, height: 40, width: '90%', borderBottomWidth: 1, borderBottomColor: '#999' }}>
+                            <Picker
+                                style={{ height: 40, width: '100%', backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: '#999', }}
+                                title="选择地区"
+                                data={this.state.district}
+                                cols={2}
+                                value={this.state.pickerValue}
+                                onChange={(v: any) => this.setState({ pickerValue: v })}
+                                onOk={(v: any) => this.setState({ pickerValue: v })}
+                            >
+                                <CustomChildren>省/市/区</CustomChildren>
+                            </Picker>
+                        </View>
+                        <View style={{ marginVertical: 15 }}>
+                            <InputItem
+                                style={{ height: 40, width: '90%', backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: '#999', padding: 0, color: '#999' }}
+                                clear
+                                value={this.state.loginPwd}
+                                onChange={(value: any) => {
+                                    this.setState({
+                                        loginPwd: value,
+                                    });
+                                }}
+                                labelNumber={4}
+                                placeholder='详细地址'
+                                placeholderTextColor='#999'
+                            
+                            >
+                                详细地址
+                            </InputItem>
+                        </View>
+                        <View style={{ marginVertical: 35, width: '100%', alignItems: 'center', }}>
+                            <Button
+                                style={{ height: 40, width: '90%', backgroundColor: 'green', borderWidth: 2, borderColor: 'white', borderRadius: 30 }}
+                                onClick={this.login}
+                            >
+                                <Text style={{ fontWeight: 'bold', color: 'white' }}>一键获取位置</Text>
+                            </Button>
+                        </View>
+                    </View>
+                </View>
+            </View>
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+
+    },
+    travelText: {
+        color: '#ffffff',
+        fontSize: 26,
+        fontFamily: 'bold',
+        textAlign: 'center',
+        width: '100%',
+        height: 40,
+        lineHeight: 40,
+    },
+    loginView: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    register: {
+        position: 'absolute',
+        top: 30,
+        right: 20,
+    },
+    loginTitle: {
+        marginTop: 80,
+    },
+    loginInput: {
+        width: '100%',
+        alignItems: 'center',
+    },
+
+})
+
+

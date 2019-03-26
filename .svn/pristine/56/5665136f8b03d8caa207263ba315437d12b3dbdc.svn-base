@@ -1,0 +1,150 @@
+// @flow
+
+
+export default {
+  Login: {
+    name: 'Login',
+    options: {
+      statusBar: {
+        drawBehind: true,
+        backgroundColor: '#00000000',
+      },
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  Register: {
+    name: 'Register',
+    options: {
+      statusBar: {
+        drawBehind: true,
+        backgroundColor: '#00000000',
+      },
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  ForgetPassword: {
+    name: 'ForgetPassword',
+    options: {
+      statusBar: {
+        drawBehind: true,
+        backgroundColor: '#00000000',
+      },
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  Home: {
+    name: 'Home',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  Test: {
+    name: 'Test',
+    options: {
+      topBar: {
+        title: {
+          text: '注销页1',
+          drawBehind: true,
+          visible: false,
+          animate: false
+        }
+      }
+    }
+  },
+  Mine: {
+    name: 'Mine',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  EditUserInfo: {
+    name: 'EditUserInfo',
+    options: {
+      topBar: {
+        title: {
+          text: '填写个人信息'
+        }
+      }
+    }
+  },
+  UserType: {
+    name: 'UserType',
+    options: {
+      topBar: {
+        title: {
+          text: '用户类型'
+        }
+      }
+    }
+  },
+  UserRegion: {
+    name: 'UserRegion',
+    options: {
+      topBar: {
+        title: {
+          text: '详细地址'
+        }
+      }
+    }
+  },
+  SetRegisterCode: {
+    name: 'SetRegisterCode',
+    options: {
+      topBar: {
+        title: {
+          text: '验证手机号',
+        }
+      }
+    }
+  },
+  SetRegisterPwd: {
+    name: 'SetRegisterPwd',
+    options: {
+      topBar: {
+        title: {
+          text: '设置登录密码',
+        }
+      }
+    }
+  },
+  SetNewCode: {
+    name: 'SetNewCode',
+    options: {
+      topBar: {
+        title: {
+          text: '验证手机号',
+        }
+      }
+    }
+  },
+  SetNewPwd: {
+    name: 'SetNewPwd',
+    options: {
+      topBar: {
+        title: {
+          text: '设置登录密码',
+        }
+      }
+    }
+  },
+}

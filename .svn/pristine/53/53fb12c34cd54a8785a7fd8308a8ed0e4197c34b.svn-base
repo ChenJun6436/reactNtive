@@ -1,0 +1,42 @@
+import * as DiagnosisService from '../services/diagnosis';
+
+//查询只能诊单
+export async function GetPlantByLivingMatter({ input }) {
+    console.log(input, 'input1')
+    const { data, totalCount, msg, success } = await DiagnosisService.GetPlantByLivingMatter(input)
+    if (!success)
+        return { suc: false };
+    return { data, totalCount };
+}
+
+//搜索农资
+export async function GetPlantClassifyByNode({ input }) {
+    const { data, totalCount, msg, success } = await DiagnosisService.GetPlantClassifyByNode(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true, data, totalCount };
+}
+
+//查询只能诊单
+export async function GetPlantPest({ input }) {
+    console.log(input, 'input2')
+    const { data, msg, success, totalCount } = await DiagnosisService.GetPlantPest(input)
+    if (!success)
+        return { suc: false };
+    return { data, totalCount };
+}
+
+//根据具体的作物查询病虫害
+export async function GetPestByPlant({ input }) {
+    const { data, msg, success, totalCount } = await DiagnosisService.GetPestByPlant(input)
+    if (!success)
+        return { suc: false };
+    return { data: data.listPestImg, totalCount };
+}
+
+export async function GetSolutionDetail({ input }) {
+    const { data, msg, success, totalCount } = await DiagnosisService.GetSolutionDetail(input)
+    if (!success)
+        return { suc: false };
+    return { data, totalCount };
+}

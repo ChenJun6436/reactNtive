@@ -1,0 +1,89 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Button
+} from 'react-native';
+import { WingBlank } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import Icon from 'react-native-vector-icons/Feather';
+const { connect } = require('remx');
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 10,
+  },
+});
+@navigatorDecorator
+export default class BrTag extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+  }
+  async componentDidMount() {
+  }
+  _onPressButton = ()=> {
+    this.pushPage(
+      component: {
+        ...Global.Screens.Login
+      }
+    )
+  }
+  _likeNews = () => {
+    
+  }
+  _unlikeNews = () => {
+
+  }
+  render() {
+    return (
+      <View style={styles.container}>
+        {/* 头部 */}
+        <View style={{borderBottomColor: '#ccc',borderBottomWidth:1,paddingBottom:10}}>
+          <Text numberOfLines={2} style={{fontSize:17,letterSpacing:2}}>关于召开2018年有机种植农场培训及研讨会的第二轮通知</Text>
+          <View style={{marginTop:5,marginBottom:5}}>
+            <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+              <Text style={{fontSize:12,lineHeight:20}}>来源：人民日报</Text>
+              <Text style={{fontSize:12,lineHeight:20}}>来源：人民日报</Text>
+            </View>
+            <Text style={{fontSize:12,lineHeight:20}}>来源：人民日报</Text>
+          </View>
+          {/* 文字 */}
+          <Text style={{lineHeight:25,letterSpacing:2}}>    新华社北京8月29日电（记者张晓松、荣启涵）第十次全国归侨侨眷代表大会29日上午在北京人民大会堂开幕。习近平、李克强、栗战书、汪洋、王沪宁、韩正、王岐山等党和国家领导人到会祝贺，赵乐际代表党中央致词。
+  　　人民大会堂大礼堂灯光璀璨，气氛热烈。主席台上方悬挂着“第十次全国归侨侨眷代表大会”的会标，后幕正中象征着五大洲侨胞心向祖国的中国侨联会徽格外醒目，10面红旗分列两侧。二楼眺台悬挂着“紧密团结在以习近平同志为核心的党中央周围，坚持以习近平新时代中国特色社会主义思想为指导，团结凝聚广大归侨侨眷和海外侨胞，为实现中华民族伟大复兴的中国梦而努力奋斗！”巨型横幅。来自全国各地的近1300名归侨侨眷代表和来自110多个国家的近700名海外侨胞特邀嘉宾欢聚一堂。</Text>  
+  <Text style={{fontSize:14,lineHeight: 20,paddingTop: 10}}>相关搜索</Text>
+          <View style={{marginTop:5,marginBottom:5}}>
+
+            <View style={{flexDirection:'row',justifyContent:'space-between', flexWrap:'wrap'}}>
+              <TouchableOpacity onPress={this._onPress}>
+                <Text numberOfLines={1}  style={{lineHeight:25, width:'50%'}}>来源：人民121111111日报</Text>
+              </TouchableOpacity>
+              <Text numberOfLines={1}  style={{lineHeight:25, width:'50%'}}>来源：2222222222211111112222报</Text>
+              <Text numberOfLines={1}  style={{lineHeight:25, width:'50%'}}>来源：人民12312321日报</Text>
+              <Text style={{lineHeight:25, width:'50%'}}>46545</Text>
+              <Text style={{lineHeight:25, width:'50%'}}>来源：人民日报</Text>
+              <Text style={{lineHeight:25, width:'50%'}}>来源：人民日报</Text>
+            </View>
+            <View style={{justifyContent:'space-around',flexDirection:'row',paddingTop: 10}}>
+              <TouchableOpacity onPress={this._likeNews}>
+                <View style={{backgroundColor:'#fff',height:30,borderRadius:10,borderColor:'red',borderWidth: 1,paddingLeft:5,paddingRight:5}}>
+                  <Text style={{lineHeight:30,textAlign:'center',color:'red'}}><Icon name='thumbs-up' size={12}/>10000000</Text>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={this._unlikeNews}>
+                <View style={{backgroundColor:'#fff',height:30,width:80,borderRadius:10,borderColor:'#999',borderWidth: 1}}>
+                  <Text style={{lineHeight:30,textAlign:'center',color:'#999'}}>不喜欢</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>    
+        </View>
+        {/* 推介 */}
+        {/* 赞 */}
+      </View>
+    );
+  }
+}

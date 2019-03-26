@@ -1,0 +1,819 @@
+// @flow
+
+
+export default {
+  Login: {
+    name: 'Login',
+    options: {
+      statusBar: {
+        drawBehind: true,
+        backgroundColor: '#00000000',
+      },
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  Disclaimer: {
+    name: 'Disclaimer',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  Register: {
+    name: 'Register',
+    options: {
+      statusBar: {
+        drawBehind: true,
+        backgroundColor: '#00000000',
+      },
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  ForgetPassword: {
+    name: 'ForgetPassword',
+    options: {
+      statusBar: {
+        drawBehind: true,
+        backgroundColor: '#00000000',
+      },
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      },
+    }
+  },
+  Home: {
+    name: 'Home',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  CitySelect: {
+    name: 'CitySelect',
+    options: {
+      topBar: {
+        title: {
+          text: '城市选择'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  Build: {
+    name: 'Build',
+    options: {
+      topBar: {
+        title: {
+          text: '开发中'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  Test: {
+    name: 'Test',
+    options: {
+      topBar: {
+        title: {
+          // text: '注销页1',
+          drawBehind: true,
+          visible: false,
+          animate: false
+        }
+      }
+    }
+  },
+  Mine: {
+    name: 'Mine',
+    options: {
+      topBar: {
+        title: {
+          text: '个人信息'
+        }
+      }
+    }
+  },
+  MineType: {
+    name: 'MineType',
+    options: {
+      topBar: {
+        title: {
+          text: '用户类型'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  MineRegion: {
+    name: 'MineRegion',
+    options: {
+      topBar: {
+        title: {
+          text: '详细地址'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  MineEditor: {
+    name: 'MineEditor',
+    options: {
+      topBar: {
+        title: {
+          text: '完善个人信息'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  MinePlant: {
+    name: 'MinePlant',
+    options: {
+      topBar: {
+        title: {
+          text: '当前种养品'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  MinePublish: {
+    name: 'MinePublish',
+    options: {
+      topBar: {
+        title: {
+          text: '我的发布'
+        },
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  PublishAdd: {
+    name: 'PublishAdd',
+    options: {
+      topBar: {
+        title: {
+          text: '新增发布'
+        },
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  PublishDetail: {
+    name: 'PublishDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '发布详情'
+        },
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  EditUserInfo: {
+    name: 'EditUserInfo',
+    options: {
+      topBar: {
+        title: {
+          text: '填写个人信息'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  UserType: {
+    name: 'UserType',
+    options: {
+      topBar: {
+        title: {
+          text: '用户类型'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  UserRegion: {
+    name: 'UserRegion',
+    options: {
+      topBar: {
+        title: {
+          text: '详细地址'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  SetRegisterCode: {
+    name: 'SetRegisterCode',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  SetRegisterPwd: {
+    name: 'SetRegisterPwd',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  SetNewCode: {
+    name: 'SetNewCode',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  SetNewPwd: {
+    name: 'SetNewPwd',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  // AgMic: {
+  //   name: 'AgMic',
+  //   options: {
+  //     topBar: {
+  //       title: {
+  //         text: '农技微课'
+  //       }
+  //     },
+  //     bottomTabs: {
+  //       drawBehind: true,
+  //       visible: false,
+  //       animate: false
+  //     },
+  //   }
+  // },
+  // AgMicDetail: {
+  //   name: 'AgMicDetail',
+  //   options: {
+  //     topBar: {
+  //       title: {
+  //         text: '农技微课'
+  //       }
+  //     },
+  //     bottomTabs: {
+  //       drawBehind: true,
+  //       visible: false,
+  //       animate: false
+  //     },
+  //   }
+  // },
+  AgInfo: {
+    name: 'AgInfo',
+    options: {
+      topBar: {
+        title: {
+          text: '农技资讯'
+        }
+      },
+      bottomTabs: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      },
+    }
+  },
+  AgInfoDetail: {
+    name: 'AgInfoDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '资讯详情'
+        }
+      },
+      bottomTabs: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      },
+    }
+  },
+  CommentDetail: {
+    name: 'CommentDetail',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      },
+      bottomTabs: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      },
+    }
+  },
+
+  //农户画像
+  FarmStore: {
+    name: 'FarmStore',
+    options: {
+      topBar: {
+        title: {
+          text: '农资店列表'
+        }
+      }
+    }
+  },
+  PurchaseRecord: {
+    name: 'PurchaseRecord',
+    options: {
+      topBar: {
+        title: {
+          text: '购买记录'
+        }
+      }
+    }
+  },
+  RecordDetail: {
+    name: 'RecordDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '购买详情'
+        }
+      }
+    }
+  },
+  Taxonomy: {
+    name: 'Taxonomy',
+    options: {
+      topBar: {
+        title: {
+          text: '购买占比图'
+        }
+      }
+    }
+  },
+  FarmersPortrait: {
+    name: 'FarmersPortrait',
+    options: {
+      topBar: {
+        title: {
+          text: '农户画像'
+        }
+      }
+    }
+  },
+  Diagnosis: {
+    name: 'Diagnosis',
+    options: {
+      topBar: {
+        title: {
+          text: '智能诊单1'
+        }
+      }
+    }
+  },
+  BuyProduct: {
+    name: 'BuyProduct',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  StoreDetail: {
+    name: 'StoreDetail',
+    options: {
+      topBar: {
+        title: {
+          text: "农资店详情"
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  AddStore: {
+    name: 'AddStore',
+    options: {
+      topBar: {
+        title: {
+          text: "新增农资店"
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  ProductDetail: {
+    name: 'ProductDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '产品详情'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  ERPDiagnosis: {
+    name: 'ERPDiagnosis',
+    options: {
+      topBar: {
+        title: {
+          text: '智能诊单'
+        }
+      }
+    }
+  },
+  ERPDiagnosisDetail: {
+    name: 'ERPDiagnosisDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '智能诊单详情'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  ERPDiaDetail: {
+    name: 'ERPDiaDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '智能诊单选择病虫草害'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  ERPDiaDetailSearch: {
+    name: 'ERPDiaDetailSearch',
+    options: {
+      topBar: {
+        title: {
+          text: '智能诊单查询'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  ERPUploadImage: {
+    name: 'ERPUploadImage',
+    options: {
+      topBar: {
+        title: {
+          text: '诊单图片上传'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  DiaSearchList: {
+    name: 'DiaSearchList',
+    options: {
+      topBar: {
+        title: {
+          text: '智能诊单查询列表'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  BarcodeScanner: {
+    name: 'BarcodeScanner',
+    options: {
+      topBar: {
+        title: {
+          text: '扫码追溯'
+        }
+      }
+    }
+  },
+  BarcodeWeb: {
+    name: 'BarcodeWeb',
+    options: {
+      topBar: {
+        title: {
+          text: '扫码结果'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  Distinguish: {
+    name: 'Distinguish',
+    options: {
+      topBar: {
+        title: {
+          text: '识别-作物选择'
+        }
+      }
+    }
+  },
+  Photograp: {
+    name: 'Photograp',
+    options: {
+      topBar: {
+        title: {
+          text: '识别-上传图片'
+        }
+      }
+    }
+  },
+  DigResult: {
+    name: 'DigResult',
+    options: {
+      topBar: {
+        title: {
+          text: '识别结果'
+        }
+      }
+    }
+  },
+  DigDetail: {
+    name: 'DigDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '识别详情'
+        }
+      }
+    }
+  },
+  AddCrop: {
+    name: 'AddCrop',
+    options: {
+      topBar: {
+        title: {
+          text: '新增关注'
+        }
+      }
+    }
+  },
+  ListCrop: {
+    name: 'ListCrop',
+    options: {
+      topBar: {
+        title: {
+          text: '我的关注'
+        }
+      }
+    }
+  },
+  DetailCrop: {
+    name: 'DetailCrop',
+    options: {
+      topBar: {
+        title: {
+          text: '关注详情'
+        }
+      }
+    }
+  },
+  AddLand: {
+    name: 'AddLand',
+    options: {
+      topBar: {
+        title: {
+          text: '新增土地'
+        }
+      }
+    }
+  },
+  ListLand: {
+    name: 'ListLand',
+    options: {
+      topBar: {
+        title: {
+          text: '我的土地'
+        }
+      }
+    }
+  },
+  DetailLand: {
+    name: 'DetailLand',
+    options: {
+      topBar: {
+        title: {
+          text: '土地详情'
+        }
+      }
+    }
+  },
+  Solution: {
+    name: 'Solution',
+    options: {
+      topBar: {
+        title: {
+          text: '解决方案'
+        }
+      }
+    }
+  },
+  SolutionDetail: {
+    name: 'SolutionDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '解决方案详情'
+        }
+      }
+    }
+  },
+  SolutionSearch: {
+    name: 'SolutionSearch',
+    options: {
+      topBar: {
+        title: {
+          text: '解决方案查询'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  SolSearchList: {
+    name: 'SolSearchList',
+    options: {
+      topBar: {
+        title: {
+          text: '解决方案查询列表'
+        }
+      },
+      bottomTabs: {
+        visible: false,
+        drawBehind: true
+      }
+    }
+  },
+  MedicationRecord: {
+    name: 'MedicationRecord',
+    options: {
+      topBar: {
+        title: {
+          text: '用药记录'
+        }
+      }
+    }
+  },
+  AddMAR: {
+    name: 'AddMAR',
+    options: {
+      topBar: {
+        title: {
+          text: '新增用药记录'
+        }
+      }
+    }
+  },
+  DetailMAR: {
+    name: 'DetailMAR',
+    options: {
+      topBar: {
+        title: {
+          text: '用药记录详情'
+        }
+      }
+    }
+  },
+  PesticidesList: {
+    name: 'PesticidesList',
+    options: {
+      topBar: {
+        title: {
+          text: '农药列表'
+        }
+      }
+    }
+  },
+  MARGoods: {
+    name: 'MARGoods',
+    options: {
+      topBar: {
+        title: {
+          text: '选择农药'
+        }
+      }
+    }
+  },
+  MARCrops: {
+    name: 'MARCrops',
+    options: {
+      topBar: {
+        title: {
+          text: '选择作物'
+        }
+      }
+    }
+  },
+  ERPDiaList: {
+    name: 'ERPDiaList',
+    options: {
+      topBar: {
+        title: {
+          text: '作物选择'
+        }
+      }
+    }
+  },
+  ERPDiaPest: {
+    name: 'ERPDiaPest',
+    options: {
+      topBar: {
+        title: {
+          text: '病虫害选择'
+        }
+      }
+    }
+  },
+}

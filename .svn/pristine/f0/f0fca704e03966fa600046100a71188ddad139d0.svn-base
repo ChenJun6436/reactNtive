@@ -1,0 +1,79 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ScrollView,
+  Dimensions,
+  TouchableOpacity,
+  KeyboardAvoidingView
+} from 'react-native';
+
+
+import store from 'root/src/stores/account';
+import UserMessage from '../baseComon/UserMessage.js'
+import CommentWrite from '../baseComon/CommentWrite.js'
+import Icon from 'react-native-vector-icons/Feather';
+const { connect } = require('remx');
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff',
+    flex: 1
+  },
+});
+
+
+@navigatorDecorator
+class CommentDetail extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+  }
+
+  async componentDidMount() {
+    //requestPermission();
+  }
+
+  render() {
+    let a = 'root/img/product.png'
+    return (
+      <View style={styles.container}>
+        <View>
+          <View style={{height: 50,flexDirection:'row',borderBottomWidth:1,borderBottomColor:'#e3e3e3'}}>
+            <TouchableOpacity onPress={this._back}>
+              <View>
+                <Text style={{lineHeight: 50, marginLeft: 15}}><Icon name='x' size={35}/></Text>
+              </View>
+            </TouchableOpacity>
+            <View>
+              <Text style={{lineHeight: 50, marginLeft: '40%', fontSize:20}}>12000条回复</Text>
+            </View>
+          </View>
+          <UserMessage  comment={'1'} img={ require(a)  } title={'UserMessage'}/>
+          <View style={{borderTopWidth:1,borderTopColor:'#e3e3e3'}}>
+            <Text style={{fontSize: 16,lineHeight: 30,marginLeft: 10}}>全部评论</Text>
+          </View>
+          <ScrollView style={{height: 400}}>
+            <UserMessage  comment={'1'} img={ require(a)  } title={'UserMessage'}/>
+            <UserMessage  comment={'1'} img={ require(a)  } title={'UserMessage'}/>
+            <UserMessage  comment={'1'} img={ require(a)  } title={'UserMessage'}/>
+            <UserMessage  comment={'1'} img={ require(a)  } title={'UserMessage'}/>
+            <UserMessage  comment={'1'} img={ require(a)  } title={'UserMessage'}/>
+            <UserMessage  comment={'1'} img={ require(a)  } title={'UserMessage'}/>
+            <UserMessage  title={'UserMessage'}/>
+          </ScrollView>
+        </View>
+        <CommentWrite/>
+      </View>
+    );
+  }
+}
+function mapStateToProps() {
+  console.info(store)
+  return {
+  };
+}
+
+module.exports = connect(mapStateToProps)(CommentDetail);
+

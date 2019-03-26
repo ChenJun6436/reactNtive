@@ -1,0 +1,243 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    ImageBackground,
+    Dimensions,
+    Image,
+    findNodeHandle,
+    Alert,
+    AsyncStorage,
+    TouchableOpacity,
+    StatusBar
+} from 'react-native';
+// import Divide from 'react-native-divide'
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { Input } from 'react-native-elements';
+import { Button, InputItem, Checkbox } from 'antd-mobile-rn';
+import * as AccountAction from 'root/src/actions/account';
+import inputItemStyle from 'antd-mobile-rn/lib/input-item/style/index.native';
+const inputStyle = {
+    ...inputItemStyle,
+    input: { ...inputItemStyle.input, color: '#fff' }
+}
+const { connect } = require('remx');
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const BG_IMAGE = require('root/img/login.jpg');
+const LOGO_IMAGE = require('root/img/logo.png');
+
+const QQ_IMAGE = require('root/img/qq.png');
+const WCHAT_IMAGE = require('root/img/wChat.png');
+
+const AgreeItem = Checkbox.AgreeItem;
+
+
+@navigatorDecorator
+export default class SetRegisterPwd extends Component {
+    constructor(props: Props) {
+        super(props);
+        this.time = 60;
+        this.tt;
+        this.state = {
+            viewRef: null,
+            loginPwd: '',
+            createIp: '',
+            rePwd: '',
+        };
+
+    }
+    componentWillMount() {
+    }
+    componentDidMount() {
+    }
+
+    nextStep = () => {
+        if (!this.state.loginPwd) {
+            MyToast.info('请填写密码');
+            return;
+        }
+        if (!this.state.rePwd) {
+            MyToast.info('请填写确认密码');
+            return;
+        }
+        if (this.state.loginPwd != this.state.rePwd) {
+            MyToast.info('两次密码输入不一致');
+            return;
+        }
+        let data = {
+            phone: this.props.phone,
+            loginPwd: this.state.loginPwd
+        }
+
+        AccountAction.register({ input: data }).then(({ suc, msg }) => {
+            if (suc) {
+                this.pushPage({
+                    component: {
+                        ...Global.Screens.EditUserInfo
+                    }
+                })
+            }
+            else {
+                MyToast.info(msg);
+                return;
+            }
+        })
+    }
+
+    imageLoaded = () => {
+        this.setState({ viewRef: findNodeHandle(this.backgroundImage) });
+    }
+    render() {
+        const { Account, navigator } = this.props;
+        // const { getFieldProps } = this.props.form;
+        return (
+            <View style={styles.container}>
+                <StatusBar
+                    backgroundColor="#ff0000"
+                    translucent={true}
+                    hidden={true}
+                    animated={true} />
+                <Image
+                    ref={(img) => { this.backgroundImage = img; }}
+                    source={BG_IMAGE}
+                    style={styles.bgImage}
+                    onLoadEnd={this.imageLoaded}
+                />
+                <TouchableOpacity
+                    style={{ position: 'absolute', zIndex: 1000, top: 15, left: 15, flexDirection: 'row', alignItems: 'center' }}
+                    onPress={() => {
+                        this.pop()
+                    }}>
+                    <Text style={{ color: '#fff', flexDirection: 'row', alignItems: 'center', fontSize: 22 }}>
+                        <Icon
+                            name='chevron-left'
+                            color='#fff'
+                            size={22}
+                        /> 返回
+                    </Text>
+                </TouchableOpacity>
+                <View style={styles.loginView}>
+                    <View style={styles.loginTitle}>
+                        <Image
+                            style={{ width: 180, height: 90 }}
+                            source={{ uri: projectConfig.loginLogo }}
+                        />
+                        {/* <View style={styles.title}>
+                            <Text style={styles.travelText}>农户APP</Text>
+                        </View> */}
+                    </View>
+                    <View style={styles.loginInput}>
+                        <View style={{ marginVertical: 15 }}>
+                            <InputItem
+                                styles={inputStyle}
+                                style={{ height: 40, width: '90%', backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: 'white', paddingRight: 0 }}
+                                clear
+                                type="password"
+                                value={this.state.loginPwd}
+                                onChange={(value: any) => {
+                                    this.setState({
+                                        loginPwd: value,
+                                    });
+                                }}
+                                labelNumber={2}
+                                placeholder='设置登录密码'
+                                placeholderTextColor='#cccccc'
+                            >
+                                <Icon
+                                    name='user'
+                                    color='#ffffff'
+                                    size={25}
+                                />
+                            </InputItem>
+                        </View>
+                        <View style={{ marginVertical: 15 }}>
+                            <InputItem
+                                styles={inputStyle}
+                                style={{ height: 40, width: '90%', backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: 'white', paddingRight: 0 }}
+                                clear
+                                type="password"
+                                value={this.state.rePwd}
+                                onChange={(value: any) => {
+                                    this.setState({
+                                        rePwd: value,
+                                    });
+                                }}
+
+                                labelNumber={2}
+                                placeholder='确认密码'
+                                placeholderTextColor='#cccccc'
+                            >
+                                <Icon
+                                    name='lock'
+                                    color='#ffffff'
+                                    size={25}
+                                />
+                            </InputItem>
+                        </View>
+                        <View><Text style={{ color: '#ffffff' }}>密码需为8~20位数字、字母的组合，不含空格</Text></View>
+                        <View style={{ marginVertical: 35, width: '100%', alignItems: 'center', }}>
+                            <Button activeStyle={{ opacity: 0.5, backgroundColor: 'none' }} disabled={this.state.submitLoading}
+                                style={{ height: 40, width: '90%', backgroundColor: this.state.loginPwd && this.state.rePwd ? 'transparent' : "#cccccc", borderWidth: 2, borderColor: 'white', borderRadius: 5 }}
+                                onClick={this.nextStep}
+                                disabled={this.state.loginPwd && this.state.rePwd ? false : true}
+                            >
+                                <Text style={{ fontWeight: 'bold', color: 'white' }}>下一步</Text>
+                            </Button>
+                        </View>
+                    </View>
+                </View>
+            </View>
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+
+    },
+    bgImage: {
+        position: "absolute",
+        flex: 1,
+        top: 0,
+        left: 0,
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT
+    },
+    title: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    travelText: {
+        color: '#ffffff',
+        fontSize: 26,
+        fontFamily: 'bold',
+        textAlign: 'center',
+        width: '100%',
+        height: 50,
+        lineHeight: 50,
+    },
+    loginView: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    register: {
+        position: 'absolute',
+        top: 30,
+        right: 20,
+    },
+    loginTitle: {
+        marginTop: 70,
+    },
+    loginInput: {
+        width: '100%',
+        alignItems: 'center',
+    },
+})
+
+

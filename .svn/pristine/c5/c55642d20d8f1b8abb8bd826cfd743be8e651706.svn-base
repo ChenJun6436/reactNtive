@@ -1,0 +1,199 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Dimensions,
+  TouchableWithoutFeedback
+} from 'react-native';
+import { Button, Grid, Carousel } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+const { connect } = require('remx');
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  wrapper: {
+    backgroundColor: '#fff',
+  },
+  text: {
+    color: '#fff',
+    fontSize: 36,
+  },
+  icon: {
+    width: 55,
+    height: 55
+  },
+  title: {
+    fontSize: 16,
+    color: 'white',
+    width: '100%',
+    position: 'absolute',
+    top: 15,
+    zIndex: 999,
+    textAlign: 'center'
+  },
+  user: {
+    position: 'absolute',
+    top: 14,
+    left: 15,
+    zIndex: 1000,
+  },
+  imgStyle: {
+    // 设置宽度
+    width: Dimensions.get('window').width,
+    // 设置高度
+    height: 230,
+    // 设置图片填充模式
+    resizeMode: 'stretch'
+  }
+});
+
+
+@navigatorDecorator
+class Home extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+  }
+
+  async componentDidMount() {
+    //requestPermission();
+  }
+  render() {
+    let data = [
+      {
+        icon: <Image source={require('root/img/product.png')} style={styles.icon} />,
+        text: '农资产品'
+      },
+      {
+        icon: <Image source={require('root/img/unit.png')} style={styles.icon} />,
+        text: '经营单位'
+      },
+      {
+        icon: <Image source={require('root/img/company.png')} style={styles.icon} />,
+        text: '生产企业'
+      },
+      {
+        icon: <Image source={require('root/img/yao.png')} style={styles.icon} />,
+        text: '禁限用药'
+      },
+      {
+        icon: <Image source={require('root/img/check.png')} style={styles.icon} />,
+        text: '现场检查'
+      },
+      {
+        icon: <Image source={require('root/img/chouyang.png')} style={styles.icon} />,
+        text: '抽样取证'
+      },
+      {
+        icon: <Image source={require('root/img/rectify.png')} style={styles.icon} />,
+        text: '责令整改'
+      },
+      {
+        icon: <Image source={require('root/img/chufa.png')} style={styles.icon} />,
+        text: '当场处罚'
+      },
+      {
+        icon: <Image source={require('root/img/message.png')} style={styles.icon} />,
+        text: '取证信息'
+      }
+    ]
+    data = this.props.menuList.map(x => {
+      return {
+        text: x.name,
+        icon: <Image source={require('root/img/message.png')} style={styles.icon} />,
+      }
+    })
+    return (
+      <View style={styles.container}>
+        <View>
+          {/* <Text style={styles.title}>乐山市农业移动执法终端系统</Text> */}
+          <Carousel autoplayTimeout={2} selectedIndex={2} autoplay infinite >
+            <View>
+              <Image
+                source={require('root/img/ZFbanner.jpg')}
+                style={styles.imgStyle}
+              />
+            </View>
+            <View>
+              <Image
+                source={require('root/img/ZFbanner2.jpg')}
+                style={styles.imgStyle}
+              />
+            </View>
+            <View>
+              <Image
+                source={require('root/img/ZFbanner3.jpg')}
+                style={styles.imgStyle}
+              />
+            </View>
+            {/* <View>
+              <Image
+                source={require('root/img/bg_screen1.jpg')}
+                style={{ height: 200, width: '100%' }}
+              />
+            </View> */}
+            {/* <View>
+              <Image
+                source={require('root/img/bg_screen1.jpg')}
+                style={{ height: 200, width: '100%' }}
+              />
+            </View> */}
+          </Carousel>
+        </View>
+
+        <View style={{ backgroundColor: 'white', width: '100%', flex: 1, justifyContent: 'center' }}>
+          <Grid data={data} columnNum={3} hasLine={false} onClick={(el, index) => {
+            switch (index) {
+              //农资产品
+              case 0: this.pushPage({
+                ...Constants.Screens.Product_SCREEN, topTabs: [
+                  { screenId: Constants.Screens.ProductListTab_SCREEN.screen, title: "", passProps: { type: 0 } }
+                ]
+              });
+                break;
+              //经营单位
+              case 1: this.pushPage(Constants.Screens.Store_SCREEN);
+                break;
+              //生产企业
+              case 2: this.pushPage(Constants.Screens.Enterprise_SCREEN);
+                break;
+              //禁限用药
+              case 3: this.pushPage({
+                ...Constants.Screens.Limit_SCREEN, topTabs: [{ screenId: Constants.Screens.LimitListTab_SCREEN.screen, title: "禁用药", passProps: { type: 0 } }, { screenId: Constants.Screens.LimitListTab_SCREEN.screen, title: "限用药", passProps: { type: 1 } }]
+              });
+                break;
+              //现场检查
+              case 4: this.pushPage(Constants.Screens.SpotCheck_SCREEN);
+                break;
+              //抽样取证
+              case 5: this.pushPage(Constants.Screens.SamplingEvidence_SCREEN);
+                break;
+              //责令整改
+              case 6: this.pushPage(Constants.Screens.Rectify_SCREEN);
+                break;
+              //当场处罚
+              case 7: this.pushPage(Constants.Screens.SpotPunish_SCREEN);
+                break;
+              //取证信息
+              case 8: this.pushPage(Constants.Screens.EvidenceInfo_SCREEN);
+                break;
+            }
+          }} />
+        </View>
+      </View>
+    );
+  }
+}
+function mapStateToProps() {
+  console.info(store)
+  return {
+    menuList: store.getMenuList()
+  };
+}
+
+module.exports = connect(mapStateToProps)(Home);
+

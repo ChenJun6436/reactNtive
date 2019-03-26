@@ -1,0 +1,244 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace } from 'antd-mobile-rn';
+import * as MineAction from 'root/src/actions/mine';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { bold } from 'ansi-colors';
+import moment from 'moment';
+import InputWriteSelect from 'root/src/screens/baseComon/InputWriteSelect.js'
+import pesticidesStore from 'root/src/stores/pesticides';
+import CropStore from 'root/src/stores/crop';
+import immutable from 'immutable';
+const { connect } = require('remx');
+const Item = List.Item;
+@navigatorDecorator
+class CropPage extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            plantList: [
+                {
+                    crop: '',
+                    cropType: '',
+                    pest: '',
+                }
+            ],
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                title: {
+                    text: '作物选择'
+                },
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+        let nowName = ''
+        this.state.plantList.map((i, index) => {
+            if (!i.crop) {
+                nowName = 'crop'
+            }
+            if (!i.pest) {
+                nowName = 'pest'
+            }
+        })
+        if (nowName) {
+            MyToast.info('请填写完整的作物信息');
+        } else {
+            let plantList = this.state.plantList
+            CropStore.setCropsList(plantList)
+            this.pop()
+        }
+    }
+    componentWillMount() {
+        const vm = this
+        let data = this.props.cropsList;
+        if (data && data.length > 0) {
+            let nowList = [];
+            data.forEach((i, index) => {
+                nowList.push({
+                    cropType: i.cropType,
+                    crop: i.crop,
+                    pest: i.pest
+                })
+            })
+            vm.setState({
+                plantList: nowList,
+            })
+        } else {
+            this.setState({
+                plantList: [
+                    {
+                        crop: '',
+                        cropType: '',
+                        pest: '',
+                    }
+                ],
+            })
+        }
+    }
+    changeData(text, index, name) {
+        let nowList = this.state.plantList
+        let textNew = text
+        nowList[index][name] = textNew
+        if (!text) {
+            switch (name) {
+                case 'pesticide':
+                    MyToast.info('农药名称不能为空');
+                    break;
+                case 'usage':
+                    MyToast.info('用药量不能为空');
+                    break;
+            }
+
+        } else {
+            this.setState({
+                plantList: nowList,
+            })
+        }
+    }
+
+    onErrorClick = () => {
+        MyToast.info('请填写正确的信息，且不能为空');
+    }
+    changeCropData = (data, index) => {
+        let plantList = immutable.updateIn(this.state.plantList, [index, 'crop'], v => data);
+        this.setState({
+            plantList
+        })
+    }
+    changePestData = (data, index) => {
+        let plantList = immutable.updateIn(this.state.plantList, [index, 'pest'], v => data.join(','));
+        this.setState({
+            plantList
+        })
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#f5f5f5' }}>
+                {
+                    this.state.plantList.map((i, index) => {
+                        return (
+                            <View key={index}>
+                                <List>
+                                    <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
+                                        <Text style={{ lineHeight: 50, fontSize: 18, marginLeft: 15, color: '#000', fontWeight: 'bold' }}>作物（{index + 1}）</Text>
+                                        {/* 删除作物列表 */}
+                                        {index == 0 ? (null) : (
+                                            <TouchableWithoutFeedback onPress={() => {
+                                                let nowList = this.state.plantList
+                                                nowList.splice(index, 1)
+                                                this.setState({
+                                                    plantList: nowList
+                                                })
+                                            }}>
+                                                <View>
+                                                    <Text style={{ textAlign: 'center', fontSize: 18, color: '#000', lineHeight: 50, marginRight: 15 }}><Icon color='red' name='trash' size={18} /></Text>
+                                                </View>
+                                            </TouchableWithoutFeedback>
+                                        )}
+                                    </View>
+                                </List>
+                                <List>
+                                    <InputWriteSelect
+                                        _name={'作物名称'}
+                                        _value={i.crop}
+                                        _type={'ERPCrop'}
+                                        onChangeERPCrop={(value) => {
+                                            this.changeData(value, index, 'crop')
+                                        }}
+                                        _selectCrop={() => {
+                                            this.pushPage({
+                                                component: {
+                                                    passProps: { changeCropData: this.changeCropData, index: index, crop: i.crop },
+                                                    ...Global.Screens.ERPDiaList
+                                                }
+                                            })
+                                        }} />
+                                </List>
+                                <List>
+                                    <InputItem
+                                        textAlign="right"
+                                        clear
+                                        onChangeText={(text) => {
+                                            this.changeData(text, index, 'cropType')
+                                        }}
+                                        maxLength={20}
+                                        placeholder="作物品种"
+                                        value={i.cropType}
+                                        placeholderTextColor='#cccccc'
+                                    ><Text style={{ color: 'gray' }}>作物品种</Text>
+                                    </InputItem>
+                                </List>
+                                <List>
+                                    <InputWriteSelect
+                                        _name={'病害名称'}
+                                        isNotSolo={true}
+                                        _value={i.pest}
+                                        _type={'ERPPest'}
+                                        onChangeERPPest={(value) => {
+                                            this.changeData(value, index, 'pest')
+                                        }}
+                                        _selectCrop={() => {
+                                            if (!i.crop) {
+                                                MyToast.info("请先选择当前作物名称")
+                                                return;
+                                            }
+                                            this.pushPage({
+                                                component: {
+                                                    passProps: { crop: i.crop, pestList: i.pest.split(','), changePestData: this.changePestData, index: index },
+                                                    ...Global.Screens.ERPDiaPest
+                                                }
+                                            })
+                                        }} />
+                                </List>
+                                <WhiteSpace size="sm" />
+                            </View>
+                        )
+                    })
+                }
+                <TouchableWithoutFeedback onPress={() => {
+                    let nowList = this.state.plantList
+                    nowList.push(
+                        {
+                            crop: '',
+                            cropType: '',
+                            pest: '',
+                        }
+                    )
+                    this.setState({
+                        plantList: nowList,
+                    })
+                }}>
+                    <View>
+                        <Text style={{ textAlign: 'center', fontSize: 18, color: '#000', lineHeight: 50 }}><Icon name='plus-circle' size={18} />添加</Text>
+                    </View>
+                </TouchableWithoutFeedback>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+        cropsList: CropStore.getCropsList(),
+    };
+}
+
+module.exports = connect(mapStateToProps)(CropPage);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

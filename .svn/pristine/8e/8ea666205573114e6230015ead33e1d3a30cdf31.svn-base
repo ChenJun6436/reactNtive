@@ -1,0 +1,46 @@
+import * as remx from 'remx';
+
+//remx.registerLoggerForDebug(console.log);
+
+const initialState = {
+  account: {},
+  menuList: []
+};
+
+const state = remx.state(initialState);
+
+const getters = remx.getters({
+  getAccount() {
+    // let account = storage.get('account');
+    console.log(state.account)
+    return state.account;
+  },
+  getMenuList() {
+    let menuList = storage.get('menuList');
+    return state.menuList && state.menuList.length == 0 && menuList != undefined ? menuList : state.menuList;
+  },
+  getUserId() {
+    // let userId = storage.get('userId');
+    return state.userId;
+  }
+});
+
+const setters = remx.setters({
+  setAccount(account) {
+    storage.set('account', account)
+    return state.account = account;
+  },
+  setMenuList(menuList) {
+    storage.set('menuList', menuList)
+    return state.menuList = menuList;
+  },
+  setUserId(userId) {
+    storage.set('userId', userId)
+    return state.userId = userId;
+  }
+});
+
+export default store = {
+  ...setters,
+  ...getters
+};

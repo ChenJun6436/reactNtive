@@ -1,0 +1,91 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    TouchableOpacity,
+    Dimensions,
+    Animated,
+    TouchableHighlight
+} from 'react-native';
+import StoreItem from 'root/src/screens/baseComon/storeItem'
+import { Button, SwipeAction } from 'antd-mobile-rn';
+import * as StoreAction from 'root/src/actions/store'
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+@navigatorDecorator
+export default class StoreList extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            // index: 0,
+            // routes: [
+            //     { key: 'first', title: '周边农资店' },
+            //     { key: 'second', title: '热销农资' },
+            // ],
+        };
+    }
+    render() {
+        const content = this.props.content
+        return (
+
+            <LoadMoreList
+                ref={ref => this.moreListInst = ref}
+                getData={StoreAction.SearchNearByStore}
+                searchParams={{ longitude: storage.get('longitude'), latitude: storage.get('latitude') }}
+                rowItem={(data) => {
+                    return <SwipeAction autoClose style={{ backgroundColor: 'transparent', flex: 1 }} right={[
+                        {
+                            text: '详情',
+                            onPress: () => {
+                                this.pushPage({
+                                    component: {
+                                        ...Global.Screens.StoreDetail,
+                                        // title: data.name
+                                    }
+                                });
+                            },
+                            style: { backgroundColor: 'orange', color: 'white' },
+                        }
+                    ]} >
+                        <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                            onPress={() => {
+                                this.pushPage({
+                                    component: {
+                                        passProps: { id: data.id },
+                                        ...Global.Screens.StoreDetail,
+                                        options: {
+                                            topBar: {
+                                                title: {
+                                                    text: data.name
+                                                }
+                                            }
+                                        },
+                                    }
+                                });
+                            }}>
+
+                            <StoreItem content={data} />
+                        </TouchableHighlight>
+                    </SwipeAction>
+                }}
+            />
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    // container: {
+    //     flex: 1,
+    //     paddingHorizontal: 16,
+    //     paddingVertical: 6,
+    //     borderBottomWidth: StyleSheet.hairlineWidth,
+    //     borderColor: '#d9d9d9',
+    // },
+    // row: {
+    //     flexDirection: 'row',
+    //     justifyContent: 'space-between'
+    // }
+});

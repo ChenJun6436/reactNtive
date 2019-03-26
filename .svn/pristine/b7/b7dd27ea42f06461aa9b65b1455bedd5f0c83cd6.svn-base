@@ -1,0 +1,238 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    ImageBackground,
+    Dimensions,
+    Image,
+    findNodeHandle,
+    Alert,
+    AsyncStorage,
+    TouchableOpacity
+} from 'react-native';
+// import Divide from 'react-native-divide'
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { Input } from 'react-native-elements';
+import { Button, InputItem, Checkbox } from 'antd-mobile-rn';
+import requestPermission from 'root/src/utils/requestPermissions';//获取相机及其他权限
+import * as AccountAction from 'root/src/actions/account';
+const { connect } = require('remx');
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const BG_IMAGE = require('root/img/login.jpg');
+const LOGO_IMAGE = require('root/img/logo.png');
+
+const QQ_IMAGE = require('root/img/qq.png');
+const WCHAT_IMAGE = require('root/img/wChat.png');
+
+const AgreeItem = Checkbox.AgreeItem;
+
+
+@navigatorDecorator
+export default class SetNewPwd extends Component {
+    constructor(props: Props) {
+        super(props);
+        this.time = 60;
+        this.tt;
+        this.state = {
+            viewRef: null,
+        };
+
+    }
+    componentWillMount() {
+        let keys = ["loginName", "loginPwd"];
+        let self = this;
+        AsyncStorage.multiGet(keys, function (errs, result) {
+            //如果发生错误，这里直接返回（return）防止进入下面的逻辑
+            if (errs) {
+                return;
+            }
+            self.setState({
+                loginName: (result[0][1] != null) ? result[0][1] : '',
+                loginPwd: (result[1][1] != null) ? result[1][1] : ''
+            })
+        });
+    }
+    componentDidMount() {
+        //requestPermission();
+    }
+
+    sendCode = () => {
+        if (!this.state.phone) {
+            Toast.info('请填写手机号', 3);
+            return;
+        }
+        this.setState({ sendLoading: true })
+        AccountAction.sendVerifiedCode({ input: { phone: this.state.phone, sendType: 1 } }).then((data) => {
+            this.startCodeTimer(() => {
+                this.setState({ sendLoading: false })
+            })
+            Toast.info('验证码发送成功', 3);
+        })
+    }
+    startCodeTimer = (callback) => {
+        let self = this;
+        self.tt = setInterval(() => {
+            self.setState({ time: self.time-- })
+            if (self.time == -1) {
+                self.time = 60;
+                self.setState({ time: undefined })
+                clearInterval(self.tt);
+                callback && callback();
+            }
+        }, 1000)
+    }
+    nextStep = () => {
+        if (!this.state.phone) {
+            Toast.info('请填写手机号', 3);
+            return;
+        }
+        if (!this.state.verificationCode) {
+            Toast.info('请填写验证码', 3);
+            return;
+        }
+        this.setState({ submitLoading: true })
+        AccountAction.login({ input: this.state }).then(({ suc, data }) => {
+            if (suc) {
+                Global.Navigate.startIndexScreen()
+            }
+            this.setState({ submitLoading: false })
+        })
+
+    }
+
+    imageLoaded = () => {
+        this.setState({ viewRef: findNodeHandle(this.backgroundImage) });
+    }
+    render() {
+        const { Account, navigator } = this.props;
+        // const { getFieldProps } = this.props.form;
+        return (
+            <View style={styles.container}>
+                <Image
+                    ref={(img) => { this.backgroundImage = img; }}
+                    source={BG_IMAGE}
+                    style={styles.bgImage}
+                    onLoadEnd={this.imageLoaded}
+                />
+                <View style={styles.loginView}>
+                    <View style={styles.loginTitle}>
+                        <Image
+                            style={{ width: 180, height: 90 }}
+                            source={LOGO_IMAGE}
+                        />
+                        <View style={styles.title}>
+                            <Text style={styles.travelText}>农户APP</Text>
+                        </View>
+                    </View>
+                    <View style={styles.loginInput}>
+                        <View style={{ marginVertical: 15 }}>
+                            <InputItem
+                                style={{ height: 40, width: '90%', backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: 'white', paddingRight: 0 }}
+                                clear
+                                type="password"
+                                value={this.state.phone}
+                                onChange={(value: any) => {
+                                    this.setState({
+                                        phone: value,
+                                    });
+                                }}
+                                labelNumber={2}
+                                placeholder='设置登录密码'
+                                placeholderTextColor='#cccccc'
+                            >
+                                <Icon
+                                    name='user'
+                                    color='#ffffff'
+                                    size={25}
+                                />
+                            </InputItem>
+                        </View>
+                        <View style={{ marginVertical: 15 }}>
+                            <InputItem
+                                style={{ height: 40, width: '90%', backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: 'white', }}
+                                clear
+                                type="password"
+                                value={this.state.verificationCode}
+                                onChange={(value: any) => {
+                                    this.setState({
+                                        verificationCode: value,
+                                    });
+                                }}
+
+                                labelNumber={2}
+                                placeholder='确认密码'
+                                placeholderTextColor='#cccccc'
+                            >
+                                <Icon
+                                    name='lock'
+                                    color='#ffffff'
+                                    size={25}
+                                />
+                            </InputItem>
+                        </View>
+                        <View><Text>密码需为6~20位数字、字母的组合，不含空格</Text></View>
+                        <View style={{ marginVertical: 35, width: '100%', alignItems: 'center', }}>
+                            <Button disabled={this.state.submitLoading}
+                                style={{ height: 40, width: '90%', backgroundColor: 'transparent', borderWidth: 2, borderColor: 'white', borderRadius: 30 }}
+                                onClick={this.nextStep}
+                            >
+                                <Text style={{ fontWeight: 'bold', color: 'white' }}>下一步</Text>
+                            </Button>
+                        </View>
+                    </View>
+                </View>
+            </View>
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+
+    },
+    bgImage: {
+        position: "absolute",
+        flex: 1,
+        top: 0,
+        left: 0,
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT
+    },
+    title: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    travelText: {
+        color: '#ffffff',
+        fontSize: 26,
+        fontFamily: 'bold',
+        textAlign: 'center',
+        width: '100%',
+        height: 50,
+        lineHeight: 50,
+    },
+    loginView: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    register: {
+        position: 'absolute',
+        top: 30,
+        right: 20,
+    },
+    loginTitle: {
+        marginTop: 80,
+    },
+    loginInput: {
+        width: '100%',
+        alignItems: 'center',
+    },
+})
+
+

@@ -1,0 +1,34 @@
+import * as remx from 'remx';
+
+//remx.registerLoggerForDebug(console.log);
+
+const initialState = {
+  replyUser: null
+};
+
+const state = remx.state(initialState);
+
+const getters = remx.getters({
+  getReplyUser() {
+    return state.replyUser
+  },
+  getMenuList() {
+    let menuList = storage.get('menuList');
+    return state.menuList.length==0&&menuList!=undefined?menuList:state.menuList;
+  },
+});
+
+const setters = remx.setters({
+  setReplyUser(replyUser) {
+    return state.replyUser = replyUser;
+  },
+  setMenuList(menuList) {
+    storage.set('menuList', menuList)
+    return state.menuList = menuList;
+  }
+});
+
+export default store = {
+  ...setters,
+  ...getters
+};

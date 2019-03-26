@@ -1,0 +1,96 @@
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    Dimensions,
+    ScrollView,
+    Image
+} from 'react-native';
+// import { inject, observer } from 'mobx-react/native';
+import { SearchBar, WhiteSpace, WingBlank, List, Button, InputItem, Accordion } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import DetailItem from 'root/src/screens/baseComon/DetailItem';
+import * as MineAction from 'root/src/actions/product';
+import QRCode from 'react-native-qrcode';
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const Item = List.Item;
+
+@loadingDecorator
+export default class ProductRecoveryDetail extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            model: {
+                plantList: []
+            },
+        }
+    }
+    componentWillMount() {
+        MineAction.GetProductRecovery(this.props.id).then((data) => {
+            if (data.suc && data.data) {
+                console.log(data.data)
+                this.setState({
+                    model: data.data,
+                    loading: false
+                })
+            } else {
+                MyToast.info('数据获取失败，稍后尝试');
+            }
+        })
+    }
+    render() {
+        let model = this.state.model;
+        return (
+            <ScrollView style={{ backgroundColor: '#f2f2f2', position: 'relative', height: SCREEN_HEIGHT }}>
+                <View style={styles.container}>
+                    <DetailItem title="基地" content={model.plantBaseName} />
+                    <DetailItem title="地块" content={model.plantBaseLandName} />
+                    <DetailItem title="作物品种" content={model.cropName + '/' + model.breedName} />
+                    <DetailItem title="采收数量" content={model.quantity + ' 千克'} />
+                    <DetailItem title="采收时间" content={model.pickDay} />
+                    <List>
+                        <Accordion defaultActiveKey="1">
+                            <Accordion.Panel header="采收人员">
+                                <List>
+                                    {model.itemStaff.map((i, ind) => (
+                                        <DetailItem title={i.staffName} content={i.workDays + '天'} />
+                                    ))}
+                                </List>
+                            </Accordion.Panel>
+                        </Accordion>
+                    </List>
+                    <DetailItem title="天气状况" content={model.weatherStr} />
+                    <DetailItem title="标签" content={model.tag} />
+                    <DetailItem title="备注" content={model.remark} />
+                    {model.qrCode ? <DetailItem title="二维码" content={<QRCode
+                        value={model.qrCode}
+                        size={120}
+                        bgColor='purple'
+                        fgColor='white' />} /> : null}
+
+                </View>
+            </ScrollView>
+        )
+    }
+}
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        marginBottom: 10,
+    },
+    search: {
+        justifyContent: 'center',
+        flexDirection: 'row',
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 180,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    },
+});

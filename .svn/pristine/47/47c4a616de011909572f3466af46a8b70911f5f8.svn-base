@@ -1,0 +1,82 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    TouchableOpacity,
+    Dimensions,
+    TouchableHighlight
+} from 'react-native';
+import { List, Button, SwipeAction } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import SolutionList from 'root/src/screens/baseComon/SolutionList';
+import * as SolutionAction from 'root/src/actions/solution';
+const { connect } = require('remx');
+@navigatorDecorator
+class SolSearchList extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            storeName: '',
+            classificCode: '',
+            search: ''
+        }
+
+    }
+    refresh = () => {
+        this.moreListInst._onRefresh();
+    }
+    render() {
+        return (
+            <View style={styles.container}>
+
+                <LoadMoreList
+                    // colums={2}
+                    ref={ref => this.moreListInst = ref}
+                    getData={SolutionAction.GetList}
+                    searchParams={{ focus: this.props.input.focus, keyword: this.props.input.search, state: this.props.input.state }}
+                    rowItem={(data) => {
+                        return <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                            style={{ backgroundColor: 'transparent', flex: 1 }}
+                            onPress={() => {
+                                this.pushPage({
+                                    component: {
+                                        passProps: { id: data.id },
+                                        ...Global.Screens.SolutionDetail,
+                                        options: {
+                                            topBar: {
+                                                title: {
+                                                    text: data.title
+                                                }
+                                            },
+                                            bottomTabs: {
+                                                visible: false,
+                                                drawBehind: true
+                                            }
+                                        },
+                                    }
+                                });
+                            }}>
+                            <SolutionList content={data} />
+                        </TouchableHighlight>
+                    }}
+                />
+            </View>
+        );
+    }
+}
+function mapStateToProps() {
+
+}
+module.exports = connect(mapStateToProps)(SolSearchList);
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+});

@@ -1,0 +1,96 @@
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    // Image,
+    ScrollView,
+    TextInput,
+    Alert,
+    // Dimensions,
+    // TouchableWithoutFeedback,
+    // ProgressBarAndroid,
+    // TouchableHighlight,
+    // StatusBar
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, Accordion, SwipeAction } from 'antd-mobile-rn'
+// import ListItem from 'root/src/screens/baseComon/ListItem'
+// import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import DetailItem from 'root/src/screens/baseComon/DetailItem.js';
+import * as DataAction from 'root/src/actions/dataAuthentication';
+// import CropStore from 'root/src/stores/crop';
+// import pesticidesStore from 'root/src/stores/pesticides';
+// const SCREEN_WIDTH = Dimensions.get('window').width;
+// const SCREEN_HEIGHT = Dimensions.get('window').height;
+const { connect } = require('remx');
+const Item = List.Item;
+// let pageIndex = 1;
+
+// @loadingDecorator
+
+//企业情况
+@navigatorDecorator
+class EnterpriseSituation extends Component {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+            data:{}
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [{
+                    ...confirmRightBtn, text: '解绑'
+                }]
+            }
+        });
+        Navigation.events().bindComponent(this);
+
+    }
+    navigationButtonPressed({ buttonId }) {
+        
+    }
+    componentWillMount() {
+        this.getEnterpriseSituation()
+    }
+
+    getEnterpriseSituation = () => {
+        DataAction.GetEnterpriseSituation(storage.cache.account.enterpriseId).then((data) => {
+            if (data.suc) {
+                this.setState({
+                    data: data.data
+                })
+            }else{
+                MyToast.info('获取失败，请稍后再试');
+            }
+        })
+    }
+    render() {
+        return (
+            <ScrollView style={styles.container}>
+                <List>
+                    
+                    <DetailItem title="名称" content={this.state.data.name} />
+                    <DetailItem title="组织结构代码" content={this.state.data.orgainzingCode} />
+                    <DetailItem title="法人代表" content={this.state.data.legalPerson} />
+                    <DetailItem title="会员数量" content={this.state.data.memberAmount} />
+                    <DetailItem title="品牌" content={this.state.data.brand} />
+                    <DetailItem title="联系电话" content={this.state.data.contact} />
+                </List>
+            </ScrollView >
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+
+    };
+}
+
+module.exports = connect(mapStateToProps)(EnterpriseSituation);
+
+const styles = StyleSheet.create({
+    container: {
+        backgroundColor: '#F5FCFF'
+    },
+
+});

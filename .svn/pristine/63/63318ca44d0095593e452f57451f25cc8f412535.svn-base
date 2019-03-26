@@ -1,0 +1,312 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    // Button,
+    ScrollView,
+    TextInput,
+    Alert,
+    StatusBar
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button } from 'antd-mobile-rn';
+import * as AccountAction from 'root/src/actions/account';
+import * as CommonAction from 'root/src/actions/common';
+import * as EnumsAction from 'root/src/actions/enums';
+import store from 'root/src/stores/account';
+const { connect } = require('remx');
+const Item = List.Item;
+
+@navigatorDecorator
+class EditUserInfo extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            files2: [],
+            id: '',
+            userName: '',
+            avatar: '',
+            email: '',
+            address: '',
+            provinceCode: '',
+            provinceName: '',
+            cityCode: '',
+            cityName: '',
+            townCode: '',
+            townName: '',
+            countyCode: '',
+            countyName: '',
+            regionId: '',
+            regionName: '',
+            sex: ['0'],
+            birthDate: '',
+            idCardNumber: '',
+            userType: '',
+            plantingCrop: '',
+            plantingArea: '',
+            plantingYield: '',
+            nextYearPlant: '',
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    {
+                        ...confirmRightBtn, text: '跳过'
+                    }
+                ],
+                leftButtons: [
+                    {
+                        display: 'none'
+                    }
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed({ buttonId }) {
+        Alert.alert(
+            '提示',
+            "新人注册当天完善信息可获得xx积分，确定跳过？",
+            [
+                { text: '确定', onPress: () => Global.Navigate.startIndexScreen() },
+                { text: '取消', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
+            ]
+        );
+    }
+    stepHome = () => {
+        this.state.id = this.props.userId
+        // this.state.birthDate = new Date(this.state.birthDate);
+        this.state.sex = this.state.sex ? this.state.sex[0] : 0;
+        if (!this.state.userName) {
+            MyToast.info('姓名不能为空');
+            return;
+        }
+        if (!this.state.regionId) {
+            MyToast.info('请选择所在区域地址');
+            return;
+        }
+        AccountAction.modifyUserForRegist({ input: this.state }).then((suc) => {
+            if (suc.suc) {
+                store.setAvatar(this.state.avatar)
+                this.state.sex = this.state.sex ? [this.state.sex[0]] : [0];
+                Global.Navigate.startIndexScreen()
+            }
+        })
+    }
+    handleFile2Change = (files, type, index) => {
+        if (type == 'add') {
+            var formData = new FormData();
+            let file = { uri: files[0].url, type: 'application/octet-stream', name: 'image.jpg' };
+            formData.append('avatar', file);
+            CommonAction.UploadImg({ input: formData }).then((suc) => {
+                if (suc.suc) {
+                    this.setState({
+                        avatar: suc.Data.url,
+                    })
+                    this.setState({
+                        files: [{
+                            url: ImgUrl + suc.Data.url,
+                            id: suc.Data.url,
+                        }],
+                    });
+                }
+                else {
+                    MyToast.info('上传头像失败')
+                }
+            })
+        }
+        else {
+            this.setState({
+                files,
+                avatar: ''
+            });
+        }
+    }
+    getAears = (data) => {
+        if (data) {
+            this.setState({
+                provinceCode: data.regionId[0],
+                provinceName: data.regionName[0],
+                cityCode: data.regionId[1],
+                cityName: data.regionName[1],
+                townCode: data.regionId[2],
+                townName: data.regionName[2],
+                countyCode: data.regionId[3],
+                countyName: data.regionName[3],
+                regionId: data.regionId.join('/'),
+                regionName: data.regionName.join(','),
+                address: data.address
+            })
+        }
+    }
+    userType = (type, name) => {
+        this.setState({
+            userType: type,
+            typeName: name
+        })
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#F5FCFF' }}>
+                <StatusBar
+                    backgroundColor="#ff0000"
+                    translucent={true}
+                    hidden={true}
+                    animated={true} />
+                <View style={{ alignItems: 'center', padding: 15 }}>
+                    <ImagePicker
+                        length="1"
+                        onChange={this.handleFile2Change}
+                        files={this.state.files}
+                    />
+                </View>
+                <List>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ userName: text })}
+                        placeholder="姓名"
+                        value={this.state.userName}
+                        placeholderTextColor='#cccccc'
+                    // style={{ fontSize: 12, color: 'gray' }}
+                    ><Text style={{ color: 'gray' }}>姓名</Text>
+                    </InputItem>
+                    <Picker
+                        // style={{ fontSize: 12, color: 'gray' }}
+                        data={[{ value: '0', label: '男' }, { value: '1', label: '女' }]}
+                        cols={1}
+                        onChange={text => this.setState({ sex: text })}
+                        value={this.state.sex}>
+                        <Item arrow="horizontal"><Text style={{ color: 'gray' }}>性别</Text></Item>
+                    </Picker>
+                    <DatePicker
+                        // style={{ fontSize: 12, color: 'gray' }}
+                        value={this.state.birthDate ? new Date(this.state.birthDate) : null}
+                        mode="date"
+                        minDate={new Date('1918-01-01')}
+                        onChange={text => this.setState({ birthDate: text })}
+                        format="YYYY-MM-DD"
+                    >
+                        <Item arrow="horizontal" ><Text style={{ color: 'gray' }}>出生日期</Text></Item>
+                    </DatePicker>
+                    <InputItem
+                        // style={{ fontSize: 12, color: 'gray' }}
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ idCardNumber: text })}
+                        placeholder="身份证号"
+                        value={this.state.idCardNumber}
+                        labelNumber={9}
+                    ><Text style={{ color: 'gray' }}>身份证号</Text>
+                    </InputItem>
+
+
+                    <Item arrow="horizontal" wrap extra={<Text style={{ color: 'gray' }}>{this.state.typeName}</Text>}
+                        // style={{ fontSize: 12, color: 'gray' }}
+                        onClick={() => {
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.UserType,
+                                    passProps: { userType: this.userType },
+                                }
+                            })
+                        }}><Text style={{ color: 'gray' }}>用户类型</Text></Item>
+
+                    <Item arrow="horizontal" wrap extra={<Text style={{ color: 'gray' }}>{this.state.regionName}</Text>}
+                        // style={{ fontSize: 12, color: 'gray' }}
+                        onClick={() => {
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.UserRegion,
+                                    passProps: { getAears: this.getAears },
+                                }
+                            })
+                        }}><Text style={{ color: 'gray' }}>所在区域</Text></Item>
+                    {/* <Item arrow="horizontal" style={{ fontSize: 12, color: 'gray' }} wrap
+                        onClick={() => {
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.MinePlant,
+                                    passProps: { isNow: 'true' },
+                                }
+                            })
+                        }}><Text style={{ color: 'gray' }}>主栽（养）品</Text></Item>
+                    <Item arrow="horizontal"
+                        // style={{ fontSize: 12, color: 'gray' }}
+                        wrap
+                        onClick={() => {
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.MinePlant,
+                                    passProps: { isNow: 'false' },
+                                }
+                            })
+                        }}><Text style={{ color: 'gray' }}>明年计划主栽（养）品</Text></Item> */}
+                    {/* <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ plantingCrop: text })}
+                        placeholder="请输入主栽品、主养殖"
+                        value={this.state.plantingCrop}
+                        labelNumber={9}
+                    >主栽（养）品
+                    </InputItem> */}
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ nextYearPlant: text })}
+                        placeholder="请输入计划主栽品、主养殖"
+                        value={this.state.nextYearPlant}
+                        labelNumber={9}
+                    // style={{ fontSize: 12, color: 'gray' }}
+                    ><Text style={{ color: 'gray' }}>明年计划主栽（养）品</Text>
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ plantingArea: text })}
+                        placeholder="请输入土地面积"
+                        value={this.state.plantingArea}
+                        labelNumber={9}
+                        type="number"
+                    // style={{ fontSize: 12, color: 'gray' }}
+                    ><Text style={{ color: 'gray' }}>土地面积</Text>
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ plantingYield: text })}
+                        placeholder="请输入产量"
+                        value={this.state.plantingYield}
+                        labelNumber={9}
+                        type="number"
+                    // style={{ fontSize: 12, color: 'gray' }}
+                    ><Text style={{ color: 'gray' }}>产量</Text>
+                    </InputItem>
+                </List>
+                <View style={{ marginVertical: 10, width: '100%', alignItems: 'center', }}>
+                    <Button
+                        style={{ height: 40, width: '90%', backgroundColor: 'green', borderWidth: 2, borderColor: 'white', borderRadius: 5 }}
+                        onClick={this.stepHome}
+                    >
+                        <Text style={{ fontWeight: 'bold', color: 'white' }}>下一步</Text>
+                    </Button>
+                </View>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+        userId: store.getUserId()
+    };
+}
+
+module.exports = connect(mapStateToProps)(EditUserInfo);
+
+const styles = StyleSheet.create({
+
+});

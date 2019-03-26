@@ -1,0 +1,40 @@
+import { Post } from '../utils/request';
+
+//获取农资店
+export async function getStoreByMember(data) {
+    return Post(`/Api/User/GetStoreByMember`, {
+        body: JSON.stringify(data)
+    });
+}
+//绑定农资店
+export async function addBind(id) {
+    debugger;
+    return Post(`/Api/User/AddBind?storeid=${id}`);
+}
+//解绑农资店
+export async function deleteBind(id) {
+    debugger;
+    return Post(`/Api/User/DeleteBind?id=${id}`);
+}
+//获取购买记录
+export async function getMemberOrder(data) {
+    return Post(`/Api/User/GetMemberOrder`, {
+        body: JSON.stringify(data)
+    });
+}
+//购买详情
+export async function getMemberOrderDetail(data) {
+    debugger;
+    return Post(`/Api/User/GetMemberOrderDetail`, {
+        body: JSON.stringify(data)
+    });
+}
+
+//获取购买农药占比图
+
+export async function getMemberPortrait(data) {
+    debugger;
+    return Post(`/Api/User/GetMemberPortrait`, {
+        body: JSON.stringify(data)
+    });
+}

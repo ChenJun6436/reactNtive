@@ -1,0 +1,381 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    // Button,
+    ScrollView,
+    TextInput,
+    Alert,
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, Accordion, SwipeAction } from 'antd-mobile-rn';
+import InputWriteSelect from 'root/src/screens/baseComon/InputWriteSelect.js'
+import * as MARAction from 'root/src/actions/medicationRecord'
+import * as LandAction from 'root/src/actions/land'
+import moment from 'moment';
+import CropStore from 'root/src/stores/crop';
+import pesticidesStore from 'root/src/stores/pesticides';
+import DetailItem from 'root/src/screens/baseComon/DetailItem.js';
+const { connect } = require('remx');
+const Item = List.Item;
+
+@navigatorDecorator
+class AddOrEdit extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            id: null,
+            unitName: "",
+            preventTime: new Date(),
+            preventAddress: "",
+            pest: "",
+            crop: "",
+            usageWay: '',
+            area: 0,
+            pesticide: "",
+            registNumber: "",
+            manufacturer: "",
+            madeTime: new Date(),
+            source: "",
+            usage: 0,
+            safeDays: 0,
+            effects: '',
+            safeComment: '',
+            isRecycled: true,
+            areaData: []
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+
+    }
+    navigationButtonPressed({ buttonId }) {
+        let input = {
+            unitName: this.state.unitName,
+            preventTime: moment(this.state.preventTime).format('YYYY-MM-DD'),
+            preventAddress: this.state.preventAddress.join(','),
+            pest: this.props.cropList.join(','),
+            crop: this.props.pestList.join(','),
+            crops: this.props.cropsList,
+            usageWay: this.state.usageWay.join(','),
+            area: this.state.area,
+            pesticides: this.props.goodsData,
+            safeDays: this.state.safeDays,
+            effects: this.state.effects.join(','),
+            safeComment: this.state.safeComment.join(','),
+            isRecycled: this.state.isRecycled.join(','),
+        }
+        alert(JSON.stringify(input))
+        if (this.props.isEdit) {
+            MARAction.Update({ input: input }).then((suc) => {
+                if (suc.suc) {
+                    MyToast.success('编辑成功！')
+                    CropStore.setCropList(null)
+                    CropStore.setPestList(null)
+                    pesticidesStore.setGoodsData(null)
+                    pesticidesStore.setPesticidesData(null)
+                    this.pop()
+                }
+                else {
+
+                }
+            })
+        }
+        else {
+            MARAction.Add({ input: input }).then((suc) => {
+                if (suc.suc) {
+                    MyToast.success('新增成功！')
+                    CropStore.setCropList(null)
+                    CropStore.setPestList(null)
+                    pesticidesStore.setGoodsData(null)
+                    pesticidesStore.setPesticidesData(null)
+                    this.pop()
+                }
+            })
+        }
+
+
+    }
+    componentDidMount() {
+        MARAction.GetPesticideEffectEnum().then((data) => {
+            if (data.suc && data.data) {
+                let comment = [];
+                let effects = [];
+                let usageWays = [];
+                if (data.data.comment && data.data.comment.length > 0) {
+                    data.data.comment.map(item => {
+                        comment.push({
+                            value: item,
+                            label: item
+                        })
+                    })
+                }
+                if (data.data.effects && data.data.effects.length > 0) {
+                    data.data.effects.map(item => {
+                        effects.push({
+                            value: item,
+                            label: item
+                        })
+                    })
+                }
+                if (data.data.usageWay && data.data.usageWay.length > 0) {
+                    data.data.usageWay.map(item => {
+                        usageWays.push({
+                            value: item,
+                            label: item
+                        })
+                    })
+                }
+
+                this.setState({
+                    commentList: comment,
+                    effectsList: effects,
+                    usageWayList: usageWays
+                })
+            }
+
+            else {
+                MyToast.info('暂无数据！稍后尝试');
+            }
+            this.setState({ loading: false })
+        })
+        LandAction.List({ input: { pageIndex: 1, pageSize: 1999 } }).then((data) => {
+            if (data.suc && data.data && data.data.length > 0) {
+                let areaData = []
+                data.data.map(item => {
+                    areaData.push({
+                        value: item.adress + '/' + item.number + '号',
+                        label: item.adress + '/' + item.number + '号',
+                    })
+                })
+                this.setState({
+                    areaData: areaData
+                })
+            }
+
+            else {
+                MyToast.info('暂无数据！稍后尝试');
+            }
+            this.setState({ loading: false })
+        })
+        if (this.props.isEdit) {
+            MARAction.GetDetail({ id: this.props.id }).then((data) => {
+                if (data.suc && data.data) {
+                    let item = data.data;
+                    CropStore.setCropsList(item.crops);
+                    pesticidesStore.setGoodsData(item.pesticides)
+                    this.setState({
+                        id: item.id,
+                        unitName: item.unitName,
+                        preventTime: [item.preventTime],
+                        preventAddress: item.preventAddress,
+                        usageWay: [item.usageWay],
+                        area: item.area + '',
+                        safeDays: item.safeDays + '',
+                        effects: [item.effects],
+                        safeComment: [item.safeComment],
+                        isRecycled: [item.isRecycled],
+                    })
+                }
+                else {
+                    MyToast.info('暂无数据！稍后尝试');
+                }
+                this.setState({ loading: false })
+            })
+        }
+    }
+    componentWillReceiveProps(nextProps) {
+    }
+    stepHome = () => {
+
+    }
+
+
+
+    render() {
+        let goodsData = this.props.goodsData;
+        let crops = this.props.cropsList;
+        return (
+            <ScrollView style={{ backgroundColor: '#F5FCFF' }}>
+                <List>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ unitName: text })}
+                        placeholder="单位名称"
+                        value={this.state.unitName}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>单位名称</Text>
+                    </InputItem>
+
+                    <DatePicker
+                        value={new Date(this.state.preventTime)}
+                        mode="date"
+                        minDate={new Date('1918-01-01')}
+                        maxDate={new Date()}
+                        onChange={text => this.setState({ preventTime: text })}
+                        format="YYYY-MM-DD"
+                    >
+                        <Item arrow="horizontal" ><Text style={{ color: 'gray' }}>防治日期</Text></Item>
+                    </DatePicker>
+                    <Picker
+                        data={this.state.areaData}
+                        cols={1}
+                        onChange={text => {  this.setState({ preventAddress: text }) }}
+                        value={this.state.preventAddress}>
+                        <Item arrow="horizontal"><Text style={{ color: 'gray' }}>防治地点</Text></Item>
+                    </Picker>
+                    <Item arrow="horizontal" wrap extra={<Text style={{ color: 'gray', overflow: 'hidden', textAlign: 'right' }}>{this.state.regionName}</Text>}
+                        cols={1}
+                        onClick={() => {
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.MARCrops,
+                                }
+                            })
+                        }}><Text style={{ color: 'gray' }}>作物选择</Text></Item>
+                    {
+                        crops && crops.length > 0 ? <Accordion defaultActiveKey="0" onChange={this.onChange}>
+                            <Accordion.Panel header={'已选作物'}>
+                                <View>
+                                    {
+                                        crops.map((item, index) => {
+                                            return <View style={styles.bgBorder}>
+                                                <View style={styles.rowsLine}>
+                                                    <View><Text>作物：{item.crop ? item.crop : '--'}</Text></View>
+                                                    <View><Text>作物品种：{item.cropType ? item.cropType : '--'}</Text></View>
+                                                </View>
+                                                <View style={styles.rowsLine}>
+                                                    <View><Text>病虫害：{item.pest ? item.pest : '--'}</Text></View>
+
+                                                </View>
+                                            </View>
+                                        })
+                                    }
+                                </View>
+                            </Accordion.Panel>
+                        </Accordion> : null
+                    }
+                    <Picker
+                        data={this.state.usageWayList}
+                        cols={1}
+                        onChange={text => { this.setState({ usageWay: text }); alert(text) }}
+                        value={this.state.usageWay}>
+                        <Item arrow="horizontal"><Text style={{ color: 'gray' }}>施药方式</Text></Item>
+                    </Picker>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        type='number'
+                        onChangeText={text => this.setState({ area: text })}
+                        placeholder="施药面积（亩）"
+                        value={this.state.area}
+                        labelNumber={9}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>施药面积（亩）</Text>
+                    </InputItem>
+                    <Item arrow="horizontal" wrap extra={<Text style={{ color: 'gray', overflow: 'hidden', textAlign: 'right' }}>{this.state.regionName}</Text>}
+                        cols={1}
+                        onClick={() => {
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.MARGoods,
+                                }
+                            })
+                        }}><Text style={{ color: 'gray' }}>用药组合</Text></Item>
+                    {
+                        goodsData && goodsData.length > 0 ? <Accordion defaultActiveKey="0" onChange={this.onChange}>
+                            <Accordion.Panel header={'已选农药'}>
+                                <View>
+                                    {
+                                        goodsData.map((item, index) => {
+                                            return <View style={styles.bgBorder}>
+                                                <View style={styles.rows}><Text style={{ color: '#7bb046', fontSize: 16 }}>{item.pesticide}</Text></View>
+                                                <View style={styles.rows}><Text>生产企业：{item.manufacturer ? item.manufacturer : '--'}</Text></View>
+                                                <View style={styles.rowsLine}>
+                                                    <View><Text>登记证号：{item.registNumber ? item.registNumber : '--'}</Text></View>
+                                                    <View><Text>用药量：{item.usage}</Text></View>
+                                                </View>
+                                                <View style={styles.rowsLine}>
+                                                    <View><Text>批号/生产日期：{item.madeTime ? item.madeTime : '--'}</Text></View>
+                                                    <View><Text>来源：{item.source ? item.source : '无'}</Text></View>
+                                                </View>
+                                            </View>
+                                        })
+                                    }
+                                </View>
+                            </Accordion.Panel>
+                        </Accordion> : null
+                    }
+
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        type='number'
+                        onChangeText={text => this.setState({ safeDays: text })}
+                        placeholder="安全间隔期（天）"
+                        value={this.state.safeDays}
+                        labelNumber={9}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>安全间隔期（天）</Text>
+                    </InputItem>
+                    <Picker
+                        data={this.state.effectsList}
+                        cols={1}
+                        onChange={text => { this.setState({ effects: text }) }}
+                        value={this.state.effects}>
+                        <Item arrow="horizontal"><Text style={{ color: 'gray' }}>防治效果</Text></Item>
+                    </Picker>
+                    <Picker
+                        data={this.state.commentList}
+                        cols={1}
+                        onChange={text => { this.setState({ safeComment: text }) }}
+                        value={this.state.safeComment}>
+                        <Item arrow="horizontal"><Text style={{ color: 'gray' }}>安全性评价</Text></Item>
+                    </Picker>
+                    <Picker
+                        data={[{ value: 'true', label: '是' }, { value: 'false', label: '否' }]}
+                        cols={1}
+                        onChange={text => { this.setState({ isRecycled: text }) }}
+                        value={this.state.isRecycled}>
+                        <Item arrow="horizontal"><Text style={{ color: 'gray' }}>农药包装废弃物回收情况</Text></Item>
+                    </Picker>
+                </List>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+        cropList: CropStore.getCropList(),
+        pestList: CropStore.getPestList(),
+        cropsList: CropStore.getCropsList(),
+        goodsData: pesticidesStore.getGoodsData()
+    };
+}
+
+module.exports = connect(mapStateToProps)(AddOrEdit);
+const styles = StyleSheet.create({
+    bgBorder: {
+        paddingHorizontal: 13,
+        backgroundColor: '#f8f8f8',
+        shadowOffset: { width: 8, height: 8 },
+        shadowOpacity: 0.4,
+        shadowRadius: 5,
+        shadowColor: '#000',
+        elevation: 3,
+        marginBottom: 5,
+    },
+    rowsLine: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+    }
+});

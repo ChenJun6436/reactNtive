@@ -1,0 +1,178 @@
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    Dimensions,
+    TouchableWithoutFeedback,
+    ProgressBarAndroid,
+    TouchableHighlight,
+    StatusBar,
+    Alert
+    // TouchableOpacity
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar, WingBlank, WhiteSpace, SwipeAction } from 'antd-mobile-rn'
+import ListItem from 'root/src/screens/baseComon/ListItem'
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import * as CropAction from 'root/src/actions/crop'
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+import CropStore from 'root/src/stores/crop';
+const { connect } = require('remx');
+let pageIndex = 1;
+// @loadingDecorator
+@navigatorDecorator
+class ListCrop extends Component {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    {
+                        id: 'add',
+                        text: '新增',
+                        color: '#fff',
+                        fontSize: 16,
+                    }
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed({ buttonId }) {
+        this.pushPage({
+            component: {
+                passProps: { _fresh: this._fresh },
+                ...Global.Screens.AddCrop,
+            }
+        });
+    }
+    componentWillMount() {
+    }
+    _fresh = () => {
+        this.moreListInst._onRefresh();
+    }
+    render() {
+        return (
+            <ScrollView style={styles.container}>
+                <LoadMoreList
+                    ref={ref => this.moreListInst = ref}
+                    getData={CropAction.List}
+                    searchParams={{ cropName: '' }}
+                    rowItem={(data) => {
+                        return <SwipeAction autoClose style={{ backgroundColor: 'transparent', flex: 1 }} right={[
+                            {
+                                text: '编辑',
+                                onPress: () => {
+                                    CropAction.Get(data.id).then((res) => {
+                                        if (res.suc) {
+                                            CropStore.setCropData([res.data.cropName])
+                                            CropStore.setPestData(res.data.pestName)
+                                            this.pushPage({
+                                                component: {
+                                                    ...Global.Screens.AddCrop,
+                                                    passProps: { id: res.data.id, _fresh: this._fresh },
+                                                    options: {
+                                                        topBar: {
+                                                            title: {
+                                                                text: '编辑关注'
+                                                            }
+                                                        },
+                                                        bottomTabs: {
+                                                            visible: false,
+                                                            drawBehind: true
+                                                        }
+                                                    },
+                                                }
+                                            });
+                                        } else {
+                                            MyToast.info('系统异常，请稍后再试');
+                                        }
+                                    })
+                                },
+                                style: { backgroundColor: 'orange', color: 'white' },
+                            }, {
+                                text: '删除',
+                                onPress: () => {
+                                    Alert.alert(
+                                        '提示',
+                                        "确定删除吗？",
+                                        [{
+                                            text: '取消',
+                                            onPress: () => {
+                                                
+                                            }
+                                        },
+                                        {
+                                            text: '确定',
+                                            onPress: () => {
+                                                const postData = {
+                                                    targetCropName: [data.cropName]
+                                                }
+                                                CropAction.Delete({ input: postData }).then((res) => {
+                                                    if (res.suc) {
+                                                        MyToast.success('操作成功');
+                                                        this._fresh()
+                                                    } else {
+                                                        MyToast.info('系统异常，请稍后再试');
+                                                    }
+                                                })
+                                            }
+                                        }
+                                        ]
+                                    );
+
+                                },
+                                style: { backgroundColor: 'red', color: 'white' },
+                            }
+                        ]} >
+                            <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                                onPress={() => {
+                                    CropAction.Get(data.id).then((res) => {
+                                        if (res.suc) {
+                                            this.pushPage({
+                                                component: {
+                                                    passProps: { data: res.data },
+                                                    ...Global.Screens.DetailCrop,
+                                                }
+                                            });
+                                        } else {
+                                            MyToast.info('系统异常，请稍后再试');
+                                        }
+                                    })
+                                }}>
+                                <ListItem firstItem={data.cropName} fourthItem={data.createTimeStr} />
+                            </TouchableHighlight>
+                        </SwipeAction>
+                    }}
+                />
+            </ScrollView >
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+    };
+}
+
+module.exports = connect(mapStateToProps)(ListCrop);
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 180,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    },
+
+});

@@ -1,0 +1,34 @@
+// @flow
+
+import Login from './Login';
+import Register from './Register';
+import SetRegisterCode from './Register/SetRegisterCode';
+import SetRegisterPwd from './Register/SetRegisterPwd';
+import SetNewCode from './ForgetPassword/SetNewCode';
+import SetNewPwd from './ForgetPassword/SetNewPwd';
+import ForgetPassword from './ForgetPassword';
+import Home from './Home';
+import Test from './Test';
+import Mine from './Mine';
+import EditUserInfo from './EditUserInfo';
+import UserRegion from './EditUserInfo/UserRegion';
+import UserType from './EditUserInfo/UserType';
+
+export function registerScreens() {
+  Navigation.registerComponent(Global.Screens.Login.name, () => Login);
+  Navigation.registerComponent(Global.Screens.Register.name, () => Register);
+  Navigation.registerComponent(Global.Screens.SetRegisterCode.name, () => SetRegisterCode);
+  Navigation.registerComponent(Global.Screens.SetRegisterPwd.name, () => SetRegisterPwd);
+
+  Navigation.registerComponent(Global.Screens.ForgetPassword.name, () => ForgetPassword);
+  Navigation.registerComponent(Global.Screens.SetNewCode.name, () => SetNewCode);
+  Navigation.registerComponent(Global.Screens.SetNewPwd.name, () => SetNewPwd);
+
+  Navigation.registerComponent(Global.Screens.Mine.name, () => Mine);
+  Navigation.registerComponent(Global.Screens.EditUserInfo.name, () => EditUserInfo);
+  Navigation.registerComponent(Global.Screens.UserRegion.name, () => UserRegion);
+  Navigation.registerComponent(Global.Screens.UserType.name, () => UserType);
+
+  Navigation.registerComponent(Global.Screens.Home.name, () => Home);
+  Navigation.registerComponent(Global.Screens.Test.name, () => Test);
+}

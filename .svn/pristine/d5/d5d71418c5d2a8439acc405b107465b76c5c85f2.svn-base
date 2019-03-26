@@ -1,0 +1,228 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ScrollView,
+  Dimensions,
+  TouchableWithoutFeedback,
+  ProgressBarAndroid
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar, WingBlank, WhiteSpace } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import BrTag from '../baseComon/BrTag.js'
+import moment from "moment/moment"
+import storage from 'react-native-sync-storage';
+import ImgLeftText2Right from '../baseComon/ImgLeftText2Right.js'
+import HotProduct from '../baseComon/hotProduct'
+import StoreItem from '../baseComon/storeItem'
+import * as StoreAction from 'root/src/actions/store'
+
+const { connect } = require('remx');
+let pageIndex = 1;
+// @loadingDecorator
+@navigatorDecorator
+class Home extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+    this.state = {
+      storeList: '',
+      goodsList: '',
+      AgInfoYangList: [],
+      weatherData: 1,
+      cityName: storage.get('cityName'),
+      longitude: storage.get('longitude'),
+      latitude: storage.get('latitude'),
+      regionId: storage.get('regionId'),
+      storeLoading: false
+    }
+  }
+  componentWillMount() {
+    //获取天气
+    if (this.state.cityName) {
+      this.getWether()
+    }
+    //搜索附近农资店
+    StoreAction.SearchNearByStore({ input: { pageIndex, pageSize: 2, longitude: storage.get('longitude'), latitude: storage.get('latitude') } }).then(({ suc, data }) => {
+      this.setState({
+        storeList: data
+      })
+      // this.setState({ loading: false })
+    })
+    // 搜索热门农资
+    StoreAction.SearchGoods({ input: { pageIndex, pageSize: 2, regionId: storage.get('regionId') } }).then(({ suc, data }) => {
+      this.setState({
+        goodsList: data
+      })
+      // this.setState({ loading: false })
+    })
+
+  }
+  componentDidMount() {
+
+  }
+  //查看农技资讯详情
+  _lookDetailInfo(id) {
+    this.pushPage({
+      component: {
+        ...Global.Screens.AgInfoDetail,
+        passProps: { id }
+      }
+    });
+  }
+  //查看更多农技资讯
+  _moreInfo(type) {
+    if (type == 1) {
+      this.pushPage({
+        component: {
+          ...Global.Screens.BuyProduct
+        }
+      });
+    } else if (type == 2) {
+      this.pushPage({
+        component: {
+          ...Global.Screens.BuyProduct
+        }
+      });
+    }
+  }
+  _lookDetailMic(id) {
+    this.pushPage({
+      component: {
+        ...Global.Screens.AgMicDetail,
+        passProps: { id }
+      }
+    });
+  }
+  //获取当前城市天气
+  getWether() {
+    const vm = this
+    this.getNetData('http://wthrcdn.etouch.cn/weather_mini?city=' + storage.get('cityName'))
+      .then((data) => {
+        if (data.status == 1000) {
+          vm.setState({
+            weatherData: data.data.forecast[0],
+            weatherStatus: false
+          })
+        } else {
+          vm.setState({
+            weatherData: null,
+            weatherStatus: false
+          })
+        }
+      })
+      .catch((data) => {
+        // reject(ErrorDeal.getError(data.code));
+      })
+  }
+  //网络数据
+  //获取网络数据
+  getNetData = (url) => {
+    return new Promise((resolve, reject) => {
+      fetch(url).then((response) => response.json())
+        .then((responseData) => {
+          resolve(responseData);
+        })
+        .catch((error) => {
+          // reject(ErrorDeal.getError(NetWork_Error))
+        })
+        .done()
+    })
+  }
+  render() {
+    let a = 'root/img/product.png'
+    let weather = this.state.weatherData
+    if (weather && weather != 1) {
+      this.highC = weather.high.split(' ')[1]
+      this.lowC = weather.low.split(' ')[1]
+    }
+    let content1 = {
+      img: require('root/img/ZFbanner2.jpg'),
+      name: '农资产品（规格）',
+      storeName: '农资店名',
+      phone: '13540901962',
+      address: '乐山市嘉州大道258号',
+      price: '25~35元'
+    }
+    return (
+      <ScrollView style={styles.container}>
+        <WingBlank size='sm'>
+          <View style={{ flexDirection: 'row' }}>
+            {
+              weather && weather != 1 ? (
+                <View style={{ width: 120, flexDirection: 'row', backgroundColor: '#eee' }}>
+                  <View>
+                    <Text style={{ fontSize: 12, lineHeight: 20 }}>{this.lowC + '~' + this.highC}</Text>
+                    <Text style={{ fontSize: 12, textAlign: 'center' }}>{weather.type}</Text>
+                  </View>
+                  <View style={{ paddingLeft: 5 }}>
+                    <Text numberOfLines={1} style={{ fontSize: 17, lineHeight: 40, textAlign: 'center', width: 60 }}>{this.state.cityName}</Text>
+                  </View>
+                </View>
+              ) : weather ? <ProgressBarAndroid /> : (<View style={{ backgroundColor: '#eee' }}><Text style={{ lineHeight: 40 }}>定位失败</Text></View>)
+            }
+            <View style={{ flex: 1, backgroundColor: '#f6f6f6' }}><SearchBar style={{ backgroundColor: '#f6f6f6' }} /></View>
+          </View>
+        </WingBlank>
+        <View>
+          <Carousel autoplay >
+            <View>
+              <Image
+                source={require('root/img/ZFbanner.jpg')}
+                style={styles.imgStyle}
+              />
+            </View>
+            <View>
+              <Image
+                source={require('root/img/ZFbanner2.jpg')}
+                style={styles.imgStyle}
+              />
+            </View>
+            <View>
+              <Image
+                source={require('root/img/ZFbanner3.jpg')}
+                style={styles.imgStyle}
+              />
+            </View>
+          </Carousel>
+        </View>
+        <View>
+          <BrTag color={'red'} title={'周边农资'} click={() => { this._moreInfo(1) }} url={this.state.storeList === '' ? false : true} />
+          {
+            this.state.storeList && this.state.storeList.length > 0 ? this.state.storeList.map(item => {
+              return <StoreItem content={item} />
+            }) : <Text>暂无数据</Text>
+          }
+        </View>
+        <WhiteSpace size="sm" />
+        <View>
+          <BrTag color={'green'} title={'热销品种'} click={() => { this._moreInfo(2) }} url={this.state.goodsList === '' ? false : true} />
+          <HotProduct content={content1} />
+        </View>
+      </ScrollView>
+    );
+  }
+}
+function mapStateToProps() {
+  return {
+    // menuList: store.getMenuList()
+  };
+}
+
+module.exports = connect(mapStateToProps)(Home);
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  imgStyle: {
+    // 设置宽度
+    width: Dimensions.get('window').width,
+    // 设置高度
+    height: 180,
+    // 设置图片填充模式
+    resizeMode: 'stretch'
+  },
+});

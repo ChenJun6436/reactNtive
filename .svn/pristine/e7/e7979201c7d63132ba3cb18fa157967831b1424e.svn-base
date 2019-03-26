@@ -1,0 +1,44 @@
+import React, { Component } from 'react';
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  View
+} from 'react-native';
+import { Button } from 'antd-mobile-rn';
+
+@navigatorDecorator
+export default class Mine extends Component {
+  render() {
+    return (
+      <View style={styles.container}>
+        <Button onPressOut={()=>{
+          this.pushPage({
+            component: {
+              ...Global.Screens.EditUserInfo
+            }
+          })
+        }}>完善个人信息</Button>
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#F5FCFF',
+    },
+    welcome: {
+      fontSize: 20,
+      textAlign: 'center',
+      margin: 10,
+    },
+    instructions: {
+      textAlign: 'center',
+      color: '#333333',
+      marginBottom: 5,
+    },
+  });

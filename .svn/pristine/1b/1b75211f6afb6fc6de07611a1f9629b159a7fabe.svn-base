@@ -1,0 +1,87 @@
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    Dimensions,
+    ScrollView,
+    Image
+} from 'react-native';
+// import { inject, observer } from 'mobx-react/native';
+import { SearchBar, WhiteSpace, WingBlank, List, Button } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import DetailItem from 'root/src/screens/baseComon/DetailItem.js';
+import * as MARAction from 'root/src/actions/medicationRecord'
+import HotProduct from 'root/src/screens/baseComon/hotProduct'
+import BrTagText from 'root/src/screens/baseComon/BrTagText'
+import ListItem from 'root/src/screens/baseComon/ListItem'
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const Item = List.Item;
+
+@loadingDecorator
+export default class Detail extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            model: {},
+        }
+    }
+    componentWillMount() {
+        MARAction.GetDetail({ id: this.props.id }).then((data) => {
+            if (data.suc && data.data && data.data.length != 0)
+                this.setState({
+                    model: data.data,
+                    list: data.dataExtend
+                })
+            else {
+                MyToast.info('暂无数据！稍后尝试');
+            }
+            this.setState({ loading: false })
+        })
+    }
+
+    render() {
+        let model = this.state.model ? this.state.model : {};
+        return (
+            <ScrollView style={{ position: 'relative', height: SCREEN_HEIGHT }}>
+                <View style={styles.container}>
+                    <DetailItem title="单位名称" gray content={model.unitName ? model.unitName : '--'} />
+                    <DetailItem title="防治日期" content={model.preventTime ? model.preventTime : '--'} />
+                    <DetailItem title="防治地点" gray content={model.preventAddress ? model.preventAddress : '--'} />
+                    <DetailItem title="作物名称" content={model.pest ? model.pest : '--'} />
+                    <DetailItem title="病害名称" gray content={model.crop ? model.crop : '--'} />
+                    <DetailItem title="施药方式" content={model.usageWay ? model.usageWay : '--'} />
+                    <DetailItem title="施药面积（亩）" gray content={model.area ? model.area : '--'} />
+                    <DetailItem title="农药名称" content={model.pesticide ? model.pesticide : '--'} />
+                    <DetailItem title="登记证号" gray content={model.registNumber ? model.registNumber : '--'} />
+                    <DetailItem title="生产企业" content={model.manufacturer ? model.manufacturer : '--'} />
+                    <DetailItem title="批号/生产日期" gray content={model.madeTime ? model.madeTime : '--'} />
+                    <DetailItem title="农药来源" content={model.source ? model.source : '--'} />
+                    <DetailItem title="用药量（亩）" gray content={model.usage ? model.usage : '--'} />
+                    <DetailItem title="安全间隔期（天）" content={model.safeDays ? model.safeDays : '--'} />
+                    <DetailItem title="防治效果" gray content={model.effects ? model.effects : '--'} />
+                    <DetailItem title="安全性评价" content={model.safeComment ? model.safeComment : '--'} />
+                    <DetailItem title="农药包装废弃物回收情况" gray content={model.isRecycled ? model.isRecycled : '--'} />
+                </View>
+            </ScrollView>
+
+        )
+    }
+}
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        marginBottom: 10,
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 180,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    },
+});

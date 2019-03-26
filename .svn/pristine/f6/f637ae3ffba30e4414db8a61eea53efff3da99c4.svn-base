@@ -1,0 +1,162 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace } from 'antd-mobile-rn';
+import * as MineAction from 'root/src/actions/testRecord';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { bold } from 'ansi-colors';
+import moment from 'moment';
+const { connect } = require('remx');
+const Item = List.Item;
+
+@navigatorDecorator
+class TestRecordAdd extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            examinDay: new Date(),
+            typeList:[
+                {
+                    label:'自检',
+                    value:'自检',
+                },
+                {
+                    label:'委托检测',
+                    value:'委托检测',
+                },
+                {
+                    label:'监管抽查',
+                    value:'监管抽查',
+                },
+            ],
+            type:'自检'
+            
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+       
+    }
+    componentWillMount() {
+       
+    }
+    onErrorClick = () => {
+        MyToast.info('请填写正确的信息，且不能为空');
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#f5f5f5' }}>
+                <View>
+                    <List>
+                        <DatePicker
+                            value={this.state.examinDay  }
+                            mode="date"
+                            minDate={new Date('2018-01-01')}
+                            onChange={(text) => {
+                                console.log(text)
+                                this.setState({
+                                    examinDay  : text
+                                })
+                            }}
+                            format="YYYY-MM-DD"
+                        >
+                            <Item arrow="horizontal" >送检日期</Item>
+                        </DatePicker>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    registerNumber : text
+                                }, () => {
+                                    if (!this.state.registerNumber) {
+                                        this.setState({
+                                            registerNumberError: true
+                                        })
+                                    } else {
+                                        this.setState({
+                                            registerNumberError: false
+                                        })
+                                    }
+                                })
+                            }}
+                            error={this.state.registerNumberError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="产品品种"
+                            value={this.state.registerNumber}
+                        >产品品种
+                        </InputItem>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    registerNumber : text
+                                }, () => {
+                                    if (!this.state.registerNumber) {
+                                        this.setState({
+                                            registerNumberError: true
+                                        })
+                                    } else {
+                                        this.setState({
+                                            registerNumberError: false
+                                        })
+                                    }
+                                })
+                            }}
+                            error={this.state.registerNumberError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="产品批次"
+                            value={this.state.registerNumber}
+                        >产品批次
+                        </InputItem>
+                    </List>
+                    <List>
+                        <Picker
+                            registerNumber="作物"
+                            data={this.state.typeList}
+                            cols={1}
+                            value={this.state.type}
+                            onOk={(val) => this.setState({ type: val })}
+                            style={{color:'#000'}}
+                        >
+                            <Item><Text style={{fontSize:17,color:'#000'}}>检测方式</Text></Item>
+                        </Picker>
+                    </List>
+                </View>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+
+    };
+}
+
+module.exports = connect(mapStateToProps)(TestRecordAdd);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

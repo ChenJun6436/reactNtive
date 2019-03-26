@@ -1,0 +1,49 @@
+import { Post } from '../utils/request';
+
+//登陆
+export async function login (data) {
+  return Post(`/Api/Farmer/Login`, {
+    body: JSON.stringify(data)
+  }
+  );
+}
+
+//注册
+export async function register (data) {
+  return Post(`/Api/Farmer/Register`, {
+    body: JSON.stringify(data)
+  }
+  );
+}
+
+//忘记密码
+export async function forgetPwd (data) {
+  return Post(`/Api/Farmer/ForgetPwd`, {
+    body: JSON.stringify(data)
+  }
+  );
+}
+
+//发送短信验证码
+export async function sendVerifiedCode (data) {
+  return Post(`/Api/Farmer/SendPhoneMsg`, {
+    body: JSON.stringify(data)
+  }
+  );
+}
+
+//获取用户信息
+export async function getUserInfo (data) {
+  return Post(`/Api/User/Get`, {
+    body: JSON.stringify(data)
+  }
+  );
+}
+
+//完善用户信息
+export async function editUserInfo (data) {
+  return Post(`/Api/User/Edit`, {
+    body: JSON.stringify(data)
+  }
+  );
+}

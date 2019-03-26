@@ -1,0 +1,158 @@
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    TouchableOpacity,
+    Modal,
+    Dimensions,
+    TouchableHighlight
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button } from 'antd-mobile-rn';
+import * as AccountAction from 'root/src/actions/account';
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const CustomChildren = (props: any) => (
+    <TouchableOpacity onPress={props.onClick}>
+        <View
+            style={{ height: 36, paddingLeft: 15, flexDirection: 'row', alignItems: 'center' }}
+        >
+            <Text style={{ flex: 1 }}>{props.children}</Text>
+            <Text style={{ textAlign: 'right', color: '#888', marginRight: 15 }}>{props.extra}</Text>
+        </View>
+    </TouchableOpacity>
+);
+export default class SearchStore extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            areasData: '',
+        }
+
+    }
+    componentWillMount() {
+        AccountAction.getAreas({ input: null }).then((data) => {
+            this.setState({
+                areasData: data.areaList
+            })
+        })
+    }
+    getStoreByMember = () => {
+        let item = {
+            storeName: this.state.storeName,
+            regionId: this.state.regionId ? this.state.regionId.join('/') : '',
+            legalPersonName: this.state.legalPersonName,
+            contactInformation: this.state.contactInformation,
+        };
+        this.props.getStoreByMember && this.props.getStoreByMember(item)
+    }
+    render() {
+        return (
+            <Modal
+                visible={this.props.visible}
+                animationType={"fade"}
+                hardwareAccelerated={true}
+                transparent={true}
+                onRequestClose={this.props.onRequestClose ? this.props.onRequestClose : this.props.handleCancel}
+            >
+                <View style={styles.confirm}>
+                    <View style={styles.box}>
+                        <List>
+                            <InputItem
+                                textAlign="right"
+                                clear
+                                onChangeText={text => this.setState({ storeName: text })}
+                                placeholder="农资店名称"
+                                value={this.state.storeName}
+                                labelNumber={9}
+                            >农资店名称
+                        </InputItem>
+                            <InputItem
+                                textAlign="right"
+                                clear
+                                onChangeText={text => this.setState({ legalPersonName: text })}
+                                placeholder="法人名称"
+                                value={this.state.legalPersonName}
+                                labelNumber={9}
+                            >法人名称
+                        </InputItem>
+                            <InputItem
+                                textAlign="right"
+                                clear
+                                onChangeText={text => this.setState({ contactInformation: text })}
+                                placeholder="联系方式"
+                                value={this.state.contactInformation}
+                                labelNumber={9}
+                            >联系方式
+                        </InputItem>
+                            <Picker
+                                style={{ height: 40, width: '100%', backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: '#999', }}
+                                title="选择地区"
+                                data={this.state.areasData}
+                                cols={4}
+                                value={this.state.regionId}
+                                format={this.format}
+                                onChange={(v: any) => this.setState({ regionId: v })}
+                                onOk={(v: any) => this.setState({ regionId: v })}
+                            >
+                                <CustomChildren>省/市/区</CustomChildren>
+                            </Picker>
+                        </List>
+                        <View style={styles.foot}>
+                            <TouchableOpacity activeOpacity={0.3} underlayColor={'#eee'}
+                                onPress={this.props.handleCancel}>
+                                <Text style={[styles.btn, { borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: 'black' }]} >{this.props.cancelText ? this.props.cancelText : '取消'}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity activeOpacity={0.3} underlayColor={'#eee'}
+                                onPress={this.getStoreByMember}>
+                                <Text style={styles.btn}>{this.props.okText ? this.props.okText : '确定'}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal >
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    confirm: {
+        position: 'absolute',
+        backgroundColor: 'rgba(141,141,141,0.5)',
+        top: 100,
+        padding: 15,
+        height: SCREEN_HEIGHT,
+        width: SCREEN_WIDTH
+        // width: SCREEN_WIDTH,
+        // backgroundColor: 'white',
+        // borderRadius: 5
+    },
+    box: {
+        width: SCREEN_WIDTH * 0.9,
+        backgroundColor: 'white',
+        borderRadius: 5,
+        padding: 15,
+    },
+    title: {
+        height: 40,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: 'black',
+        alignItems: 'center',
+        justifyContent: 'center',
+        // fontSize: 16
+    },
+    content: {
+        minHeight: 80
+    },
+    foot: {
+        borderTopWidth: StyleSheet.hairlineWidth,
+        borderTopColor: 'black',
+        flexDirection: 'row',
+    },
+    btn: {
+        fontSize: 16,
+        width: SCREEN_WIDTH * 0.5,
+        textAlign: 'center',
+        lineHeight: 40
+    }
+});

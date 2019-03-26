@@ -1,0 +1,131 @@
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    Dimensions,
+    ScrollView,
+} from 'react-native';
+// import { inject, observer } from 'mobx-react/native';
+import { SearchBar, WhiteSpace, WingBlank, List, Button, InputItem } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import * as PortraitAction from 'root/src/actions/farmersPortrait';
+import HotProduct from '../../../baseComon/hotProduct'
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const Item = List.Item;
+
+// @loadingDecorator
+export default class StoreDetail extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            model: null,
+        }
+    }
+    componentWillMount() {
+        // PortraitAction.getMemberOrderDetail({ orderId: this.props.id }).then((data) => {
+        //     if (data.suc && data.data && data.data.length != 0)
+        //         this.setState({ model: data.data })
+        //     else {
+        //         Toast.offline('暂无数据！稍后尝试', 3);
+        //     }
+        //     this.setState({ loading: false })
+        // })
+    }
+    render() {
+        let content1 = {
+            img: require('root/img/ZFbanner2.jpg'),
+            name: '农资产品（规格）',
+            storeName: '农资店名',
+            phone: '13540901962',
+            address: '乐山市嘉州大道258号',
+            price: '25~35元'
+        }
+        return (
+            <ScrollView style={{ backgroundColor: '#f2f2f2', position: 'relative', height: SCREEN_HEIGHT }}>
+                <View style={styles.search}>
+                    <InputItem
+                        style={{ height: 40, width: '95%', backgroundColor: 'transparent', borderWidth: 1, borderColor: '#bbbbbb', paddingLeft: 10 }}
+                        clear
+                        value={this.state.storeName}
+                        onChange={(value: any) => {
+                            this.setState({
+                                storeName: value,
+                            });
+                        }}
+                        labelNumber={2}
+                        placeholder='请输入用户名'
+                        placeholderTextColor='#999999'
+                    >
+                        <Icon
+                            name='search'
+                            color='#999999'
+                            size={25}
+                        />
+                    </InputItem>
+                </View>
+                <View style={styles.container}>
+                    <View style={styles.row}>
+                        <Text style={{ color: '#999', }}>地址：{'item.goodsName'}</Text>
+                    </View>
+                    <View style={[styles.row, { backgroundColor: '#c1c1c1' }]}>
+                        <Text style={{ color: '#999', }}>联系人：{'item.specifications'}</Text>
+                    </View>
+                    <View style={styles.row}>
+                        <Text style={{ color: '#999', }}>联系电话：{'item.specifications'}</Text>
+                    </View>
+
+                    <View style={[styles.row, { backgroundColor: '#c1c1c1' }]}>
+                        <Text style={{ color: '#999', }}>距离：{'item.originalAmount'}</Text>
+                        <Text style={{ color: '#999', }}>查看量：{'item.score'}</Text>
+                    </View>
+                    <View style={styles.line}></View>
+                    <View>
+                        <HotProduct content={content1} />
+                    </View>
+                </View>
+                {/* <View style={{ marginVertical: 35, width: '100%', alignItems: 'center', position: 'absolute', bottom: -10 }}>
+                    <Button
+                        style={{ height: 40, width: '90%', backgroundColor: 'green', borderWidth: 2, borderColor: 'white', borderRadius: 5, }}
+                        onClick={this.login}
+                    >
+                        <Text style={{ fontWeight: 'bold', color: 'white' }}>电话联系</Text>
+                    </Button>
+                </View> */}
+            </ScrollView>
+        )
+    }
+}
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+        marginBottom: 10,
+        // paddingLeft: 12,
+        // paddingRight: 12
+    },
+    line: {
+        borderWidth: 0.3,
+        borderColor: '#aaa',
+        borderStyle: 'solid',
+        marginTop: 5,
+        marginBottom: 5,
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        // height: 36,
+        lineHeight: 28,
+        padding: 10
+    },
+    search: {
+        justifyContent: 'center',
+        flexDirection: 'row',
+        margin: 10,
+        paddingRight: 10
+    }
+});

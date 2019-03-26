@@ -1,0 +1,314 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ScrollView,
+  Dimensions,
+  TouchableWithoutFeedback,
+  ProgressBarAndroid,
+  findNodeHandle,
+  Alert
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar, WingBlank, WhiteSpace, Modal, Badge } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import BrTag from 'root/src/screens/baseComon/BrTag.js'
+import moment from "moment/moment"
+import storage from 'react-native-sync-storage';
+import ImgLeftText2Right from 'root/src/screens/baseComon/ImgLeftText2Right.js'
+import VideoTopText2Bottom from 'root/src/screens/baseComon/VideoTopText2Bottom'
+import * as SolutionAction from 'root/src/actions/solution';
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const BG_IMAGE = require('root/img/userInfo.jpg');
+const { connect } = require('remx');
+const alert = Modal.alert;
+let pageIndex = 1;
+let pageSize = 3;
+
+@navigatorDecorator
+class Main extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+    this.state = {
+      AgInfoList: 'loading',
+      AgInfoZhongList: 'loading',
+      AgInfoYangList: [],
+      weatherData: 1,
+      cityName: storage.get('cityName'),
+      count: 0,
+    }
+  }
+  imageLoaded = () => {
+    this.setState({ viewRef: findNodeHandle(this.backgroundImage) });
+  }
+  componentWillMount() {
+    SolutionAction.SolutionNotReadCount().then((suc) => {
+      if (suc)
+        this.setState({ count: suc.data })
+    })
+  }
+  render() {
+    let data = [
+      {
+        icon: <Image source={require('root/img/person.png')} style={styles.icon} />,
+        text: '个人信息',
+        uri: 'MineEditor'
+      },
+      {
+        icon: <Image source={require('root/img/push.png')} style={styles.icon} />,
+        text: '我的发布',
+        uri: 'MinePublish'
+      },
+      {
+        icon: <Image source={require('root/img/message.png')} style={styles.icon} />,
+        text: '消息中心',
+        uri: 'Build'
+      },
+      {
+        icon: <Image source={require('root/img/set.png')} style={styles.icon} />,
+        text: '设置',
+        uri: 'Build'
+      },
+      {
+        icon: <Image source={require('root/img/Distinguish.png')} style={styles.icon} />,
+        text: '识别',
+        uri: 'Distinguish'
+      },
+      {
+        icon: <Image source={require('root/img/MinePlant.png')} style={styles.icon} />,
+        text: '当前种养品',
+        uri: 'MinePlant',
+        passProps: { isNow: 'true', isLogin: true, isCurrent: true },
+      },
+      {
+        icon: <Image source={require('root/img/MinePlantM.png')} style={styles.icon} />,
+        text: '计划种养品',
+        uri: 'MinePlant',
+        passProps: { isNow: 'false', isLogin: true, isCurrent: false }
+      }, {
+        icon: <Image source={require('root/img/FarmersPortrait.png')} style={styles.icon} />,
+        text: '购药记录',
+        uri: 'FarmersPortrait',
+      },
+      {
+        icon: <Image source={require('root/img/ERPUploadImage.png')} style={styles.icon} />,
+        text: '上传图片',
+        uri: 'ERPUploadImage',
+      },
+      {
+        icon: <Image source={require('root/img/solution.png')} style={styles.icon} />,
+        text: '解决方案',
+        uri: 'Solution',
+      },
+      {
+        icon: <Image source={require('root/img/MedicationRecord.png')} style={styles.icon} />,
+        text: '用药记录',
+        uri: 'MedicationRecord',
+      },
+      {
+        icon: <Image source={require('root/img/guanzhu.png')} style={styles.icon} />,
+        text: '我的关注',
+        uri: 'ListCrop',
+      },
+      {
+        icon: <Image source={require('root/img/tudi.png')} style={styles.icon} />,
+        text: '我的土地',
+        uri: 'ListLand',
+      },
+      {
+        icon: <Image source={require('root/img/logout.png')} style={styles.icon} />,
+        text: '退出登录',
+        uri: 'logout'
+      },
+
+    ]
+
+    return (
+      <ScrollView style={styles.container}>
+        {/* <View style={{}}></View> */}
+        {/* <WingBlank size='sm'> */}
+        <View>
+
+          <Image
+            ref={(img) => { this.backgroundImage = img; }}
+            source={BG_IMAGE}
+            style={styles.bgImage}
+            onLoadEnd={this.imageLoaded}
+          />
+          <View style={styles.head}>
+            <View style={{ marginBottom: -115, flexDirection: 'column', alignItems: 'center' }}>
+              <Text style={styles.headTetx}>{this.props.userInfo.loginName}</Text>
+              {
+                this.props.avatar ? <Image
+                  source={{ uri: ImgUrl + this.props.avatar }}
+                  style={styles.headIcon}
+                /> : <Image
+                    source={require('root/img/head_portrait.png')}
+                    style={styles.headIcon}
+                  />
+              }
+            </View>
+          </View>
+          <View style={{ marginTop: 40 }}></View>
+          <View style={styles.main}>
+            {data.map((i, index) => {
+              if (i.uri == 'logout') {
+                return <TouchableWithoutFeedback
+                  style={styles.boxBox}
+                  key={index}
+                  onPress={() => {               
+                    Alert.alert(
+                      '提示',
+                      "是否确定退出当前登录账号?",
+                      [
+                        {
+                          text: '取消', onPress: () => {
+
+                          }
+                        },
+                        {
+                          text: '确定', onPress: () => {
+                            storage.remove('token');
+                            Global.Navigate.startLoginScreen();
+                          }
+                        },
+                      ]
+                    );
+                  }}>
+                  <View style={styles.boxBox1}>
+                    <View style={styles.imgBox}>{i.icon}</View>
+                    <Text style={styles.imgTetx}>{i.text}</Text>
+                  </View>
+                </TouchableWithoutFeedback>
+              }
+              else if (i.uri == 'Solution') {
+                return (<TouchableWithoutFeedback
+                  style={styles.boxBox}
+                  key={index}
+                  onPress={() => {
+                    this.pushPage({
+                      component: {
+                        passProps: i.passProps ? i.passProps : null,
+                        ...Global.Screens[i.uri],
+                      }
+                    })
+                  }}>
+                  <View style={styles.boxBox1}>
+                    {/* <Badge text={this.state.count} overflowCount={99} size='small' style={styles.badge} /> */}
+                    <View style={styles.imgBox}>{i.icon}</View>
+                    <Text style={styles.imgTetx}>{i.text}</Text>
+
+                  </View>
+
+                </TouchableWithoutFeedback>)
+              }
+              else {
+                return (
+                  <TouchableWithoutFeedback
+                    style={styles.boxBox}
+                    key={index}
+                    onPress={() => {
+                      this.pushPage({
+                        component: {
+                          passProps: i.passProps ? i.passProps : null,
+                          ...Global.Screens[i.uri],
+                        }
+                      })
+                    }}>
+                    <View style={styles.boxBox1}>
+                      <View style={styles.imgBox}>{i.icon}</View>
+                      <Text style={styles.imgTetx}>{i.text}</Text>
+                    </View>
+                  </TouchableWithoutFeedback>
+                )
+              }
+            })}
+          </View>
+        </View>
+      </ScrollView>
+    );
+  }
+}
+function mapStateToProps() {
+  return {
+    userInfo: store.getAccount(),
+    avatar: store.getAvatar(),
+  };
+}
+
+module.exports = connect(mapStateToProps)(Main);
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  head: {
+    justifyContent: 'center',
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 150,
+  },
+  headIcon: {
+    width: 80,
+    height: 80,
+    zIndex: 1000,
+    borderRadius: 40,
+  },
+  headTetx: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold'
+  },
+  main: {
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    // justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    paddingBottom: 10,
+  },
+  boxBox: {
+    width: '25%',
+  },
+  boxBox1: {
+    width: '25%',
+    position: 'relative'
+  },
+  badge: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    // width: 30,
+    // height: 30,
+    // borderRadius: 15,
+    // zIndex: 1001,
+  },
+  imgBox: {
+    justifyContent: 'center',
+    width: '100%',
+    flexDirection: 'row',
+    height: 75,
+  },
+  imgTetx: {
+    textAlign: 'center',
+  },
+  icon: {
+    width: 50,
+    height: 50,
+    marginTop: 15,
+    marginBottom: 15,
+  },
+  bgImage: {
+    position: "absolute",
+    flex: 1,
+    top: 0,
+    left: 0,
+    width: SCREEN_WIDTH,
+    height: 150,
+
+  },
+});

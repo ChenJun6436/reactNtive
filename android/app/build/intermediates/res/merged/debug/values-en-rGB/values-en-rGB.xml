@@ -37,17 +37,7 @@
     <string msgid="5201977337835724196" name="common_open_on_phone">"Open on phone"</string>
     <string msgid="3441753203274453993" name="common_signin_button_text">"Sign In"</string>
     <string msgid="669893613918351210" name="common_signin_button_text_long">"Sign in with Google"</string>
-    <string msgid="2382411136909255532" name="exo_controls_fastforward_description">"Fast-forward"</string>
-    <string msgid="7044845014191647105" name="exo_controls_next_description">"Next track"</string>
-    <string msgid="7924816224515798262" name="exo_controls_pause_description">"Pause"</string>
-    <string msgid="2326300949114396072" name="exo_controls_play_description">"Play"</string>
-    <string msgid="4729846277375475426" name="exo_controls_previous_description">"Previous track"</string>
-    <string msgid="8909385102773547833" name="exo_controls_repeat_all_description">"Repeat all"</string>
-    <string msgid="2273550552389469729" name="exo_controls_repeat_off_description">"Repeat none"</string>
-    <string msgid="475266640141093764" name="exo_controls_repeat_one_description">"Repeat one"</string>
-    <string msgid="5799450167394904608" name="exo_controls_rewind_description">"Rewind"</string>
-    <string msgid="1374364424026734323" name="exo_controls_shuffle_description">"Shuffle"</string>
-    <string msgid="121453720915069922" name="exo_controls_stop_description">"Stop"</string>
+    <string msgid="9521340570209730" name="gcm_fallback_notification_channel_label">"Miscellaneous"</string>
     <string msgid="146198913615257606" name="search_menu_title">"Search"</string>
     <string msgid="2869576371154716097" name="status_bar_notification_info_overflow">"999+"</string>
 </resources>

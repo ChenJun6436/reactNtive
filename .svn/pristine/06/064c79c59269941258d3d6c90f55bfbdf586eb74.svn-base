@@ -1,0 +1,120 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    TouchableOpacity,
+    Dimensions,
+    TouchableHighlight
+} from 'react-native';
+import { List, InputItem, Button, SwipeAction, Checkbox } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import DiagnosisList from 'root/src/screens/baseComon/DiagnosisList';
+import CropStore from 'root/src/stores/crop';
+import * as DiagnosisAction from 'root/src/actions/diagnosis';
+const { connect } = require('remx');
+const CheckboxItem = Checkbox.CheckboxItem;
+@navigatorDecorator
+class ERPDiaList extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            cropList: this.props.cropList ? this.props.cropList : [],
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed({ buttonId }) {
+        if (!this.state.cropList || this.state.cropList.length == 0) {
+            MyToast.info('请选择作物！')
+        }
+        else {
+            CropStore.setCropList(this.state.cropList);
+            this.props.changeCropData && this.props.changeCropData(this.state.cropList, this.props.index)
+            this.pop();
+        }
+
+    }
+
+    refresh = () => {
+        this.moreListInst._onRefresh();
+    }
+    onChange = (e, value) => {
+        let cropList = this.state.cropList;
+        let array = [];
+        if (this.props.isSolo) {
+            if (e.target.checked) {
+                array.push(value)
+                this.setState({
+                    cropList: array
+                })
+            }
+            else {
+                this.setState({
+                    cropList: []
+                })
+            }
+        }
+        else {
+            if (e.target.checked) {
+                cropList.push(value);
+                this.setState({
+                    cropList: cropList
+                })
+            }
+            else {
+                array = cropList.filter(item => {
+                    return item != value
+                })
+                this.setState({
+                    cropList: array
+                })
+            }
+        }
+    }
+    render() {
+        return (
+            <LoadMoreList
+                ref={ref => this.moreListInst = ref}
+                getData={DiagnosisAction.GetPlantByLivingMatter}
+                searchParams={{ classificCode: this.state.classificCode, search: this.state.search }}
+                rowItem={(data) => {
+                    let checked = false;
+                    if (this.state.cropList && this.state.cropList.length) {
+                        this.state.cropList.map(item => {
+                            if (item == data.nameCn) {
+                                checked = true
+                            }
+                        })
+                    }
+                    return <CheckboxItem key={data.crop} checked={checked} onChange={(value) => this.onChange(value, data.nameCn)}>
+                        {data.nameCn}
+                    </CheckboxItem>
+                }}
+            />
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+        cropList: CropStore.getCropList(),
+    };
+}
+module.exports = connect(mapStateToProps)(ERPDiaList);
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+});

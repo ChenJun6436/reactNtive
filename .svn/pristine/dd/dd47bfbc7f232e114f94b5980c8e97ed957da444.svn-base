@@ -1,0 +1,38 @@
+import * as StoreService from '../services/intRecord';
+
+//新增  购买记录
+export async function AddBuy({ input }) {
+    const { data, msg, success, dataExtend } = await StoreService.AddBuy(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data, dataExtend };
+}
+
+//查询--购买记录
+export async function ListBuy({ input }) {
+    const { data, msg, success, dataExtend } = await StoreService.ListBuy(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data, dataExtend };
+}
+//详情--购买记录
+export async function GetBuy( input ) {
+    const { data, msg, success, dataExtend } = await StoreService.GetBuy(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data, dataExtend };
+}
+//编辑--购买记录
+export async function EditBuy({ input }) {
+    const { data, msg, success, dataExtend } = await StoreService.EditBuy(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data, dataExtend };
+}
+//删除--购买记录
+export async function DeleteBuy({ input }) {
+    const { data, msg, success, dataExtend } = await StoreService.DeleteBuy(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data, dataExtend };
+}

@@ -1,0 +1,176 @@
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    Dimensions,
+    TouchableWithoutFeedback,
+    ProgressBarAndroid,
+    TouchableHighlight,
+    StatusBar
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar, WingBlank, WhiteSpace, SwipeAction } from 'antd-mobile-rn'
+import ListItem from 'root/src/screens/baseComon/ListItem'
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import * as DataAction from 'root/src/actions/dataAuthentication';
+import CropStore from 'root/src/stores/crop';
+import EnterpriseSituation from './index.js'
+import pesticidesStore from 'root/src/stores/pesticides';
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const { connect } = require('remx');
+let pageIndex = 1;
+// @loadingDecorator
+
+//企业列表
+@navigatorDecorator
+class EnterpriseList extends Component {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+            enterpriseId:null,
+            enterpriseFlag:0
+        }
+        Navigation.mergeOptions(this.props.componentId, null);
+        Navigation.events().bindComponent(this);
+    }
+
+    navigationButtonPressed({ buttonId }) {
+        if (this.state.enterpriseId){//解绑
+            this.deleteEnterprise(this.state.enterpriseId)
+        }else{
+
+        }
+    }
+
+    componentWillMount() {
+        this.setState({
+            enterpriseId:storage.cache.account.enterpriseId,
+        })
+       
+    }
+    refresh = () => {
+        this.moreBaseList._onRefresh();
+    }
+
+    //解绑
+    deleteEnterprise = (id) => {
+        DataAction.DeleteEnterprise({
+            idList: [id]
+        }).then((data) => {
+            if (data.suc) {
+                let that = this
+                MyToast.info('解绑成功');
+                setTimeout(() => {
+                    storage.cache.account.enterpriseId = null
+                    that.reloadPage(0)
+                }, 2000)
+                
+            } else {
+                MyToast.info(data.msg);
+            }
+        })
+    }
+
+    //重新加载页面
+    reloadPage = (flag) =>{
+        if(!flag){
+            this.setState({enterpriseId:null})
+        }else{
+            this.setState({
+                enterpriseId: null,
+                enterpriseFlag:flag
+            })
+        }
+    }
+    render() {
+        if(!this.state.enterpriseId){
+            Navigation.mergeOptions(this.props.componentId, {
+                topBar: {
+                    rightButtons: [{
+                        
+                        text: null
+                    }]
+                }
+            });
+            // Navigation.events().bindComponent(this);
+            return (
+                <ScrollView style={styles.container}>
+                    <LoadMoreList
+                        ref={ref => this.moreBaseList = ref}
+                        getData={DataAction.GetEnterpriseList}
+                        searchParams={{ name: '' }}
+                        rowItem={(data) => {
+                            return <SwipeAction autoClose style={{ backgroundColor: 'transparent', flex: 1 }} right={[
+                                {
+                                    text: '绑定',
+                                    onPress: () => {
+                                        DataAction.AddEnterprise({ idList: [data.id] }).then(
+                                            (datas) => {
+                                                if(datas.suc){
+                                                    storage.cache.account.enterpriseId = data.id
+                                                    MyToast.success('绑定成功');
+                                                    setTimeout(()=>{
+                                                        this.setState({enterpriseId:data.id})
+                                                    },2000)
+                                                    
+                                                }else{
+                                                    MyToast.info(datas.msg);
+                                                }
+                                            }
+                                        )
+                                    },
+                                    style: { backgroundColor: 'orange', color: 'white' },
+                                }
+                            ]} >
+                                <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                                    onPress={() => {
+                                        this.setState({ enterpriseId:data.id})
+                                    }}>
+                                    <ListItem firstItem={data.name} secondItem={data.legalPerson} thirdItem={data.brand} fourthItem={data.createTime}/>
+                                </TouchableHighlight>
+                            </SwipeAction>
+                        }}
+                    />
+                </ScrollView >
+            );
+        }else{
+            Navigation.mergeOptions(this.props.componentId, {
+                topBar: {
+                    rightButtons: [{
+                        ...confirmRightBtn,
+                        text: '解绑'
+                    }]
+                }
+            });
+            // Navigation.events().bindComponent(this);
+            return (
+                    < EnterpriseSituation enterpriseId={this.state.enterpriseId} />
+            )
+        }
+    }
+}
+function mapStateToProps() {
+    return {
+
+    };
+}
+
+module.exports = connect(mapStateToProps)(EnterpriseList);
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 180,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    },
+
+});

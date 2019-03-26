@@ -1,0 +1,49 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    Image
+} from 'react-native';
+export default class HotProduct extends Component {
+    render() {
+        const content = this.props.content
+        return (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', paddingBottom: 15, paddingTop: 15, alignItems: 'center', backgroundColor: '#fff', paddingRight: 12, paddingLeft: 12 }}>
+                <View style={{ width: '30%', height: 120 }}>
+                    <Image
+                        // source={require('root/img/ZFbanner3.jpg')}
+                        source={content.img}
+                        style={{ width: '100%', height: '100%', borderRadius: 5 }}
+                    />
+                </View>
+                <View style={{ marginLeft: 15, width: '60%' }}>
+                    <Text style={{ lineHeight: 20, fontSize: 18, fontWeight: 'bold' }}>{content.name}</Text>
+                    <Text style={{ lineHeight: 20 }}>热销产品</Text>
+
+                    <Text style={{ lineHeight: 20 }}>{content.storeName}</Text>
+                    <Text style={{ lineHeight: 20 }}>地址：{content.address}</Text>
+                    <Text style={{ lineHeight: 20 }}>电话：{content.phone}</Text>
+                    <Text style={{ lineHeight: 20 }}>参考价：{content.price}</Text>
+                </View>
+            </View>
+        );
+    }
+}
+
+// const styles = StyleSheet.create({
+//     container: {
+//         flex: 1,
+//         paddingHorizontal: 16,
+//         paddingVertical: 6,
+//         borderBottomWidth: StyleSheet.hairlineWidth,
+//         borderColor: '#d9d9d9',
+//     },
+//     row: {
+//         flexDirection: 'row',
+//         justifyContent: 'space-between'
+//     }
+// });

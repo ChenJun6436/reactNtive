@@ -1,0 +1,52 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    Image
+} from 'react-native';
+export default class DiagnosisList extends Component {
+    render() {
+        const content = this.props.content
+        return (     
+            <View style={{ width: '90%', marginTop: 10, borderColor: '#f1f1f1', borderWidth: 0.4, marginLeft: '5%', marginBottom: 10 }}>
+                <View style={{ width: '100%', height: 120, marginBottom: 10 }}>
+                    {
+                        content.imageUrl ? <Image
+                            source={{ uri: content.imageUrl }}
+                            style={styles.imgSty}
+                        /> : <Image
+                                source={require('root/img/nopic.gif')}
+                                style={styles.imgSty}
+                            />
+                    }
+                </View>
+                <View style={{ margin: 10, width: '100%' }}>
+                    <Text style={{ lineHeight: 20, fontSize: 18, fontWeight: 'bold', textAlign: 'center' }}>{content.nameCn ? content.nameCn : content.pest}</Text>
+                </View>
+            </View>
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderColor: '#d9d9d9',
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    },
+    imgSty: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 5
+    }
+});

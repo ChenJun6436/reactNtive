@@ -1,0 +1,130 @@
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    Dimensions,
+    TouchableWithoutFeedback,
+    ProgressBarAndroid,
+    TouchableHighlight,
+    StatusBar
+    // TouchableOpacity
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar, WingBlank, WhiteSpace, SwipeAction, Checkbox } from 'antd-mobile-rn'
+import ListItem from 'root/src/screens/baseComon/ListItem'
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import SearchLinputRbutton from 'root/src/screens/baseComon/SearchLinputRbutton.js';
+import * as MARAction from 'root/src/actions/medicationRecord'
+import pesticidesStore from 'root/src/stores/pesticides';
+const CheckboxItem = Checkbox.CheckboxItem;
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const { connect } = require('remx');
+let pageIndex = 1;
+// @loadingDecorator
+@navigatorDecorator
+class PesticidesList extends Component {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+            goodsList: null,
+            search: '',
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [{
+                    ...confirmRightBtn, text: '确定'
+                }]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed({ buttonId }) {
+        if (!this.state.goodsList || this.state.goodsList.length == 0) {
+            myToast.info('请选择农药！')
+        }
+        else {
+            pesticidesStore.setPesticidesData(this.state.goodsList)
+            this.props.getData && this.props.getData(this.state.goodsList, this.props.index)
+            this.pop()
+        }
+
+    }
+    componentWillMount() {
+    }
+    onChange = (e, value) => {
+
+        let goodsList = this.state.goodsList;
+        let array = [];
+        if (e.target.checked) {
+            array.push(value)
+            this.setState({
+                goodsList: array
+            })
+        }
+        else {
+            this.setState({
+                goodsList: []
+            })
+        }
+    }
+    _search = (val) => {
+        this.setState({
+            search: val
+        },() => {
+            console.log(this.state.search)
+            this.moreStoreListInst._onRefresh({ search: this.state.search });
+        })
+    }
+    render() {
+        return (
+            <View>
+                <SearchLinputRbutton content={''} search={ this._search } />
+                <View style={{ height: SCREEN_HEIGHT - 150 }}>
+                    <LoadMoreList
+                        ref={ref => this.moreStoreListInst = ref}
+                        getData={MARAction.GoodsSearch}
+                        searchParams={{ search: this.state.search }}
+                        rowItem={(data) => {
+                            let checked = false;
+                            if (this.state.goodsList && this.state.goodsList.length > 0) {
+                                this.state.goodsList.map(item => {
+                                    if (item.registerID == data.registerID) {
+                                        checked = true
+                                    }
+                                })
+                            }
+                            return <CheckboxItem key={data.crop} checked={checked} onChange={(value) => this.onChange(value, data)}>
+                                <ListItem firstItem={data.registerName} secondItem={data.registerID} thirdItem={data.productSType} fourthItem={data.manufacturerName} />
+                            </CheckboxItem>
+                        }}
+                    />
+                </View>
+            </View>
+
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+    };
+}
+
+module.exports = connect(mapStateToProps)(PesticidesList);
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 180,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    },
+
+});

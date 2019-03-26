@@ -1,0 +1,30 @@
+import { Post } from '../utils/request';
+
+//新增 购买记录
+export async function AddBuy(data) {
+    return Post(`/Api/InvestmentPurchase/Add`, {
+        body: JSON.stringify(data)
+    });
+}
+//查询 购买记录
+export async function ListBuy(data) {
+    return Post(`/Api/InvestmentPurchase/GetPageList`, {
+        body: JSON.stringify(data)
+    });
+}
+//详情--购买记录
+export async function GetBuy(data) {
+    return Post(`/Api/InvestmentPurchase/GetDetail?id=`+ data);
+}
+//编辑--购买记录
+export async function EditBuy(data) {
+    return Post(`/Api/InvestmentPurchase/Update`, {
+        body: JSON.stringify(data)
+    });
+}
+//删除--购买记录
+export async function DeleteBuy(data) {
+    return Post(`/Api/InvestmentPurchase/Delete`, {
+        body: JSON.stringify(data)
+    });
+}

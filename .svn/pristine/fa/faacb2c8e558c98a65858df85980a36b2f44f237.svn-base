@@ -1,0 +1,337 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace } from 'antd-mobile-rn';
+import * as MineAction from 'root/src/actions/testRecord';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { bold } from 'ansi-colors';
+import moment from 'moment';
+const { connect } = require('remx');
+const Item = List.Item;
+let initData = {
+    plantName: '',
+    area: '',
+    period: '',
+    year: new Date(),
+    outPut: '',
+    iscurrent: true,
+    unit: "亩"
+}
+let initError = {
+    plantName: false,
+    area: false,
+    period: false,
+}
+let model = null
+@navigatorDecorator
+class TestRecordAdd extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            intState: [],
+            cropState: [],
+            IntList: [],
+            CropList: [],
+            registerNumber : '',
+            registerNumberError: false,
+            registerName : '',
+            registerNameError: false,
+            investmentName : '',
+            spec : '', 
+            specUnit : '',
+            packUnit : '',
+            quantity : '',
+            manufacturer : '',
+            saleUnity : '',
+            remark : '',
+
+            plantList: [initData],
+            plantError: [initError],
+            
+            remark: '',
+            expirationDay : new Date(),
+            endTime: new Date(),
+            remarkError: false,
+            
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+        let nowName = ''
+        let nowError = this.state.plantError
+        
+        if (nowName) {
+            MyToast.info('请完整填写发布信息');
+            this.setState({
+                plantError: nowError
+            })
+        } else {
+            let expirationDay  = moment(this.state.expirationDay ).format('YYYY-MM-DD');
+            let postData = {
+                investmentType : this.state.intState[0],
+                registerNumber : this.state.registerNumber,
+                registerName : this.state.investmentName,
+                spec: 0,
+                saleUnity: 'sssss',
+                specUnit: 'hhhhhh',
+                expirationDay : expirationDay,
+                investmentName : this.state.investmentName,
+                packUnit : this.state.packUnit,
+                quantity : this.state.quantity,
+                manufacturer :this.state.manufacturer,
+                saleUnity  :this.state.saleUnity,
+                remark  :this.state.remark,
+            }
+            if(this.props.id) {
+                postData.id = this.props.id
+                console.log(postData)
+                MineAction.EditUse({ input: postData }).then((data) => {
+                    if (data.suc == 1) {
+                        MyToast.success('发布成功');
+                        initData = {
+                            investmentType : '',
+                            registerNumber : '',
+                            registerName : '',
+                            expirationDay : new Date(),
+                            investmentName : '',
+                            packUnit : true,
+                            quantity : "亩",
+                            manufacturer :'',    
+                            saleUnity  :'',
+                            remark  :'',
+                        }
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.IntUseRecord,
+                                }
+                            });
+                        }, 2000)
+                    } else {
+                        MyToast.info('发布失败，请稍后再试');
+                    }
+                })
+            }else{
+                MineAction.AddUse({ input: postData }).then((data) => {
+                    if (data.suc == 1) {
+                        MyToast.success('发布成功');
+                        initData = {
+                            investmentType : '',
+                            registerNumber : '',
+                            registerName : '',
+                            expirationDay : new Date(),
+                            investmentName : '',
+                            packUnit : true,
+                            quantity : "亩",
+                            manufacturer :'',
+                            saleUnity  :'',
+                            remark  :'',
+                        }
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.IntUseRecord,
+                                }
+                            });
+                        }, 2000)
+                    } else {
+                        MyToast.info('发布失败，请稍后再试');
+                    }
+                })
+            }
+        }
+    }
+    componentWillMount() {
+        //获取所有作物
+        MineAction.GetAllCrop().then((data) => {
+            if (data.suc) {
+                console.log(data)
+                let model =  data.data
+                let arrInt = []
+                model.forEach((i,index) => {
+                    arrInt[index] = {}
+                    arrInt[index].label = i.cropName
+                    arrInt[index].value = i.id
+                });
+                this.setState({
+                    intState: arrInt,
+                })
+            } else {
+                MyToast.info('数据获取失败，稍后尝试');
+            }
+        })
+        //获取所有投入品
+        MineAction.GetAllInt().then((data) => {
+            console.log(data)
+            if (data.suc) {
+                let model =  data.data
+                this.setState({
+                    intState: [model.investmentType+''],
+                    registerNumber : model.registerNumber,
+                    registerName : model.registerNumber,
+                    investmentName : model.investmentName,
+                    spec : model.spec, 
+                    specUnit : model.specUnit,
+                    packUnit : model.packUnit,
+                    quantity : model.quantity +'',
+                    manufacturer : model.manufacturer,
+                    saleUnity : model.saleUnity,
+                    remark : model.remark,
+                })
+            } else {
+                MyToast.info('数据获取失败，稍后尝试');
+            }
+        })
+        //判断是否是编辑
+        if(this.props.id){
+            MineAction.GetUse(this.props.id).then((data) => {
+                if (data.suc) {
+                    let model =  data.data
+                    this.setState({
+                        intState: [model.investmentType+''],
+                        registerNumber : model.registerNumber,
+                        registerName : model.registerNumber,
+                        investmentName : model.investmentName,
+                        spec : model.spec, 
+                        specUnit : model.specUnit,
+                        packUnit : model.packUnit,
+                        quantity : model.quantity +'',
+                        manufacturer : model.manufacturer,
+                        saleUnity : model.saleUnity,
+                        remark : model.remark,
+                    })
+                } else {
+                    MyToast.info('数据获取失败，稍后尝试');
+                }
+            })
+        }
+    }
+    changeData(text,  name) {
+        let nowList = this.state.plantList
+        let nowError = this.state.plantError
+        let textNew = text
+        if(text[0] == '-' && text.length > 1){
+            textNew = ''
+        }
+    }
+    onErrorClick = () => {
+        MyToast.info('请填写正确的信息，且不能为空');
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#f5f5f5' }}>
+                <View>
+                    <List>
+                        <Picker
+                            registerNumber="投入品"
+                            data={this.state.IntList}
+                            cols={1}
+                            value={this.state.intState}
+                            onOk={(val) => this.setState({ intState: val })}
+                            style={{color:'#000'}}
+                        >
+                            <Item><Text style={{fontSize:17,color:'#000'}}>投入品</Text></Item>
+                        </Picker>
+                    </List>
+                    <List>
+                        <Picker
+                            registerNumber="作物"
+                            data={this.state.CropList}
+                            cols={1}
+                            value={this.state.cropState}
+                            onOk={(val) => this.setState({ cropState: val })}
+                            style={{color:'#000'}}
+                        >
+                            <Item><Text style={{fontSize:17,color:'#000'}}>作物</Text></Item>
+                        </Picker>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    quantity  : text
+                                }, () => {
+                                    if (!this.state.registerNumber) {
+                                        this.setState({
+                                            registerNumberError: true
+                                        })
+                                    } else {
+                                        this.setState({
+                                            registerNumberError: false
+                                        })
+                                    }
+                                })
+                            }}
+                            error={this.state.registerNumberError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="数量"
+                            type='number'
+                            value={this.state.quantity }
+                        >数量
+                        </InputItem>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    remark: text
+                                }, () => {
+                                    if (!this.state.remark) {
+                                        this.setState({
+                                            remarkError: true
+                                        })
+                                    } else {
+                                        this.setState({
+                                            remarkError: false
+                                        })
+                                    }
+                                })
+                            }}
+                            error={this.state.remarkError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="输入备注"
+                            value={this.state.remark}
+                        >备注
+                        </InputItem>
+                    </List>
+                </View>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+
+    };
+}
+
+module.exports = connect(mapStateToProps)(TestRecordAdd);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

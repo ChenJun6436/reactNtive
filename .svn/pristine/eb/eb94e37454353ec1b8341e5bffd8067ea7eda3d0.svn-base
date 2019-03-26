@@ -1,0 +1,155 @@
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    Dimensions,
+    TouchableWithoutFeedback,
+    ProgressBarAndroid,
+    TouchableHighlight,
+    StatusBar
+    // TouchableOpacity
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar, WingBlank, WhiteSpace, SwipeAction } from 'antd-mobile-rn'
+import ListItem from 'root/src/screens/baseComon/ListItem'
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import * as MARAction from 'root/src/actions/medicationRecord'
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const { connect } = require('remx');
+let pageIndex = 1;
+// @loadingDecorator
+@navigatorDecorator
+class MedicationRecord extends Component {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [{
+                    confirmRightBtn, text: '新增'
+                }]
+            }
+        });
+        Navigation.events().bindComponent(this);
+
+    }
+    navigationButtonPressed({ buttonId }) {
+        this.pushPage({
+            component: {
+                ...Global.Screens.AddMAR,
+                options: {
+                    topBar: {
+                        title: {
+                            text: '新增用药记录'
+                        }
+                    },
+                    bottomTabs: {
+                        visible: false,
+                        drawBehind: true
+                    }
+                },
+            }
+        });
+    }
+    componentWillMount() {
+    }
+
+    render() {
+        return (
+            <ScrollView style={styles.container}>
+                <LoadMoreList
+                    ref={ref => this.moreStoreListInst = ref}
+                    getData={MARAction.GetPageList}
+                    searchParams={{ sort: this.state.type }}
+                    rowItem={(data) => {
+                        return <SwipeAction autoClose style={{ backgroundColor: 'transparent', flex: 1 }} right={[
+                            {
+                                text: '编辑',
+                                onPress: () => {
+                                    this.pushPage({
+                                        component: {
+                                            passProps: { id: data.id, isEdit: true },
+                                            ...Global.Screens.AddMAR,
+                                            options: {
+                                                topBar: {
+                                                    title: {
+                                                        text: '编辑用药记录'
+                                                    }
+                                                },
+                                                bottomTabs: {
+                                                    visible: false,
+                                                    drawBehind: true
+                                                }
+                                            },
+                                        }
+                                    });
+                                },
+                                style: { backgroundColor: 'orange', color: 'white' },
+                            }, {
+                                text: '删除',
+                                onPress: () => {
+                                    MARAction.Delete({ ids: [data.id] }).then(
+                                        () => {
+                                            this.refresh();
+                                            Toast.success('删除成功');
+                                        }
+                                    )
+                                },
+                                style: { backgroundColor: 'red', color: 'white' },
+                            }
+                        ]} >
+                            <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                                onPress={() => {
+                                    this.pushPage({
+                                        component: {
+                                            passProps: { id: data.id },
+                                            ...Global.Screens.DetailMAR,
+                                            options: {
+                                                topBar: {
+                                                    title: {
+                                                        text: '用药记录详情'
+                                                    }
+                                                },
+                                                bottomTabs: {
+                                                    visible: false,
+                                                    drawBehind: true
+                                                }
+                                            },
+                                        }
+                                    });
+                                }}>
+                                <ListItem firstItem={data.crop} secondItem={data.pest} thirdItem={data.preventAddress} fourthItem={data.createTime} />
+                            </TouchableHighlight>
+                        </SwipeAction>
+                    }}
+                />
+            </ScrollView >
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+    };
+}
+
+module.exports = connect(mapStateToProps)(MedicationRecord);
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 180,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    },
+
+});

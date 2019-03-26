@@ -1,0 +1,254 @@
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    Dimensions,
+    ScrollView,
+    TouchableOpacity,
+    TouchableHighlight,
+    Image
+} from 'react-native';
+// import { inject, observer } from 'mobx-react/native';
+import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
+import { SearchBar, WhiteSpace, WingBlank, List, Button, SwipeAction } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import * as PortraitAction from 'root/src/actions/farmersPortrait';
+import HotProduct from 'root/src/screens/baseComon/hotProduct'
+import * as StoreAction from 'root/src/actions/store'
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList';
+import DetailItem from 'root/src/screens/baseComon/DetailItem.js';
+import BrTagText from 'root/src/screens/baseComon/BrTagText'
+import UserMessage from 'root/src/screens/baseComon/UserMessage.js'
+import CommentWrite from 'root/src/screens/baseComon/CommentWrite.js'
+import SearchLinputRbutton from 'root/src/screens/baseComon/SearchLinputRbutton.js'
+import * as AgInfoAction from 'root/src/actions/agInfo'
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const Item = List.Item;
+
+@loadingDecorator @navigatorDecorator
+export default class StoreDetail extends Component {
+    constructor(props) {
+        super(props);
+        this.pageIndex = 1;
+        this.pageSize = 20;
+        this.state = {
+
+        }
+    }
+    componentWillMount() {
+        this.setState({
+            index: 0,
+            routes: [
+                { key: 'first', title: '基本信息' },
+                { key: 'second', title: '农资产品' },
+                { key: 'third', title: '评论' },
+            ],
+            haveMore: true,
+            content: '',
+            userMesList: [],
+        })
+        StoreAction.ViewStore({ input: { storeid: this.props.id, longitude: storage.get('longitude'), latitude: storage.get('latitude') } }).then((data) => {
+            if (data.suc && data.data && data.data.length != 0) {
+                this.setState({ model: data.data })
+                this.loadMore(data.data.id, false)
+            } else {
+                MyToast.info('暂无数据！稍后尝试');
+            }
+            this.setState({ loading: false })
+        })
+        StoreAction.SearchGoods({ input: { pageIndex: 1, pageSize: 1000, storeid: this.props.id, regionId: storage.get('regionId') } }).then(({ suc, data }) => {
+            if (data && data.length > 0){
+                this.setState({
+                    goodsList: data
+                })
+            }
+        })
+    }
+    loadMore = (id, refresh, click) => {
+        if (!refresh) {
+            AgInfoAction.getAgComment({ input: { pageIndex: this.pageIndex, pageSize: this.pageSize, contentId: id } }).then((res) => {
+                let toHeight = 0
+                if (res.data.length < this.pageSize) {
+                    this.setState({
+                        haveMore: false
+                    })
+                } else {
+                    this.setState({
+                        haveMore: true
+                    })
+                }
+                toHeight = 95 * (this.pageSize) * (this.pageIndex - 1)
+                let oldUserMesList = this.state.userMesList
+                let newUserMesList = oldUserMesList.concat(res.data)
+                this.pageIndex += 1
+                this.setState({
+                    userMesList: newUserMesList,
+                }, () => {
+                    if (click) {
+                        setTimeout(() => {
+                            this.thirdScroll.scrollTo({ x: 0, y: toHeight, animated: false })
+                        }, 300)
+                    }
+                })
+
+            })
+        } else {
+            AgInfoAction.getAgComment({ input: { pageIndex: 1, pageSize: this.pageSize, contentId: id } }).then((res) => {
+                this.setState({
+                    userMesList: res.data,
+                })
+                if (res.data.length < this.pageSize) {
+                    this.setState({
+                        haveMore: false
+                    })
+                } else {
+                    this.setState({
+                        haveMore: true
+                    })
+                }
+            })
+        }
+    }
+    //搜索农资产品
+    _search =(content)=>{
+        StoreAction.SearchGoods({ input: { pageIndex: 1, pageSize: 1000, key: content,storeid: this.props.id, regionId: storage.get('regionId') } }).then(({ suc, data }) => {
+            if (data){
+                this.setState({
+                    goodsList: data
+                })
+            }
+        })
+        this.setState({
+            content
+        })
+    }
+    render() {
+        let model = this.state.model
+        let FirstRoute = () => {
+            if (model) {
+                return (
+                    <ScrollView >
+                        <View style={styles.search}>
+                            {
+                                model.imageUrl ? <Image
+                                    source={{ uri: model.imageUrl }}
+                                    style={styles.imgStyle}
+                                /> : <Image
+                                        source={require('root/img/nopic.gif')}
+                                        style={styles.imgStyle}
+                                    />
+                            }
+                        </View>
+                        <BrTagText color='red' title='基本信息' />
+                        <DetailItem title="农资店名" content={model.name} />
+                        <DetailItem title="地址" content={model.address} />
+                        <DetailItem title="联系人" content={model.legalPersonName} />
+                        <DetailItem title="联系方式" content={model.contactInformation} />
+                        <DetailItem title="距离" content={model.distance ? (model.distance.toFixed(2) + 'km') : '0km'} />
+                        <DetailItem title="查看量" content={model.viewAmount} />
+                    </ScrollView >
+                )
+            } else {
+                return null
+            }
+        }
+        let SecondRoute = () => (
+            <View>
+                <SearchLinputRbutton ref={ref => this.searchItem = ref } content={this.state.content} search={this._search}/>
+                <ScrollView style={{height:SCREEN_HEIGHT-150}}>
+                    {
+                        this.state.goodsList && this.state.goodsList.length > 0 && this.state.goodsList != 'loading' ? this.state.goodsList.map((item, index) => {
+                            return <TouchableOpacity activeOpacity={0.3} underlayColor={'#eee'} key={item.id}
+                                onPress={() => {
+                                    this.pushPage({
+                                        component: {
+                                            passProps: { id: item.id, registerNumber: item.registerNumber },
+                                            ...Global.Screens.ProductDetail,
+                                            options: {
+                                                topBar: {
+                                                    title: {
+                                                        text: item.goodsName
+                                                    }
+                                                },
+                                                bottomTabs: {
+                                                    visible: false,
+                                                    drawBehind: true
+                                                }
+                                            },
+                                        }
+                                    });
+                                }}>
+                                <HotProduct content={item} />
+                            </TouchableOpacity>
+                        }) : <Image source={require('root/img/nodata.jpg')} style={{ justifyContent: 'center', width: SCREEN_WIDTH, height: 120, marginTop: 8 }} />
+                    }
+                </ScrollView>
+            </View>
+        )
+        this.user = {
+            isCollected: true,
+        }
+        let ThirdRoute = () => (
+            <View style={{ flex: 1 }}>
+                <ScrollView ref={(node) => { this.thirdScroll = node }}>
+                    {this.state.userMesList && this.state.userMesList.length > 0 ? (
+                        this.state.userMesList.map((item, index) => {
+                            return <UserMessage key={item.id} content={item} />
+                        })
+                    ) : (
+                            null
+                        )}
+                    {this.state.haveMore ? (
+                        <TouchableOpacity onPress={() => { this.loadMore(model.id, false, true) }}>
+                            <View style={{ paddingBottom: 60 }}><Text style={{ textAlign: 'center' }}>点击加载更多</Text></View>
+                        </TouchableOpacity>
+                    ) : (
+                            <View style={{ paddingBottom: 60 }}><Text style={{ textAlign: 'center' }}>没有更多数据了</Text></View>
+                        )}
+                </ScrollView>
+                <CommentWrite user={this.user} nowType={0} fresh={this.loadMore} id={model.id} type={0} />
+            </View>
+        )
+        return (
+            <TabView
+                navigationState={{ ...this.state }}
+                renderScene={SceneMap({
+                    first: FirstRoute,
+                    second: SecondRoute,
+                    third: ThirdRoute
+                })}
+                renderTabBar={props =>
+                    <TabBar
+                        {...props}
+                        style={{ backgroundColor: '#fff' }}
+                        labelStyle={{ color: '#999' }}
+                        indicatorStyle={{ backgroundColor: '#7bb046' }}
+                    />
+                }
+                onIndexChange={index => this.setState({ index })}
+                initialLayout={{ width: Dimensions.get('window').width, height: SCREEN_HEIGHT }}
+            />
+        )
+    }
+}
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    search: {
+        justifyContent: 'center',
+        flexDirection: 'row',
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 200,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    },
+});

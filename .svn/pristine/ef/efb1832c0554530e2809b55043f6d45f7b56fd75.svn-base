@@ -1,0 +1,179 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    TouchableOpacity,
+    Dimensions,
+    TouchableHighlight,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { List, InputItem, Button, SwipeAction, WhiteSpace, Picker, DatePicker } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import * as MineAction from 'root/src/actions/mine';
+import moment from 'moment';
+const Item = List.Item;
+const { connect } = require('remx');
+@navigatorDecorator
+class MinePublish extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            publishState: [''],
+            typeList: [{ label: '全部', value: '' }, { label: '已发布', value: '1' }, { label: '未发布', value: '2' }],
+            startTime: moment(new Date()).format('YYYY-MM-DD'),
+            endTime: moment(new Date()).format('YYYY-MM-DD')
+
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    addRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    componentWillMount() {
+
+    }
+    navigationButtonPressed() {
+        this.pushPage({
+            component: {
+                passProps: { isNow: 'true', refresh: this.refresh },
+                ...Global.Screens.PublishAdd,
+            }
+        });
+    }
+    refresh = (searchParams) => {
+        this.moreListInst._onRefresh(searchParams);
+    }
+    render() {
+        return (
+            <View style={styles.container}>
+                <View>
+                    <View>
+                        <DatePicker
+                            value={this.state.startTime ? new Date(this.state.startTime) : null}
+                            mode="date"
+                            minDate={new Date('2000-01-01')}
+                            onChange={text => this.setState({ startTime: text }, () => { this.refresh({ state: this.state.publishState[0], startTime: this.state.startTime, endTime: this.state.endTime }); })}
+                            format="YYYY-MM-DD"
+                        >
+                            <Item arrow="horizontal" ><Text style={{ color: 'gray' }}>开始时间</Text></Item>
+                        </DatePicker>
+                    </View>
+                    <View>
+                        <DatePicker
+                            value={this.state.endTime ? new Date(this.state.endTime) : null}
+                            mode="date"
+                            minDate={new Date(this.state.startTime)}
+                            onChange={text => this.setState({ endTime: text }, () => { this.refresh({ state: this.state.publishState[0], startTime: this.state.startTime, endTime: this.state.endTime }); })}
+                            format="YYYY-MM-DD"
+                        >
+                            <Item arrow="horizontal" ><Text style={{ color: 'gray' }}>结束时间</Text></Item>
+                        </DatePicker>
+                    </View>
+                    <View>
+                        <Picker
+                            title="选择状态"
+                            data={this.state.typeList}
+                            cols={1}
+                            value={this.state.publishState}
+                            onChange={(val) => this.setState({ publishState: val })}
+                            onOk={(val) => this.setState({ publishState: val }, () => { this.refresh({ state: this.state.publishState[0], startTime: this.state.startTime, endTime: this.state.endTime }); })}
+                        >
+                            <Item><Text>状态</Text></Item>
+                        </Picker>
+                    </View>
+                </View>
+                <LoadMoreList
+                    ref={ref => this.moreListInst = ref}
+                    getData={MineAction.GetPublish}
+                    searchParams={{ state: this.state.publishState[0], startTime: this.state.startTime, endTime: this.state.endTime }}
+                    rowItem={(item) => {
+                        return <SwipeAction autoClose style={{ backgroundColor: 'transparent', flex: 1 }} right={[
+                            {
+                                text: '删除',
+                                onPress: () => {
+                                    MineAction.DeletePublish(item.id).then((data) => {
+                                        if (data.suc) {
+                                            this.refresh()
+                                        } else {
+                                            MyToast.info('操作失败，请稍后再试');
+                                        }
+                                    })
+                                },
+                                style: { backgroundColor: 'red', color: 'white' },
+                            }
+                        ]} >
+                            <TouchableWithoutFeedback activeOpacity={0.3} underlayColor={'#eee'}
+                                onPress={() => {
+                                    this.pushPage({
+                                        component: {
+                                            passProps: { id: item.id },
+                                            ...Global.Screens.PublishDetail,
+                                        }
+                                    });
+                                }}>
+                                <View style={{ borderBottomColor: '#e3e3e3', borderBottomWidth: 1, paddingLeft: 12, paddingRight: 12, paddingTop: 10 }}>
+                                    <Text numberOfLines={2} style={{ fontSize: 17, height: 30, lineHeight: 30 }}>{item.title}</Text>
+                                    <WhiteSpace />
+                                    <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
+                                        <Text style={{ textAlign: 'right', lineHeight: 30, marginRight: 10 }}>{item.createTime}</Text>
+                                        {
+                                            item.state == 1 ? (
+                                                <Button onClick={() => {
+                                                    MineAction.SetPublish({ input: { id: item.id, state: 2 } }).then((data) => {
+                                                        if (data.suc) {
+                                                            this.refresh()
+                                                            MyToast.success('已取消发布');
+                                                        } else {
+                                                            MyToast.info('操作失败，请稍后再试');
+                                                        }
+                                                    })
+                                                }} style={{ height: 30, width: 80, borderColor: '#ff8125' }} size="small"><Text style={{ color: '#ff8125' }}>取消发布</Text></Button>
+                                            ) : (
+                                                    <Button onClick={() => {
+                                                        MineAction.SetPublish({ input: { id: item.id, state: 1 } }).then((data) => {
+                                                            if (data.suc) {
+                                                                this.refresh()
+                                                                MyToast.success('发布成功');
+                                                            } else {
+                                                                MyToast.info('发布失败，请稍后再试');
+                                                            }
+                                                        })
+                                                    }} style={{ height: 30, width: 80, borderColor: '#49a9ee' }} size="small" ><Text style={{ color: '#49a9ee' }}><Icon name='send' size={14} style={{ marginRight: 5 }} />   发布</Text></Button>
+                                                )
+                                        }
+                                    </View>
+                                    <WhiteSpace />
+                                </View>
+                            </TouchableWithoutFeedback>
+                        </SwipeAction>
+                    }}
+                />
+            </View>
+        );
+    }
+}
+function mapStateToProps() {
+    // return {
+    // };
+}
+module.exports = connect(mapStateToProps)(MinePublish);
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        // paddingTop: 60
+    },
+    topSearch: {
+        flexDirection: 'row',
+    },
+});

@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
   ProgressBarAndroid,
   TouchableHighlight,
+  TouchableOpacity,
   StatusBar
   // TouchableOpacity
 } from 'react-native';
@@ -20,10 +21,13 @@ import storage from 'react-native-sync-storage';
 import ImgLeftText2Right from 'root/src/screens/baseComon/ImgLeftText2Right.js'
 import HotProduct from 'root/src/screens/baseComon/hotProduct'
 import StoreItem from 'root/src/screens/baseComon/storeItem'
+import SolutionList from 'root/src/screens/baseComon/SolutionList';
 import * as StoreAction from 'root/src/actions/store'
+import * as SolutionAction from 'root/src/actions/solution';
 import AppStore from 'root/src/stores/app';
 import RNUpdate from "react-native-update-app"
 import areasData from 'root/src/assets/data.json'
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const { connect } = require('remx');
@@ -36,28 +40,34 @@ class Home extends Component {
     this.state = {
       storeList: 'loading',
       goodsList: 'loading',
+      solutionList: 'loading',
       AgInfoYangList: [],
       weatherData: 1,
       cityName: storage.get('cityName'),
-      longitude: storage.get('longitude'),
-      latitude: storage.get('latitude'),
       regionId: storage.get('regionId'),
-      storeLoading: false
-    }
+      storeLoading: false,
+      fresh: false,
+    };
+    Navigation.events().registerComponentDidAppearListener(async ({ componentId, componentName }) => {
+      if (componentId == this.props.componentId) {
+        //如果当前是使用的本机定位模式
+        if (this.props.byLocation) {
+          await startLocation(() => {
+            this.getWether(storage.get('cityName'))
+            
+          })
+        } else {
+          this.getWether(this.props.cityName);
+          getCityLocation(this.props.cityName, this.query);
+        }
+      }
+    });
   }
   componentWillMount() {
+    this.query()
   }
   componentDidMount() {
-    //如果当前是使用的本机定位模式
-    if (this.props.byLocation) {
-      startLocation(() => {
-        this.getWether(storage.get('cityName'))
-        this.query()
-      })
-    } else {
-      this.getWether(this.props.cityName);
-      getCityLocation(this.props.cityName, this.query);
-    }
+
   }
   componentWillReceiveProps(nextProps) {
     if (nextProps.byLocation == false && nextProps.cityName && this.props.cityName != nextProps.cityName) {
@@ -67,7 +77,7 @@ class Home extends Component {
   }
   query = () => {
     //获取周边农资店
-    StoreAction.SearchNearByStore({ input: { pageIndex, pageSize: 2, longitude: storage.get('longitude'), latitude: storage.get('latitude') } }).then(({ suc, data }) => {
+    StoreAction.SearchNearByStore({ input: { pageIndex, pageSize: 2, longitude: storage.get('longitude'), latitude: storage.get('latitude'), regionId: storage.get('regionId') } }).then(({ suc, data }) => {
       if (data && data.length > 0) {
         this.setState({
           storeList: data
@@ -90,17 +100,52 @@ class Home extends Component {
             goodsList: []
           })
         }
+      }),
+      //搜索解决方案
+      SolutionAction.GetList({ input: { pageIndex, pageSize: 2, focus: true } }).then(({ suc, data }) => {
+        console.log(data)
+        if (data && data.length > 0)
+          this.setState({
+            solutionList: data
+          })
+        else {
+          this.setState({
+            solutionList: []
+          })
+        }
       })
   }
 
   //查看更多
   _moreInfo(type) {
-    AppStore.setBuyProductTopIndex(type);
-    Navigation.mergeOptions(this.props.componentId, {
-      bottomTabs: {
-        currentTabIndex: 3
-      }
-    })
+    if (type == 1 || type == 0) {
+      AppStore.setBuyProductTopIndex(type);
+      Navigation.mergeOptions(this.props.componentId, {
+        bottomTabs: {
+          currentTabIndex: 3
+        }
+      })
+    }
+    if (type == 2) {
+      this.pushPage({
+        component: {
+          // passProps: { id: item.id, registerNumber: item.registerNumber },
+          ...Global.Screens.Solution,
+          options: {
+            topBar: {
+              title: {
+                text: '解决方案'
+              }
+            },
+            bottomTabs: {
+              visible: false,
+              drawBehind: true
+            }
+          },
+        }
+      });
+    }
+
   }
   //获取当前城市天气
   getWether(city) {
@@ -129,7 +174,25 @@ class Home extends Component {
       // reject(ErrorDeal.getError(data.code));
     })
   }
-
+  hasReadSolution() {
+    SolutionAction.GetList({ input: { pageIndex, pageSize: 2, focus: true } }).then(({ suc, data }) => {
+      if (data && data.length > 0)
+        this.setState({
+          solutionList: data
+        })
+      else {
+        this.setState({
+          solutionList: []
+        })
+      }
+    })
+  }
+  _fresh = () => {
+    this.hasReadSolution()
+    // this.setState({
+    //   fresh: true
+    // })
+  }
   render() {
     let a = 'root/img/product.png'
     let weather = this.state.weatherData ? this.state.weatherData : {}
@@ -138,7 +201,7 @@ class Home extends Component {
       this.lowC = weather.low ? weather.low.split(' ')[1] : ''
     }
     return (
-      [<ScrollView style={styles.container}>
+      [<ScrollView style={styles.container} key={"xx1"}>
         <StatusBar
           backgroundColor="#ff0000"
           translucent={true}
@@ -149,11 +212,17 @@ class Home extends Component {
             weather && weather != 1 ? (
               <View style={{ flexDirection: 'row', }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }} >
-                  <Text style={{ fontSize: 12, lineHeight: 54, marginRight: 5, color: '#fff' }}>{this.lowC + '~' + this.highC}</Text>
-                  <Text style={{ fontSize: 12, lineHeight: 54, marginRight: 5, textAlign: 'center', color: '#fff' }}>{weather.type}</Text>
+                  <Text style={{ fontSize: 12, lineHeight: 54, marginRight: 5, color: '#fff' }}>
+                    {this.lowC + '~' + this.highC}
+                  </Text>
+                  <Text style={{ fontSize: 12, lineHeight: 54, marginRight: 5, textAlign: 'center', color: '#fff' }}>
+                    {weather.type}
+                  </Text>
                 </View>
                 <View style={{ paddingLeft: 5, marginLeft: 5, marginRight: 5 }}>
-                  <Text numberOfLines={1} style={{ fontSize: 14, lineHeight: 54, textAlign: 'center', color: '#fff' }}>{this.props.cityName}</Text>
+                  <Text numberOfLines={1} style={{ fontSize: 14, lineHeight: 54, textAlign: 'center', color: '#fff' }}> 
+                    {this.props.cityName ? (this.props.cityName.length > 5 ? this.props.cityName.substr(0, 5) + "..." : this.props.cityName) : ""}
+                  </Text>
                 </View>
               </View>
             ) : weather ? <ProgressBarAndroid
@@ -161,7 +230,7 @@ class Home extends Component {
               styleAttr={'Small'} /> : (<View ><Text style={{ lineHeight: 54 }}>定位失败</Text></View>)
           }
 
-          <TouchableHighlight
+          <TouchableOpacity
             style={{ height: 54, marginLeft: 5, justifyContent: 'center', }}
             onPress={() => {
               this.pushPage({
@@ -172,7 +241,7 @@ class Home extends Component {
               });
             }}>
             <View style={styles.rowdata}><Text style={styles.rowdatatext}>[切换城市]</Text></View>
-          </TouchableHighlight>
+          </TouchableOpacity>
         </View>
 
         <View>
@@ -192,8 +261,8 @@ class Home extends Component {
             color={'#999'}
             styleAttr={'Horizontal'} /></View> : null}
           {
-            this.state.storeList && this.state.storeList.length > 0 && this.state.storeList != 'loading' ? this.state.storeList.map(item => {
-              return <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'} key={item.id}
+            this.state.storeList && this.state.storeList.length > 0 && this.state.storeList != 'loading' ? this.state.storeList.map((item, index) => {
+              return <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'} key={index}
                 onPress={() => {
                   this.pushPage({
                     component: {
@@ -225,8 +294,8 @@ class Home extends Component {
             color={'#999'}
             styleAttr={'Horizontal'} /></View> : null}
           {
-            this.state.goodsList && this.state.goodsList.length > 0 && this.state.goodsList != 'loading' ? this.state.goodsList.map(item => {
-              return <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'} key={item.id}
+            this.state.goodsList && this.state.goodsList.length > 0 && this.state.goodsList != 'loading' ? this.state.goodsList.map((item, index) => {
+              return <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'} key={index}
                 onPress={() => {
                   this.pushPage({
                     component: {
@@ -251,8 +320,41 @@ class Home extends Component {
             }) : this.state.goodsList && this.state.goodsList.length == 0 ? <Image source={require('root/img/nodata.jpg')} style={{ justifyContent: 'center', width: SCREEN_WIDTH, height: 120, marginTop: 8 }} /> : null
           }
         </View>
+        <Spacing />
+        <View>
+          <BrTag color={'orange'} title={'解决方案'} click={() => { this._moreInfo(2) }} url={this.state.solutionList == 'loading' ? false : true} />
+          {this.state.solutionList == 'loading' ? <View style={{ height: 80, flex: 1, justifyContent: 'center', alignItems: "center" }}><ProgressBarAndroid
+            color={'#999'}
+            styleAttr={'Horizontal'} /></View> : null}
+          {
+            this.state.solutionList && this.state.solutionList.length > 0 && this.state.solutionList != 'loading' ? this.state.solutionList.map((item, index) => {
+              return <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'} key={index}
+                onPress={() => {
+                  this.pushPage({
+                    component: {
+                      passProps: { id: item.id, hasReadSolution: this.hasReadSolution, _fresh: this._fresh },
+                      ...Global.Screens.SolutionDetail,
+                      options: {
+                        topBar: {
+                          title: {
+                            text: '解决方案详情'
+                          }
+                        },
+                        bottomTabs: {
+                          visible: false,
+                          drawBehind: true
+                        }
+                      },
+                    }
+                  });
+                }}>
+                <SolutionList content={item} />
+              </TouchableHighlight>
+            }) : this.state.solutionList && this.state.solutionList.length == 0 ? <Image source={require('root/img/nodata.jpg')} style={{ justifyContent: 'center', width: SCREEN_WIDTH, height: 120, marginTop: 8 }} /> : null
+          }
+        </View>
       </ScrollView >,
-      <RNUpdate
+      <RNUpdate key={"xx2"}
         onBeforeStart={async () => {
           const response = await fetch(BaseApiUrl + '/appVersion.json?t=' + Date.now());
           const data = await response.json();

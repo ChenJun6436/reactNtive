@@ -1,0 +1,165 @@
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    Dimensions,
+    ScrollView,
+    TouchableOpacity,
+    TouchableHighlight,
+    Image
+} from 'react-native';
+// import { inject, observer } from 'mobx-react/native';
+import { SearchBar, WhiteSpace, WingBlank, List, Button, SwipeAction } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import * as PortraitAction from 'root/src/actions/farmersPortrait';
+import HotProduct from 'root/src/screens/baseComon/hotProduct'
+import * as StoreAction from 'root/src/actions/store'
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList';
+import DetailItem from 'root/src/screens/baseComon/DetailItem.js';
+import BrTagText from 'root/src/screens/baseComon/BrTagText'
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const Item = List.Item;
+
+@loadingDecorator @navigatorDecorator
+export default class StoreDetail extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            model: {},
+        }
+    }
+    componentWillMount() {
+        StoreAction.ViewStore({ input: { storeid: this.props.id, longitude: storage.get('longitude'), latitude: storage.get('latitude') } }).then((data) => {
+            if (data.suc && data.data && data.data.length != 0)
+                this.setState({ model: data.data })
+            else {
+                MyToast.info('暂无数据！稍后尝试');
+            }
+            this.setState({ loading: false })
+        })
+        StoreAction.SearchGoods({ input: { pageIndex: 1, pageSize: 1000, storeid: this.props.id, regionId: storage.get('regionId') } }).then(({ suc, data }) => {
+            if (data && data.length > 0)
+                this.setState({
+                    goodsList: data
+                })
+        })
+    }
+    render() {
+        let model = this.state.model
+        return (
+            <ScrollView style={{ height: SCREEN_HEIGHT }}>
+                <View style={styles.search}>
+                    {
+                        model.imageUrl ? <Image
+                            source={{ uri: model.imageUrl }}
+                            style={styles.imgStyle}
+                        /> : <Image
+                                source={require('root/img/nopic.gif')}
+                                style={styles.imgStyle}
+                            />
+                    }
+                </View>
+                <View style={styles.container}>
+                    <BrTagText color='red' title='基本信息' />
+                    <DetailItem title="农资店名" content={model.name} />
+                    <DetailItem title="地址" content={model.address} />
+                    <DetailItem title="联系人" content={model.legalPersonName} />
+                    <DetailItem title="联系方式" content={model.contactInformation} />
+                    <DetailItem title="距离" content={model.distance ? (model.distance.toFixed(2) + 'km') : '0km'} />
+                    <DetailItem title="查看量" content={model.viewAmount} />
+                </View>
+                <Spacing />
+                <View>
+                    <BrTagText color='red' title='农资产品' />
+                    {
+                        this.state.goodsList && this.state.goodsList.length > 0 && this.state.goodsList != 'loading' ? this.state.goodsList.map(item => {
+                            return <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'} key={item.id}
+                                onPress={() => {
+                                    this.pushPage({
+                                        component: {
+                                            passProps: { id: item.id, registerNumber: item.registerNumber },
+                                            ...Global.Screens.ProductDetail,
+                                            options: {
+                                                topBar: {
+                                                    title: {
+                                                        text: item.goodsName
+                                                    }
+                                                },
+                                                bottomTabs: {
+                                                    visible: false,
+                                                    drawBehind: true
+                                                }
+                                            },
+                                        }
+                                    });
+                                }}>
+                                <HotProduct content={item} />
+                            </TouchableHighlight>
+                        }) : <Image source={require('root/img/nodata.jpg')} style={{ justifyContent: 'center', width: SCREEN_WIDTH, height: 120, marginTop: 8 }} />
+                    }
+                    {/* <LoadMoreList
+                        ref={ref => this.moreListInst = ref}
+                        getData={StoreAction.SearchGoods}
+                        searchParams={{ storeid: this.props.id, regionId: storage.get('regionId') }}
+                        rowItem={(data) => {
+                            return <SwipeAction autoClose style={{ backgroundColor: 'transparent', flex: 1 }} right={[
+                                {
+                                    text: '详情',
+                                    onPress: () => {
+                                        this.pushPage({
+                                            component: {
+                                                ...Global.Screens.ProductDetail
+                                            }
+                                        });
+                                    },
+                                    style: { backgroundColor: 'orange', color: 'white' },
+                                }
+                            ]} >
+                                <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                                    onPress={() => {
+                                        this.pushPage({
+                                            component: {
+                                                passProps: { id: data.id },
+                                                ...Global.Screens.ProductDetail,
+                                                options: {
+                                                    topBar: {
+                                                        title: {
+                                                            text: data.name
+                                                        }
+                                                    }
+                                                },
+                                            }
+                                        });
+                                    }}>
+                                    <HotProduct content={data} />
+                                </TouchableHighlight>
+                            </SwipeAction>
+                        }}
+                    /> */}
+                </View>
+            </ScrollView>
+
+        )
+    }
+}
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    search: {
+        justifyContent: 'center',
+        flexDirection: 'row',
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 200,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    },
+});

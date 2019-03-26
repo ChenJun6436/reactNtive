@@ -1,0 +1,454 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace } from 'antd-mobile-rn';
+import * as MineAction from 'root/src/actions/product';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { bold } from 'ansi-colors';
+import moment from 'moment';
+const { connect } = require('remx');
+const Item = List.Item;
+let initData = {
+    plantName: '',
+    area: '',
+    period: '',
+    year: new Date(),
+    outPut: '',
+    iscurrent: true,
+    unit: "亩"
+}
+let initError = {
+    plantName: false,
+    area: false,
+    period: false,
+}
+let model = null
+let breedName = null
+@navigatorDecorator
+class ProductSaleAdd extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            cropList: [],
+            peopleState: '',
+            peopleList: [],
+            remark: '',
+            saleDay: new Date(),
+            customerName: '',
+            saleList: [
+                {
+                    cropId: '',
+                    breedId: '',
+                    salePrice: '',
+                    traceCode: '',
+                    productStockId: '',
+                    traceList: [],
+                    traceState: '',
+                    cropState: '', //未组装的3*id
+                    traceNum: 0,
+                }
+            ],
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                title: {
+                    text: this.props.id ? '编辑销售记录' : '新增销售'
+                },
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+        let nowName = false
+        let nowError = this.state.plantError
+        if (!this.state.peopleState[0]) {
+            nowName = true
+            MyToast.info('请选择客户');
+        }
+        this.state.saleList.forEach((i) => {
+            if (!i.cropState) {
+                nowName = true
+                MyToast.info('请选择销售作物');
+            } else if (!i.traceCode) {
+                nowName = true
+                MyToast.info('请选择批次');
+            } else if (!i.quantity) {
+                nowName = true
+                MyToast.info('请填写销售数量');
+            } else if (!i.salePrice) {
+                nowName = true
+                MyToast.info('请填写销售单价');
+            }
+        })
+        if (nowName) {
+            return false
+        } else {
+            let saleDay = moment(this.state.saleDay).format('YYYY-MM-DD');
+            let saleList = this.state.saleList
+            saleList.forEach((i) => {
+                i.saleDay = saleDay
+            })
+            let postData = {
+                customerName: this.state.peopleState[0].split('*')[1],
+                customerId: this.state.peopleState[0].split('*')[0],
+                remark: this.state.remark,
+                saleItems: saleList,
+            }
+            if (this.props.id) {
+                postData.id = this.props.id
+                MineAction.EditProductSale({ input: postData }).then((data) => {
+                    if (data.suc == 1) {
+                        MyToast.success('编辑成功');
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.ProductSale,
+                                }
+                            });
+                        }, 2000)
+                    } else {
+                        MyToast.info('编辑失败，请稍后再试');
+                    }
+                })
+            } else {
+                MineAction.AddProductSale({ input: postData }).then((data) => {
+                    if (data.suc == 1) {
+                        MyToast.success('新增成功');
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.ProductSale,
+                                }
+                            });
+                        }, 2000)
+                    } else {
+                        MyToast.info('新增失败，请稍后再试');
+                    }
+                })
+            }
+        }
+    }
+    componentWillMount() {
+        //获取所有作物
+        MineAction.GetAllPackCrop().then((data) => {
+            if (data.suc) {
+                let model = data.data
+                let arrInt = []
+                model.forEach((i, index) => {
+                    i.value = i.value + '*' + i.id + '*' + i.label
+                    i.children.forEach((o) => {
+                        o.value = o.value + '*' + o.label
+                    })
+                });
+                this.setState({
+                    cropList: model,
+                })
+            } else {
+                MyToast.info('作物获取失败，稍后尝试');
+            }
+        })
+        //获取所有客户
+        MineAction.GetAllPeople(2).then((data) => {
+            if (data.suc) {
+                let model = data.data
+                let arrInt = []
+                model.forEach((i, index) => {
+                    arrInt[index] = {}
+                    arrInt[index].label = i.name
+                    arrInt[index].value = i.id + "*" + i.name
+                });
+                this.setState({
+                    peopleList: arrInt,
+                })
+            } else {
+                MyToast.info('客户获取失败，稍后尝试');
+            }
+        })
+        if (this.props.id) {
+            MineAction.GetProductSale(this.props.id).then((data) => {
+                if (data.suc) {
+                    let model = data.data
+                    model.saleItems.forEach((i, ind) => {
+                        i.cropState = [i.cropId + '*' + i.productStockId + '*' + i.cropName, i.breedId + '*' + i.breedName]
+                        i.traceState = [i.traceCode + '*' + i.stock]
+                        i.quantity = i.quantity.toString()
+                        i.salePrice = i.salePrice.toString()
+                        i.traceNum = (parseFloat(i.stock) + parseFloat(i.quantity)).toString()
+                        this.GetTrace(i.cropId, ind)
+                    })
+                    this.setState({
+                        peopleState: [model.customerId + "*" + model.customerName],
+                        remark: model.remark,
+                        saleDay: new Date(model.saleItems[0].saleDay),
+                        saleList: model.saleItems
+                    })
+                } else {
+                    MyToast.info('数据获取失败，稍后尝试');
+                }
+            })
+        }
+    }
+    //获取批次
+    GetTrace(id, index) {
+        MineAction.GetAllCropTrace(id).then((data) => {
+            if (data.suc) {
+                let model = data.data
+                let arrInt = []
+                model.forEach((i, index) => {
+                    arrInt[index] = {}
+                    arrInt[index].label = i.traceCode
+                    arrInt[index].value = i.traceCode + '*' + i.quantity
+                });
+                let saleList = this.state.saleList
+                saleList[index]['traceList'] = arrInt
+                this.setState({
+                    saleList
+                })
+            } else {
+                MyToast.info('批次获取失败，稍后尝试');
+            }
+        })
+    }
+    changeData(name, index, data) {
+        let dataList = this.state.saleList
+        if (name == 'cropState') {
+            dataList[index]['traceList'] = []
+            dataList[index]['traceCode'] = ''  //请空当前批次
+            dataList[index]['traceState'] = ''  //请空当前批次
+            let str = data[0].toString()
+            let strTwo = data[1].toString()
+            this.GetTrace(str.split('*')[0], index) //获取新批次
+            //分解ID 赋值
+            dataList[index]['cropId'] = str.split('*')[0]
+            dataList[index]['breedId'] = strTwo.split('*')[0]
+            dataList[index]['productStockId'] = str.split('*')[1]
+            dataList[index]['cropName'] = str.split('*')[2]
+            dataList[index]['breedName'] = strTwo.split('*')[1]
+        }
+        if (name == 'traceState') {
+            dataList[index]['traceCode'] = data[0].split('*')[0]
+            dataList[index]['traceNum'] = data[0].split('*')[1]
+            if(parseFloat(data[0].split('*')[1]) >= 0){
+                dataList[index]['quantity'] = data[0].split('*')[1]
+            }else{
+                dataList[index]['quantity'] = '0'
+            }
+        }
+        dataList[index][name] = data
+        if (name == 'quantity') {
+            if(parseFloat(data) > parseFloat(dataList[index]['traceNum'])){
+                MyToast.info('库存不足，已为您修改至最大销售数量')
+                dataList[index]['quantity'] = dataList[index]['traceNum']+''
+            }
+        }
+        this.setState({
+            saleList: dataList
+        })
+    }
+    onErrorClick = () => {
+        MyToast.info('请填写正确的信息，且不能为空');
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#f5f5f5' }}>
+                <View>
+                    <List>
+                        <Picker
+                            registerNumber="客户"
+                            data={this.state.peopleList}
+                            cols={1}
+                            value={this.state.peopleState}
+                            onOk={(val) => {
+                                this.setState({ peopleState: val })
+                            }}
+                            style={{ color: '#000' }}
+                        >
+                            <Item><Text style={{ fontSize: 17, color: '#000' }}>客户</Text></Item>
+                        </Picker>
+                    </List>
+
+                    <List>
+                        <DatePicker
+                            value={this.state.saleDay}
+                            mode="date"
+                            minDate={new Date('2018-01-01')}
+                            onChange={(text) => {
+                                this.setState({
+                                    saleDay: text
+                                })
+                            }}
+                            format="YYYY-MM-DD"
+                        >
+                            <Item arrow="horizontal" >销售日期</Item>
+                        </DatePicker>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    remark: text
+                                })
+                            }}
+                            maxLength={50}
+                            placeholder="输入备注"
+                            value={this.state.remark}
+                        >备注
+                        </InputItem>
+                    </List>
+                    {
+                        this.state.saleList.map((i, ind) => {
+                            return (
+                                <View key={ind}>
+                                    <List>
+                                        <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
+                                            <Text style={{ lineHeight: 50, fontSize: 18, marginLeft: 15, color: '#00BFFF', fontWeight: 'bold' }}>销售作物（{ind + 1}）</Text>
+                                            {this.state.saleList.length == 1 || this.props.id ? (null) : (
+                                                <TouchableWithoutFeedback onPress={() => {
+                                                    let nowList = this.state.saleList
+                                                    nowList.splice(ind, 1)
+                                                    this.setState({
+                                                        saleList: nowList
+                                                    })
+                                                }}>
+                                                    <View>
+                                                        <Text style={{ textAlign: 'center', fontSize: 18, color: '#000', lineHeight: 50, marginRight: 15 }}><Icon color='red' name='trash' size={18} /></Text>
+                                                    </View>
+                                                </TouchableWithoutFeedback>
+                                            )}
+                                        </View>
+                                    </List>
+                                    <List>
+                                        <Picker
+                                            registerNumber="作物"
+                                            data={this.state.cropList}
+                                            cols={2}
+                                            value={this.state.saleList[ind]['cropState']}
+                                            onOk={(val) => {
+                                                if (val != this.state.saleList[ind]['cropState']) {
+                                                    this.changeData('cropState', ind, val)
+                                                }
+                                            }}
+                                            style={{ color: '#000' }}
+                                        >
+                                            <Item><Text style={{ fontSize: 17, color: '#000' }}>作物</Text></Item>
+                                        </Picker>
+                                    </List>
+                                    {
+                                        this.state.saleList[ind]['cropId'] ? (
+                                            <List>
+                                                <Picker
+                                                    registerNumber="批次"
+                                                    data={this.state.saleList[ind]['traceList']}
+                                                    cols={1}
+                                                    value={this.state.saleList[ind]['traceState']}
+                                                    onOk={(val) => {
+                                                        this.changeData('traceState', ind, val)
+                                                    }}
+                                                    style={{ color: '#000' }}
+                                                >
+                                                    <Item><Text style={{ fontSize: 17, color: '#000' }}>批次</Text></Item>
+                                                </Picker>
+                                            </List>
+                                        ) : (null)
+                                    }
+                                    {this.state.saleList[ind].traceNum || this.props.id? (
+                                        <List>
+                                            <InputItem
+                                                labelNumber={12}
+                                                textAlign="right"
+                                                clear
+                                                onChangeText={(text) => {
+                                                    this.changeData('quantity', ind, text)
+                                                }}
+                                                extra={'千克'}
+                                                onErrorClick={this.onErrorClick}
+                                                maxLength={50}
+                                                placeholder="数量"
+                                                value={this.state.saleList[ind].quantity}
+                                                type='number'
+                                            >
+                                                {'数量 剩余（' + this.state.saleList[ind].traceNum + 'kg）'}
+                                            </InputItem>
+                                        </List>
+                                    ) : (null)}
+
+                                    <List>
+                                        <InputItem
+                                            labelNumber={8}
+                                            textAlign="right"
+                                            clear
+                                            onChangeText={(text) => {
+                                                this.changeData('salePrice', ind, text)
+                                            }}
+                                            extra={'元'}
+                                            error={this.state.registerNumberError}
+                                            onErrorClick={this.onErrorClick}
+                                            maxLength={50}
+                                            placeholder="单价"
+                                            type='number'
+                                            value={this.state.saleList[ind].salePrice}
+                                        >单价
+                                        </InputItem>
+                                    </List>
+                                </View>
+                            )
+                        })
+                    }
+                    {
+                        this.props.id ? (null) : (
+                            <TouchableWithoutFeedback onPress={() => {
+                                let nowList = this.state.saleList
+                                nowList.push(
+                                    {
+                                        cropId: '',
+                                        breedId: '',
+                                        salePrice: '',
+                                        traceCode: '',
+                                        productStockId: '',
+                                    }
+                                )
+                                this.setState({
+                                    saleList: nowList,
+                                })
+                            }}>
+                                <View>
+                                    <Text style={{ textAlign: 'center', fontSize: 18, color: '#000', lineHeight: 50 }}><Icon name='plus-circle' size={18} />添加</Text>
+                                </View>
+                            </TouchableWithoutFeedback>
+                        )
+                    }
+
+
+                </View>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+
+    };
+}
+
+module.exports = connect(mapStateToProps)(ProductSaleAdd);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

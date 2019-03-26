@@ -1,0 +1,49 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
+import { WingBlank } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import Icon from 'react-native-vector-icons/Feather';
+import VideoPlayer from './VideoPlayer'
+const { connect } = require('remx');
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    flexDirection:'row',
+    justifyContent:'space-around',
+  },
+});
+@navigatorDecorator
+export default class VideoTopText2Bottom extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+  }
+  async componentDidMount() {
+  }
+  _onPressButton = ()=> {
+    console.log(1)
+  }
+  render() {
+    return (
+            <View>
+                <VideoPlayer />
+                <View style={{flexDirection:'row',height:60}}>
+                  <View style={{width:'80%',justifyContent:'space-between',paddingLeft:10}}>
+                    <Text numberOfLines={1} style={{fontSize:18,lineHeight: 25, marginTop: 5}}>泰州研究院姜小三院长获江苏省最1美sd撒旦法教奖</Text>
+                    <Text numberOfLines={1} style={{fontSize:13,lineHeight: 30}}>作者:优农帮研发部最帅测试，四川农业大学新闻系教授</Text>
+                  </View>
+                  <TouchableOpacity onPress={this._onPressButton}>
+                    <Text style={{marginLeft:10,lineHeight:60}}><Icon name='thumbs-up' size={24}/> 7788</Text>
+                  </TouchableOpacity>
+                </View>
+            </View>
+    );
+  }
+}

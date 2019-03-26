@@ -1,0 +1,30 @@
+import { Post } from '../utils/request';
+//新增用药记录
+export async function Add(data) {
+    return Post(`/Api/PesticideRecord/Add`, {
+        body: JSON.stringify(data)
+    });
+}
+//修改用药记录
+export async function Update(data) {
+    return Post(`/Api/PesticideRecord/Update`, {
+        body: JSON.stringify(data)
+    });
+}
+//获取列表
+export async function GetPageList(data) {
+    return Post(`/Api/PesticideRecord/GetPageList`, {
+        body: JSON.stringify(data)
+    });
+}
+//获取详情
+export async function GetDetail(id) {
+    return Post(`/Api/PesticideRecord/GetDetail?id=${id}`);
+}
+
+//删除
+export async function Delete(data) {
+    return Post(`/Api/PesticideRecord/Delete`, {
+        body: JSON.stringify(data)
+    });
+}

@@ -1,0 +1,116 @@
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    Dimensions,
+    TouchableWithoutFeedback,
+    ProgressBarAndroid,
+    TouchableHighlight,
+    StatusBar
+    // TouchableOpacity
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar, WingBlank, WhiteSpace, SwipeAction, Checkbox } from 'antd-mobile-rn'
+import ListItem from 'root/src/screens/baseComon/ListItem'
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import * as MARAction from 'root/src/actions/medicationRecord'
+import pesticidesStore from 'root/src/stores/pesticides';
+const CheckboxItem = Checkbox.CheckboxItem;
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const { connect } = require('remx');
+let pageIndex = 1;
+// @loadingDecorator
+@navigatorDecorator
+class PesticidesList extends Component {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+            goodsList: this.props.pesticidesData
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [{
+                    ...confirmRightBtn, text: '确定'
+                }]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed({ buttonId }) {
+        pesticidesStore.setPesticidesData(this.state.goodsList)
+        this.props.getData && this.props.getData(this.state.goodsList, this.props.index)
+        this.pop()
+    }
+    componentWillMount() {
+    }
+    onChange = (e, value) => {
+
+        let goodsList = this.state.goodsList;
+        let array = [];
+        debugger;
+        if (e.target.checked) {
+            array.push(value)
+            this.setState({
+                goodsList: array
+            })
+        }
+        else {
+            this.setState({
+                goodsList: []
+            })
+        }
+
+    }
+    render() {
+        console.log(this.state.goodsList)
+        return (<ScrollView style={styles.container}>
+            <LoadMoreList
+                ref={ref => this.moreStoreListInst = ref}
+                getData={MARAction.GoodsSearch}
+                searchParams={{ search: this.state.search }}
+                rowItem={(data) => {
+                    console.log(data)
+                    let checked = false;
+                    debugger
+                    if (this.state.goodsList && this.state.goodsList.length > 0) {
+                        debugger;
+                        this.state.goodsList.map(item => {
+                            if (item.registerID == data.registerID) {
+                                checked = true
+                            }
+                        })
+                    }
+                    return <CheckboxItem key={data.crop} checked={checked} onChange={(value) => this.onChange(value, data)}>
+                        <ListItem firstItem={data.registerName} secondItem={data.registerID} thirdItem={data.productSType} fourthItem={data.manufacturerName} />
+                    </CheckboxItem>
+                }}
+            />
+        </ScrollView >
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+        pesticidesData: pesticidesStore.getPesticidesData()
+    };
+}
+
+module.exports = connect(mapStateToProps)(PesticidesList);
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 180,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    },
+
+});

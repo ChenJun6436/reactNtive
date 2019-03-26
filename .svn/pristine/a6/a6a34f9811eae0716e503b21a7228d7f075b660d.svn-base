@@ -1,0 +1,54 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
+import { WingBlank } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import Icon from 'react-native-vector-icons/Feather';
+const { connect } = require('remx');
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    flexDirection:'row',
+    justifyContent:'space-around',
+  },
+});
+@navigatorDecorator
+export default class VedioLeftText2Right extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+  }
+  async componentDidMount() {
+  }
+  _onPressButton = ()=> {
+    console.log(1)
+  }
+  render() {
+    // const img = require( this.props.img )
+    return (
+      <WingBlank size={'sm'} style={{paddingTop: 10,paddingBottom: 10}}>
+          <TouchableOpacity onPress={this._onPressButton}>
+            <View style={{flexDirection:'row',justifyContent:'flex-start'}}>
+              {this.props.img?<Image style={{width:150,height:80,marginRight:20}} source={this.props.img}/>:null}
+              <View style={{justifyContent:'space-between',flex:1,height: this.props.img?80:60}}>
+                <Text numberOfLines={2}  style={{fontSize:16}}>泰州研究院姜小三院长获江苏省最1美教是奖</Text>
+                <View style={{flexDirection:'row'}}>
+                  <Text>阅读 5110</Text>
+                  <Text style={{marginLeft:10}}><Icon name='thumbs-up' size={12}/> 7788</Text>
+                  <View style={{backgroundColor:'#e4e4e4',position:'absolute',top:-11,right:10,height:30,width:80,borderRadius:10}}>
+                    <Text style={{lineHeight:30,textAlign:'center',color:'#CC9900'}}>10000积分</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+      </WingBlank>
+    );
+  }
+}

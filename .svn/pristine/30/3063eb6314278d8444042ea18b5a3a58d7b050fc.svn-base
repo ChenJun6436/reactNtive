@@ -1,0 +1,82 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    Image
+} from 'react-native';
+import CropStore from 'root/src/stores/crop';
+const { connect } = require('remx');
+export default class DiagnosisList extends Component {
+    render() {
+        const content = this.props.content
+        return (
+            <View style={styles.container} >
+                {
+                    this.props.cropData && (this.props.cropData == content.nameCn)?(
+                        <View style={styles.isSelect}></View>
+                    ):(null)
+                }
+                {
+                    this.props.pestData && (this.props.pestData == content.pest)?(
+                        <View style={styles.isSelect}></View>
+                    ):(null)
+                }
+                <View style={{ flexDirection: 'row', justifyContent: 'center', width: '100%', height: 120, }}>
+                    {
+                        content.imageUrl ? <Image
+                            source={{ uri: content.imageUrl }}
+                            style={styles.imgSty}
+                        /> : <Image
+                                source={require('root/img/nopic.gif')}
+                                style={styles.imgSty}
+                            />
+                    }
+                </View>
+                <View style={{ width: '100%' }}>
+                    <Text numberOfLines={1} style={{ lineHeight: 60, fontSize: 18, fontWeight: 'bold', textAlign: 'center', color: 'gray' }}>{content.nameCn ? content.nameCn : content.pest}</Text>
+                </View>
+            </View>
+        );
+    }
+}
+const styles = StyleSheet.create({
+    container: {
+        width: '90%',
+        borderRadius: 5,
+        marginLeft: '5%',
+        marginBottom: 10,
+        shadowOffset: { width: 8, height: 8 },
+        shadowOpacity: 0.4,
+        shadowRadius: 5,
+        shadowColor: '#000',
+        elevation: 3,
+    },
+    imgSty: {
+        width: '90%',
+        height: 120,
+        borderRadius: 5,
+        marginTop: 10,
+        marginBottom: 10,
+    },
+    isSelect:{
+        position:'absolute',
+        left:0,
+        top:0,
+        bottom:0,
+        right:0,
+        borderWidth: 6,
+        borderRadius: 5,
+        borderColor:'#46bd0b',
+    }
+});
+function mapStateToProps() {
+    return {
+        cropData: CropStore.getCropData(),
+        pestData: CropStore.getPestData(),
+    };
+}
+module.exports = connect(mapStateToProps)(DiagnosisList);

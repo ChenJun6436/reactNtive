@@ -1,0 +1,68 @@
+import * as AcountService from '../services/account';
+import * as AgInfoServer from '../services/agInfo';
+import AgInfoStore from '../stores/agInfo';
+
+//获取农技所有信息
+export async function getAg({ input }) {
+    console.log(input)
+    const { data, msg, success } = await AgInfoServer.getAg(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true, data };
+}
+
+//注册
+export async function register({ input }) {
+    const { data, msg, success } = await AcountService.register(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true, msg };
+}
+
+//忘记密码
+export async function forgetPwd({ input }) {
+    const { data, msg, success } = await AcountService.forgetPwd(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true };
+}
+
+//发送验证码
+export async function sendVerifiedCode({ input }) {
+    const { data, msg, success } = await AcountService.sendVerifiedCode(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true, msg };
+}
+
+//获取用户信息
+export async function getUserInfo({ input }) {
+    const { data, msg, success } = await AcountService.getUserInfo(input)
+
+    if (!success)
+        return { suc: false };
+    return { suc: true, data };
+}
+
+//完善用户信息
+export async function editUserInfo({ input }) {
+    const { data, msg, success } = await AcountService.editUserInfo(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true };
+}
+
+//验证验证码是否正确
+export async function verification({ input }) {
+    const { data, msg, success } = await AcountService.verification(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true, msg };
+}
+//验证手机号码是否正确
+export async function existIdentifier({ input }) {
+    const { data, msg, success } = await AcountService.existIdentifier(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true, msg, data };
+}

@@ -1,0 +1,174 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    ScrollView,
+    TextInput,
+    Alert,
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker } from 'antd-mobile-rn';
+import * as AccountAction from 'root/src/actions/account';
+import * as EnumsAction from 'root/src/actions/enums';
+const Item = List.Item;
+
+@navigatorDecorator
+export default class EditUserInfo extends Component {
+    static get options() {
+        return {
+            topBar: {
+                rightButtons: [
+                    {
+                        id: 'comfirm',
+                        title: '确定',
+                        color: '#fff'
+                    }
+                ],
+            }
+        };
+    }
+    constructor(props) {
+        super(props);
+        this.state = {
+            plantingHabits: null
+        }
+        Navigation.events().registerNativeEventListener((event, params) => {
+            if (event === "buttonPressed" && params && params.buttonId === "comfirm") {
+                AccountAction.editUserInfo({ input: this.state }).then(({ suc, data }) => {
+                    if (suc) {
+                        Toast.info('修改成功', 3);
+                    }
+                })
+            }
+        });
+    }
+    componentWillMount() {
+        EnumsAction.getPlantingHabits({ input: null }).then(({ suc, data }) => {
+            if (suc) {
+                this.setState({ plantingHabitsList: data })
+                AccountAction.getUserInfo({ input: null }).then(({ suc, data }) => {
+                    if (suc) {
+                        this.setState(data)
+                    }
+                })
+            }
+        })
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#F5FCFF' }}>
+                <List>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ nickName: text })}
+                        placeholder="用户昵称"
+                        value={this.state.nickName}
+                    >用户昵称
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ realName: text })}
+                        placeholder="真实姓名"
+                        value={this.state.realName}
+                    >真实姓名
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ idCardNumber: text })}
+                        placeholder="身份证号"
+                        value={this.state.idCardNumber}
+                    >身份证号
+                    </InputItem>
+                    <DatePicker
+                        value={this.state.birthDate ? new Date(this.state.birthDate) : null}
+                        mode="date"
+                        minDate={new Date('1918-01-01')}
+                        onChange={text => this.setState({ birthDate: text })}
+                        format="YYYY-MM-DD"
+                    >
+                        <Item arrow="horizontal" >出生日期</Item>
+                    </DatePicker>
+                    <Picker
+                        data={[{ value: '男', label: '男' }, { value: '女', label: '女' }]}
+                        cols={1}
+                        onChange={text => this.setState({ sex: text })}
+                        value={this.state.sex}>
+                        <Item arrow="horizontal">性别</Item>
+                    </Picker>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ address: text })}
+                        placeholder="居住地址"
+                        value={this.state.address}
+                    >居住地址
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ personalAssets: text })}
+                        placeholder="个人资产"
+                        value={this.state.personalAssets}
+                    >个人资产
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ income: text })}
+                        placeholder="年收入"
+                        value={this.state.income}
+                    >年收入
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ degreeEducation: text })}
+                        placeholder="文化程度"
+                        value={this.state.degreeEducation}
+                    >文化程度
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ consumptionLevel: text })}
+                        placeholder="消费水平"
+                        value={this.state.consumptionLevel}
+                    >消费水平
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ familyMemberNumber: text })}
+                        placeholder="家人口数"
+                        value={this.state.familyMemberNumber}
+                    >家人口数
+                    </InputItem>
+                    <Picker
+                        data={[{ value: '已婚', label: '已婚' }, { value: '未婚', label: '未婚' }]}
+                        cols={1}
+                        onChange={text => this.setState({ maritalStatus: text })}
+                        value={this.state.maritalStatus}>
+                        <Item arrow="horizontal">婚姻状况</Item>
+                    </Picker>
+                    <Picker
+                        data={this.state.plantingHabitsList ? this.state.plantingHabitsList.map(x => { return { value: x.enumName, label: x.enumName } }) : null}
+                        cols={1}
+                        onChange={text => this.setState({ plantingHabits: text })}
+                        value={this.state.plantingHabits}>
+                        <Item arrow="horizontal" >种植习惯</Item>
+                    </Picker>
+                </List>
+            </ScrollView>
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+
+});

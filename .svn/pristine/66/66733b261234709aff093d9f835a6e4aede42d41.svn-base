@@ -1,0 +1,272 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    ImageBackground,
+    Dimensions,
+    Image,
+    findNodeHandle,
+    Alert,
+    AsyncStorage,
+    TouchableOpacity
+} from 'react-native';
+// import Divide from 'react-native-divide'
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { Input } from 'react-native-elements';
+import { Button, InputItem, Checkbox } from 'antd-mobile-rn';
+import requestPermission from 'root/src/utils/requestPermissions';//获取相机及其他权限
+import * as AccountAction from 'root/src/actions/account';
+const { connect } = require('remx');
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const BG_IMAGE = require('root/img/login.jpg');
+const LOGO_IMAGE = require('root/img/logo.png');
+
+const QQ_IMAGE = require('root/img/qq.png');
+const WCHAT_IMAGE = require('root/img/wChat.png');
+
+const AgreeItem = Checkbox.AgreeItem;
+
+
+@navigatorDecorator
+export default class SetNewCode extends Component {
+    constructor(props: Props) {
+        super(props);
+        this.time = 60;
+        this.tt;
+        this.state = {
+            viewRef: null,
+        };
+
+    }
+    componentWillMount() {
+
+    }
+    componentDidMount() {
+    }
+
+    sendCode = () => {
+        if (!this.state.phone || this.state.phone.length < 11) {
+            Toast.info('请填写正确的手机号', 3);
+            return;
+        }
+        // this.setState({ sendLoading: true })
+        // AccountAction.sendVerifiedCode({ input: { phone: this.state.phone, sendType: 1 } }).then((data) => {
+        //     this.startCodeTimer(() => {
+        //         this.setState({ sendLoading: false })
+        //     })
+        //     Toast.info('验证码发送成功', 3);
+        // })
+        this.setState({ sendLoading: true })
+        AccountAction.existIdentifier({ input: { phone: this.state.phone } }).then((suc) => {
+            if (!suc.data) {
+                Toast.info(suc.msg, 3);
+                return;
+            }
+            else {
+                AccountAction.sendVerifiedCode({ input: { phone: this.state.phone, type: 2 } }).then((suc, msg) => {
+                    this.startCodeTimer(() => {
+                        this.setState({ sendLoading: false, })
+                    })
+                    if (suc.suc) {
+                        Toast.info('验证码发送成功', 3);
+                    }
+                    else {
+                        Toast.info(suc.msg, 3);
+                    }
+                })
+            }
+        })
+    }
+    startCodeTimer = (callback) => {
+        let self = this;
+        self.tt = setInterval(() => {
+            self.setState({ time: self.time-- })
+            if (self.time == -1) {
+                self.time = 60;
+                self.setState({ time: undefined })
+                clearInterval(self.tt);
+                callback && callback();
+            }
+        }, 1000)
+    }
+
+    nextStep = () => {
+        if (!this.state.phone) {
+            Toast.info('请填写手机号', 3);
+            return;
+        }
+        if (!this.state.verificationCode) {
+            Toast.info('请填写验证码', 3);
+            return;
+        }
+        this.setState({ submitLoading: true })
+        this.pushPage({
+            component: {
+                ...Global.Screens.SetNewPwd,
+                passProps: { phone: this.state.phone, verificationCode: this.state.verificationCode },
+            }
+        })
+        // AccountAction.verification({ input: this.state }).then(({ suc, data }) => {
+        //     if (suc) {
+        //         this.pushPage({
+        //             component: {
+        //                 ...Global.Screens.SetNewPwd,
+        //                 passProps: { phone: this.state.phone, verificationCode: this.state.verificationCode },
+        //             }
+        //         })
+        //     }
+        //     else {
+        //         Toast.info('请填写正确的验证码！', 3);
+        //         return;
+        //     }
+        //     this.setState({ submitLoading: false })
+        // })
+    }
+
+    imageLoaded = () => {
+        this.setState({ viewRef: findNodeHandle(this.backgroundImage) });
+    }
+    render() {
+        const { Account, navigator } = this.props;
+        // const { getFieldProps } = this.props.form;
+        return (
+            <View style={styles.container}>
+                <Image
+                    ref={(img) => { this.backgroundImage = img; }}
+                    source={BG_IMAGE}
+                    style={styles.bgImage}
+                    onLoadEnd={this.imageLoaded}
+                />
+                <View style={styles.loginView}>
+                    <View style={styles.loginTitle}>
+                        <Image
+                            style={{ width: 180, height: 90 }}
+                            source={LOGO_IMAGE}
+                        />
+                        <View style={styles.title}>
+                            <Text style={styles.travelText}>农户APP</Text>
+                        </View>
+                    </View>
+                    <View style={styles.loginInput}>
+                        <View style={{ marginVertical: 15, flexDirection: 'row', width: '90%' }}>
+                            <InputItem
+                                style={{ height: 40, width: '73%', backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: 'white', paddingRight: 0 }}
+                                clear
+                                value={this.state.phone}
+                                onChange={(value: any) => {
+                                    if (value.length == 11) {
+                                        this.setState({ sendLoading: true })
+                                    }
+                                    this.setState({
+                                        phone: value,
+                                    });
+                                }}
+                                // onBlur={this.existIdentifier}
+                                labelNumber={2}
+                                placeholder='请输入手机号'
+                                placeholderTextColor='#cccccc'
+                                maxLength={11}
+                            >
+                                <Icon
+                                    name='user'
+                                    color='#ffffff'
+                                    size={25}
+                                />
+                            </InputItem>
+                            <View style={{ width: 100, justifyContent: 'flex-end', alignItems: 'flex-end' }}>
+                                <Button disabled={!this.state.sendLoading}
+                                    size="small" style={{ height: 40, backgroundColor: 'transparent', borderWidth: 2, borderBottomWidth: 1, }} onClick={this.sendCode}>
+                                    <Text style={{ fontSize: 12, fontWeight: 'bold', color: 'white' }}>发送验证码 {this.state.time}</Text>
+                                </Button>
+                            </View>
+                        </View>
+                        <View style={{ marginVertical: 15, width: '90%' }}>
+                            <InputItem
+                                style={{ height: 40, width: '90%', backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: 'white', }}
+                                clear
+                                type="text"
+                                value={this.state.verificationCode}
+                                onChange={(value: any) => {
+                                    this.setState({
+                                        verificationCode: value,
+                                    });
+                                }}
+
+                                labelNumber={2}
+                                placeholder='请输入验证码'
+                                placeholderTextColor='#cccccc'
+                            >
+                                <Icon
+                                    name='lock'
+                                    color='#ffffff'
+                                    size={25}
+                                />
+                            </InputItem>
+                        </View>
+                        <View style={{ marginVertical: 35, width: '100%', alignItems: 'center', }}>
+                            <Button
+                                // disabled={this.state.submitLoading}
+                                style={{ height: 40, width: '90%', backgroundColor: this.state.phone && this.state.verificationCode ? 'transparent' : '#cccccc', borderWidth: 2, borderColor: 'white', borderRadius: 30 }}
+                                onClick={this.nextStep}
+                                disabled={this.state.phone && this.state.verificationCode ? false : true}
+                            >
+                                <Text style={{ fontWeight: 'bold', color: 'white' }}>下一步</Text>
+                            </Button>
+                        </View>
+                    </View>
+                </View>
+            </View>
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+
+    },
+    bgImage: {
+        position: "absolute",
+        flex: 1,
+        top: 0,
+        left: 0,
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT
+    },
+    title: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    travelText: {
+        color: '#ffffff',
+        fontSize: 26,
+        fontFamily: 'bold',
+        textAlign: 'center',
+        width: '100%',
+        height: 50,
+        lineHeight: 50,
+    },
+    loginView: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    register: {
+        position: 'absolute',
+        top: 30,
+        right: 20,
+    },
+    loginTitle: {
+        marginTop: 80,
+    },
+    loginInput: {
+        width: '100%',
+        alignItems: 'center',
+    },
+})
+
+

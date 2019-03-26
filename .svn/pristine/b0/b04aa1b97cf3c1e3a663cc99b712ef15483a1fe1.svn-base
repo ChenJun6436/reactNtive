@@ -1,0 +1,287 @@
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ * @flow
+ */
+
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    TouchableOpacity,
+    Dimensions,
+    Animated,
+    TouchableHighlight,
+    Image,
+    Alert,
+    ScrollView
+} from 'react-native';
+import moment from 'moment';
+import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
+import { Button, SwipeAction, InputItem, Checkbox } from 'antd-mobile-rn';
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+import * as DiagnosisAction from 'root/src/actions/diagnosis';
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList';
+import DiagnosisList from 'root/src/screens/baseComon/DiagnosisList';
+import CropStore from 'root/src/stores/crop';
+const { connect } = require('remx');
+import lodash from 'lodash'
+const CheckboxItem = Checkbox.CheckboxItem;
+// @loadingDecorator
+@navigatorDecorator
+export default class ERPDiaPest extends Component {
+    constructor(props) {
+        super(props);
+        this.nowSelect = []
+        this.state = {
+            pestList: this.props.pestList ? this.props.pestList : [],
+            index: 0,
+            routes: [
+                { key: 'first', title: '热门病害' },
+                { key: 'second', title: '热门虫害' },
+                { key: 'third', title: '热门草害' },
+            ],
+
+        };
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed({ buttonId }) {
+        CropStore.setPestList(this.state.pestList);
+        this.pop();
+
+    }
+    componentWillMount() {
+        this.queryDisease()
+        this.queryInsect()
+        this.queryGrass()
+    }
+    onChange = (e, value) => {
+        let pestList = this.state.pestList;
+        let array = [];
+        if (this.props.isSolo) {
+            if (e.target.checked) {
+                array.push(value)
+                this.setState({
+                    pestList: array
+                })
+            }
+            else {
+                this.setState({
+                    pestList: []
+                })
+            }
+        }
+        else {
+            if (e.target.checked) {
+                pestList.push(value);
+                this.setState({
+                    pestList: pestList
+                })
+            }
+            else {
+                array = pestList.filter(item => {
+                    return item != value
+                })
+                this.setState({
+                    pestList: array
+                })
+            }
+        }
+
+    }
+    queryDisease = () => {
+        DiagnosisAction.GetPestByCrops({ input: { type: '病害', crops: this.props.crops ? this.props.crops : ['大麦'] } }).then(({ suc, data }) => {
+            if (suc && data && data.length > 0) {
+                this.setState({
+                    diseaseList: data
+                })
+            }
+            else {
+                this.setState({
+                    diseaseList: []
+                })
+            }
+        })
+    }
+    queryInsect = () => {
+        DiagnosisAction.GetPestByCrops({ input: { type: '虫害', crops: this.props.crops } }).then(({ suc, data }) => {
+            if (suc && data && data.length > 0) {
+                this.setState({
+                    insectList: data
+                })
+            }
+            else {
+                this.setState({
+                    insectList: []
+                })
+            }
+
+        })
+    }
+    queryGrass = () => {
+        DiagnosisAction.GetPestByCrops({ input: { type: '草害', crops: this.props.crops } }).then(({ suc, data }) => {
+            if (suc && data && data.length > 0) {
+                this.setState({
+                    grassList: data
+                })
+            }
+            else {
+                this.setState({
+                    grassList: []
+                })
+            }
+        })
+    }
+
+    render() {
+        console.log(this.state.diseaseList)
+        const FirstRoute = () => (
+            <ScrollView style={[styles.container]} >
+                {
+                    this.state.diseaseList && this.state.diseaseList.length > 0 ? this.state.diseaseList.map(item => {
+                        return <View style={styles.rows}>
+                            <View style={{ height: 32 }}><Text style={{ coloe: '#7bb046', lineHeight: 32 }}>{item.crop}</Text></View>
+                            {
+                                item.pest && item.pest.length > 0 ?
+                                    item.pest.map(opt => {
+                                        let checked = false;
+                                        if (this.state.pestList && this.state.pestList.length) {
+                                            this.state.pestList.map(i => {
+                                                if (i == opt) {
+                                                    checked = true
+                                                }
+                                            })
+                                        }
+                                        return <CheckboxItem key={opt} checked={checked} onChange={(e) => this.onChange(e, opt)}>
+                                            {opt}
+                                        </CheckboxItem>
+                                    }) : <View><Text>暂无病虫害数据</Text></View>
+                            }
+                        </View>
+                    }) : <View><Text>暂无数据</Text></View>
+                }
+            </ScrollView>
+        );
+        const SecondRoute = () => (
+            <ScrollView style={[styles.container]} >
+                {
+                    this.state.insectList && this.state.insectList.length > 0 ? this.state.insectList.map(item => {
+                        return <View style={styles.rows}>
+                            <View style={{ height: 32 }}><Text style={{ coloe: '#7bb046', lineHeight: 32 }}>{item.crop}</Text></View>
+                            {
+                                item.pest && item.pest.length > 0 ?
+                                    item.pest.map(opt => {
+                                        let checked = false;
+                                        debugger;
+                                        if (this.state.pestList && this.state.pestList.length) {
+                                            this.state.pestList.map(i => {
+                                                if (i == opt) {
+                                                    checked = true
+                                                }
+                                            })
+                                        }
+                                        return <CheckboxItem key={opt} checked={checked} onChange={(e) => this.onChange(e, opt)}>
+                                            {opt}
+                                        </CheckboxItem>
+                                    }) : <View><Text>暂无病虫害数据</Text></View>
+                            }
+                        </View>
+                    }) : <View><Text>暂无数据</Text></View>
+                }
+            </ScrollView>
+        );
+        const ThirdRoute = () => (
+            <ScrollView style={[styles.container]} >
+                {
+                    this.state.grassList && this.state.grassList.length > 0 ? this.state.grassList.map(item => {
+                        return <View style={styles.rows}>
+                            <View style={{ height: 32 }}><Text style={{ coloe: '#7bb046', lineHeight: 32 }}>{item.crop}</Text></View>
+                            {
+                                item.pest && item.pest.length > 0 ?
+                                    item.pest.map(opt => {
+                                        let checked = false;
+                                        debugger;
+                                        if (this.state.pestList && this.state.pestList.length) {
+                                            this.state.pestList.map(i => {
+                                                if (i == opt) {
+                                                    checked = true
+                                                }
+                                            })
+                                        }
+                                        return <CheckboxItem key={opt} checked={checked} onChange={(e) => this.onChange(e, opt)}>
+                                            {opt}
+                                        </CheckboxItem>
+                                    }) : <View><Text>暂无病虫害数据</Text></View>
+                            }
+                        </View>
+                    }) : <View><Text>暂无数据</Text></View>
+                }
+            </ScrollView>
+        );
+        return (<TabView
+            navigationState={this.state}
+            renderScene={SceneMap({
+                first: FirstRoute,
+                second: SecondRoute,
+                third: ThirdRoute,
+            })}
+            renderTabBar={props =>
+                <TabBar
+                    {...props}
+                    style={{ backgroundColor: '#fff' }}
+                    labelStyle={{ color: '#999' }}
+                    indicatorStyle={{ backgroundColor: '#7bb046' }}
+                />
+            }
+            onIndexChange={index => this.setState({ index })}
+            initialLayout={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT }}
+        />);
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        marginTop: 10,
+        padding: 12,
+    },
+    rows: {
+        // flexDirection: 'row',
+        // alignItems: 'center',
+        marginBottom: 10,
+    },
+    tabBar: {
+        flexDirection: 'row',
+        // paddingTop: Constants.statusBarHeight,
+        backgroundColor: 'green'
+    },
+    tabItem: {
+        flex: 1,
+        alignItems: 'center',
+        padding: 16,
+    },
+    searchBtn: {
+        width: '100%',
+        flexDirection: 'row',
+    },
+    btn: {
+        width: '33.3%'
+    }
+});
+function mapStateToProps() {
+    return {
+        pestList: CropStore.getPestList(),
+    };
+}
+module.exports = connect(mapStateToProps)(ERPDiaPest);
+// AppRegistry.registerComponent('Statistics', () => Statistics);

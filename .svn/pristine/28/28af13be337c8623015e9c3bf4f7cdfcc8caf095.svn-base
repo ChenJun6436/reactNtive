@@ -1,0 +1,114 @@
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    Dimensions,
+    ScrollView,
+    Image
+} from 'react-native';
+// import { inject, observer } from 'mobx-react/native';
+import { SearchBar, WhiteSpace, WingBlank, List, Button } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import DetailItem from 'root/src/screens/baseComon/DetailItem.js';
+import * as StoreAction from 'root/src/actions/store'
+import HotProduct from 'root/src/screens/baseComon/hotProduct'
+import BrTagText from 'root/src/screens/baseComon/BrTagText'
+import ListItem from 'root/src/screens/baseComon/ListItem'
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const Item = List.Item;
+
+@loadingDecorator
+export default class ProductDetail extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            model: {},
+        }
+    }
+    componentWillMount() {
+        StoreAction.GetGoods({ input: { id: this.props.id, registerNumber: this.props.registerNumber } }).then((data) => {
+            if (data.suc && data.data && data.data.length != 0)
+                this.setState({
+                    model: data.data,
+                    list: data.dataExtend
+                })
+            else {
+                MyToast.info('暂无数据！稍后尝试');
+            }
+            this.setState({ loading: false })
+        })
+    }
+
+    render() {
+        let model = this.state.model ? this.state.model : {};
+        let list = this.state.list ? this.state.list : {};
+        let registGoodsUseList = list.registGoodsUseList ? list.registGoodsUseList : [];
+        let registGoodInfo = list.registGoodInfo ? list.registGoodInfo : {};
+        let goodsBaseList = list.goodsBaseList ? list.goodsBaseList : [];
+        let manufacturerInfo = list.manufacturerInfo ? list.manufacturerInfo : {};
+        return (
+            <ScrollView style={{ position: 'relative', height: SCREEN_HEIGHT }}>
+                <View style={styles.search}>
+                    {
+                        model.imageUrl ? <Image
+                            source={{ uri: model.imageUrl }}
+                            style={styles.imgStyle}
+                        /> : <Image
+                                source={require('root/img/nopic.gif')}
+                                style={styles.imgStyle}
+                            />
+                    }
+                </View>
+                <View style={styles.container}>
+                    <BrTagText color='red' title='产品基本信息' />
+                    <DetailItem title="商品分类" content={model.goodsTypeName ? model.goodsTypeName : '--'} />
+                    {/* <DetailItem title="商标条码" content={model.registerNumber} /> */}
+                    <DetailItem title="商标名" content={model.goodsName ? model.goodsName : '--'} />
+                    <DetailItem title="登记证号" content={model.registerNumber ? model.registerNumber : '--'} />
+                    <DetailItem title="包装/规格" content={model.specifications ? model.specifications : '--'} />
+                    <DetailItem title="价格范围" content={model.priceRange ? model.priceRange : '--'} />
+                    <Spacing />
+                    <BrTagText color='green' title='商品标签信息' />
+                    <DetailItem title="生产厂家" content={manufacturerInfo.name ? manufacturerInfo.name : '--'} />
+                    <DetailItem title="商品类型" content={model.goodsCategoryName} />
+                    <DetailItem title="剂型" content={registGoodInfo.dosage} />
+                    <DetailItem title="登记名称" content={registGoodInfo.registerName} />
+                    <DetailItem title="有效成分含量" content={registGoodInfo.totalContent} />
+                    <DetailItem title="毒性" content={registGoodInfo.toxicity} />
+                    <Spacing />
+                    <BrTagText color='yellow' title='产品作物信息' />
+                    <View style={{ backgroundColor: '#fff' }}>
+                        {
+                            registGoodsUseList && registGoodsUseList.length > 0 ? registGoodsUseList.map((item, index) => {
+                                return <ListItem firstItem={item.crop} secondItem={item.uselevel} key={index} thirdItem={item.pest} fourthItem={item.usageMode} />
+                            }) : <Text>暂无数据</Text>
+                        }
+                    </View>
+                </View>
+            </ScrollView>
+
+        )
+    }
+}
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        marginBottom: 10,
+    },
+    search: {
+        justifyContent: 'center',
+        flexDirection: 'row',
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 180,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    },
+});

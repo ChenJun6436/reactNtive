@@ -1,0 +1,121 @@
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    Dimensions,
+    ScrollView,
+    Image
+} from 'react-native';
+// import { inject, observer } from 'mobx-react/native';
+import { SearchBar, WhiteSpace, WingBlank, List, Button, InputItem } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import DetailItem from 'root/src/screens/baseComon/DetailItem.js';
+import * as PortraitAction from 'root/src/actions/farmersPortrait';
+import HotProduct from '../../../baseComon/hotProduct'
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const Item = List.Item;
+
+// @loadingDecorator
+export default class ProductDetail extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            model: null,
+        }
+    }
+    componentWillMount() {
+        // PortraitAction.getMemberOrderDetail({ orderId: this.props.id }).then((data) => {
+        //     if (data.suc && data.data && data.data.length != 0)
+        //         this.setState({ model: data.data })
+        //     else {
+        //         Toast.offline('暂无数据！稍后尝试', 3);
+        //     }
+        //     this.setState({ loading: false })
+        // })
+    }
+    render() {
+        let content1 = {
+            img: require('root/img/ZFbanner2.jpg'),
+            name: '农资产品（规格）',
+            storeName: '农资店名',
+            phone: '13540901962',
+            address: '乐山市嘉州大道258号',
+            price: '25~35元'
+        }
+        return (
+            <ScrollView style={{ backgroundColor: '#f2f2f2', position: 'relative', height: SCREEN_HEIGHT }}>
+                <View style={styles.search}>
+                    <Image
+                        source={require('root/img/ZFbanner.jpg')}
+                        style={styles.imgStyle}
+                    />
+                </View>
+                <View>
+                    <Text>产品基本信息</Text>
+                </View>
+                <View style={styles.container}>
+                    <DetailItem title="登记证号" content={'this.state.model.organsName'} />
+                    <DetailItem title="登记名称" content={'this.state.model.loginName'} top={10} />
+                    <DetailItem title="生产企业" content={'this.state.model.userName'} />
+                    <DetailItem title="毒性" content={'this.state.model.phone'} />
+                    <DetailItem title="有效成分含量" content={'this.state.model.organsName'} />
+                    <DetailItem title="剂型" content={'this.state.model.loginName'} top={10} />
+                    <DetailItem title="有效开始日期" content={'this.state.model.userName'} />
+                    <DetailItem title="有效结束日期" content={'this.state.model.phone'} />
+                    <DetailItem title="农药生产许可证号" content={'this.state.model.organsName'} />
+                    <DetailItem title="农药产品标准号" content={'this.state.model.loginName'} top={10} />
+                    <DetailItem title="类型" content={'this.state.model.userName'} />
+                </View>
+                <View>
+                    <Text>产品作物信息</Text>
+                </View>
+                <View>
+                    <DetailItem title="登记作物名称" content={'this.state.model.organsName'} />
+                    <DetailItem title="防治对象名称" content={'this.state.model.loginName'} top={10} />
+                    <DetailItem title="用药量" content={'this.state.model.userName'} />
+                    <DetailItem title="施用方法" content={'this.state.model.phone'} />
+                </View>
+            </ScrollView>
+        )
+    }
+}
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+        marginBottom: 10,
+        // paddingLeft: 12,
+        // paddingRight: 12
+    },
+    line: {
+        borderWidth: 0.3,
+        borderColor: '#aaa',
+        borderStyle: 'solid',
+        marginTop: 5,
+        marginBottom: 5,
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        // height: 36,
+        lineHeight: 28,
+        padding: 10
+    },
+    search: {
+        justifyContent: 'center',
+        flexDirection: 'row',
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 180,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    }
+});

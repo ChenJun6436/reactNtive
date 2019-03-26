@@ -1,0 +1,26 @@
+import * as remx from 'remx';
+
+//remx.registerLoggerForDebug(console.log);
+
+const initialState = {
+    buyProductTopIndex: 0
+};
+
+const state = remx.state(initialState);
+
+const getters = remx.getters({
+    getBuyProductTopIndex() {
+        return state.buyProductTopIndex;
+    },
+});
+
+const setters = remx.setters({
+    setBuyProductTopIndex(index) {
+        return state.buyProductTopIndex = index;
+    },
+});
+
+export default store = {
+    ...setters,
+    ...getters
+};

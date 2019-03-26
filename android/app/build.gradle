@@ -107,7 +107,7 @@ android {
         targetSdkVersion 25
         missingDimensionStrategy "RNN.reactNativeVersion", "reactNative55" // <- See note below for further instruction regarding compatibility with other React Native versions
         versionCode 1
-        versionName "1.0"
+        versionName "1.8"
         multiDexEnabled true 
         vectorDrawables.useSupportLibrary = true
         ndk {
@@ -171,6 +171,9 @@ configurations.all {
         }
 }
 dependencies {
+    implementation project(':react-native-amap-geolocation')
+    implementation project(':react-native-amap3d')
+    implementation project(':react-native-device-info')
     implementation project(':react-native-image-crop-picker')
     implementation project(':react-native-fs')
     implementation project(':react-native-update-app')
@@ -178,7 +181,6 @@ dependencies {
     implementation project(':react-native-linear-gradient')
     implementation project(':react-native-orientation')
     implementation project(':react-native-keep-awake')
-    implementation project(':react-native-video')
     implementation project(':react-native-smart-splash-screen')
     implementation project(':react-native-vector-icons')
     

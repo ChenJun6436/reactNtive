@@ -1,0 +1,371 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  ImageBackground,
+  Dimensions,
+  Image,
+  findNodeHandle,
+  Alert,
+  AsyncStorage,
+  TouchableOpacity,
+  ScrollView,
+  StatusBar
+} from 'react-native';
+// import Divide from 'react-native-divide'
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { Input } from 'react-native-elements';
+import { Button, InputItem, Checkbox, List } from 'antd-mobile-rn';
+import requestPermission from 'root/src/utils/requestPermissions';//获取相机及其他权限
+import * as AccountAction from 'root/src/actions/account';
+import RNUpdate from "react-native-update-app"
+const { connect } = require('remx');
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const BG_IMAGE = require('root/img/login.jpg');
+const LOGO_IMAGE = require('root/img/logo.png');
+import storage from 'react-native-sync-storage';
+const QQ_IMAGE = require('root/img/qq.png');
+const WCHAT_IMAGE = require('root/img/wChat.png');
+
+const AgreeItem = Checkbox.AgreeItem;
+
+import inputItemStyle from 'antd-mobile-rn/lib/input-item/style/index.native';
+const inputStyle = {
+  ...inputItemStyle,
+  input: { ...inputItemStyle.input, color: '#fff' }
+}
+@navigatorDecorator
+export default class LoginScreen extends Component {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      viewRef: null,
+      loginName: storage.get('loginName'),
+      loginPwd: storage.get('loginPwd'),
+      isLogin: false,
+      inputType: 'password',
+      iconType: '#aaa',
+      isColor: true
+    };
+  }
+  componentWillMount() {
+
+  }
+
+  componentDidMount() {
+    requestPermission();
+  }
+  login = () => {
+    if (!this.state.loginName) {
+      MyToast.info('请填写用户名');
+      return;
+    }
+    if (!this.state.loginPwd) {
+      MyToast.info('请填写密码');
+      return;
+    }
+    MyToast.submiting();
+    this.setState({ submitLoading: true })
+    let vm = this
+    AccountAction.login({ input: { loginName: this.state.loginName, loginPwd: this.state.loginPwd } }).then((suc) => {
+      if (suc.suc) {
+        MyToast.success('登录成功');
+        Global.Navigate.startIndexScreen()
+      }
+      else {
+        MyToast.info(suc.msg);
+        return;
+      }
+      this.setState({ submitLoading: false })
+    })
+
+  }
+
+  imageLoaded = () => {
+    this.setState({ viewRef: findNodeHandle(this.backgroundImage) });
+  }
+  render() {
+    const { Account, navigator } = this.props;
+    // const { getFieldProps } = this.props.form;
+    return (
+      [<ScrollView style={styles.container}>
+        <StatusBar
+          backgroundColor="#ff0000"
+          translucent={true}
+          hidden={true}
+          animated={true} />
+        <Image
+          ref={(img) => { this.backgroundImage = img; }}
+          source={BG_IMAGE}
+          style={styles.bgImage}
+          onLoadEnd={this.imageLoaded}
+        />
+        <View style={styles.loginView}>
+          {/* <View style={styles.register}>
+            <TouchableOpacity onPress={() => {
+              this.pushPage({
+                component: {
+                  ...Global.Screens.SetRegisterCode
+                }
+              })
+            }}>
+              <Text style={{ color: '#ccc', fontSize: 20 }}>
+                注册
+              </Text>
+            </TouchableOpacity>
+          </View> */}
+          <View style={styles.loginTitle}>
+            <Image
+              style={{ width: 180, height: 90 }}
+              source={LOGO_IMAGE}
+            />
+          </View>
+          <View style={styles.loginInput}>
+            <View style={{ marginVertical: 15 }}>
+              <InputItem
+                style={{ height: 40, width: '90%', backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: 'white' }}
+                styles={inputStyle}
+                clear
+                value={this.state.loginName}
+                onChange={(value: any) => {
+                  this.setState({
+                    loginName: value,
+                  });
+                }}
+                labelNumber={2}
+                placeholder='请输入用户名'
+                placeholderTextColor='#cccccc'
+              >
+                <Icon
+                  name='user'
+                  color='#ffffff'
+                  size={25}
+                />
+                {/* <Text style={{ color: 'white' }}>{this.state.loginName}</Text> */}
+              </InputItem>
+            </View>
+            <View style={{ marginVertical: 15 }}>
+              <InputItem
+                style={{ height: 40, width: '90%', backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: 'white' }}
+                styles={inputStyle}
+                clear
+                type={this.state.inputType}
+                value={this.state.loginPwd}
+                onChange={(value: any) => {
+                  this.setState({
+                    loginPwd: value,
+                  });
+                }}
+                labelNumber={2}
+                placeholder='请输入密码'
+                placeholderTextColor='#cccccc'
+
+                extra={
+                  <TouchableOpacity onPress={() => {
+                    if (this.state.isColor) {
+                      this.setState({
+                        inputType: 'text',
+                        iconType: '#fff',
+                        isColor: false
+                      })
+                    }
+                    else {
+                      this.setState({
+                        inputType: 'password',
+                        iconType: '#aaa',
+                        isColor: true
+                      })
+                    }
+                  }}>
+                    <Text >
+                      <Icon
+                        name='eye'
+                        color={this.state.iconType}
+                        size={25}
+                      />
+                    </Text>
+                  </TouchableOpacity>
+                }
+              >
+                <Icon
+                  name='lock'
+                  color='#ffffff'
+                  size={25}
+                />
+              </InputItem>
+            </View>
+            {/* <View style={{ marginVertical: 15, width: '95%', }} >
+              <AgreeItem
+                checked={this.state.isLogin}
+                checkboxStyle={{ tintColor: '#ffffff' }}
+                onChange={(event: any) => {
+                  this.setState({ isLogin: event.target.checked });
+                }}
+              >
+                <TouchableOpacity onPress={() => {
+                  this.pushPage({
+                    component: {
+                      ...Global.Screens.Disclaimer
+                    }
+                  })
+                }}>
+                  <Text style={{ color: '#ffffff' }}>
+                    同意《免责申明》
+              </Text>
+                </TouchableOpacity>
+              </AgreeItem>
+            </View> */}
+            <View style={{ marginVertical: 30, width: '100%', alignItems: 'center', }}>
+              <Button
+                style={{ height: 40, width: '90%', backgroundColor: this.state.loginName && this.state.loginPwd ? 'transparent' : '#cccccc', borderWidth: 2, borderColor: 'white', borderRadius: 5 }}
+                onClick={this.login}
+                disabled={!(this.state.loginName && this.state.loginPwd)}
+              >
+                <Text style={{ fontWeight: 'bold', color: 'white' }}>登    录</Text>
+              </Button>
+            </View>
+            <View style={{ width: '100%', alignItems: 'center', }}>
+              <Button
+                style={{ height: 40, width: '90%', backgroundColor: 'transparent', borderWidth: 2, borderColor: 'white', borderRadius: 5 }}
+                onClick={() => {
+                  this.pushPage({
+                    component: {
+                      ...Global.Screens.SetRegisterCode
+                    }
+                  })
+                }}
+              >
+                <Text style={{ fontWeight: 'bold', color: 'white' }}>注    册</Text>
+              </Button>
+            </View>
+          </View>
+          <View style={{ width: '90%', flexDirection: 'row', justifyContent: 'flex-end', marginVertical: 30 }}>
+            <TouchableOpacity onPress={() => {
+              this.pushPage({
+                component: {
+                  ...Global.Screens.SetNewCode
+                }
+              })
+            }}>
+              <Text style={{ color: '#ffffff' }}>
+                忘记密码?
+                  </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.fastLogin}>
+            <View style={styles.fastTitle}>
+              <View style={styles.lineTitle}></View>
+              <View style={styles.textTitle}><Text style={{ color: 'white', fontSize: 18, }}>快捷登录</Text></View>
+              <View style={styles.lineTitle}></View>
+            </View>
+            <View style={styles.fastImg}>
+              <TouchableOpacity onPress={() => {
+                MyToast.info('正在开发中');
+              }}>
+                <Image
+                  style={{ width: 35, height: 35, marginRight: 80, marginTop: 5, }}
+                  source={QQ_IMAGE}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => {
+                MyToast.info('正在开发中');
+              }}>
+                <Image
+                  style={{ width: 35, height: 35, marginTop: 5, }}
+                  source={WCHAT_IMAGE}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </ScrollView>,
+      <RNUpdate
+        onBeforeStart={async () => {
+          const response = await fetch(BaseApiUrl + '/appVersion.json?t=' + Date.now());
+          const data = await response.json();
+          return data;
+        }}
+        progressBarColor={"#f50"}
+        updateBoxWidth={250}
+        updateBoxHeight={250}
+        updateBtnHeight={38}
+      />]
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    height: SCREEN_HEIGHT,
+
+  },
+  bgImage: {
+    position: "absolute",
+    flex: 1,
+    top: 0,
+    left: 0,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT
+  },
+  title: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  travelText: {
+    color: '#ffffff',
+    fontSize: 26,
+    fontFamily: 'bold',
+    textAlign: 'center',
+    width: '100%',
+    height: 40,
+    lineHeight: 40,
+  },
+  loginView: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: SCREEN_HEIGHT,
+  },
+  register: {
+    position: 'absolute',
+    top: 30,
+    right: 20,
+  },
+  loginTitle: {
+    marginTop: 70,
+  },
+  loginInput: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  fastLogin: {
+    width: '100%',
+    alignItems: 'center',
+    // marginTop:10,
+  },
+  fastTitle: {
+    width: '90%',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  lineTitle: {
+    borderWidth: 1,
+    borderColor: '#ffffff',
+    width: '38%',
+    height: 1
+  },
+  fastImg: {
+    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5
+  }
+})
+
+

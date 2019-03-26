@@ -1,0 +1,89 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    TouchableOpacity,
+    Dimensions,
+    TouchableHighlight
+} from 'react-native';
+import { List, InputItem, Button, SwipeAction, Checkbox } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import DiagnosisList from 'root/src/screens/baseComon/DiagnosisList';
+import CropStore from 'root/src/stores/crop';
+import * as DiagnosisAction from 'root/src/actions/diagnosis';
+const { connect } = require('remx');
+const CheckboxItem = Checkbox.CheckboxItem;
+@navigatorDecorator
+class ERPDiaList extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            cropList: [],
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed({ buttonId }) {
+        // this.pushPage({
+        //     component: {
+        //         ...Global.Screens.ERPDiaDetailSearch,
+        //         passProps: { searchFn: this.searchFn },
+        //     }
+        // });
+        CropStore.setCropList(this.state.cropList);
+        this.pop();
+
+    }
+
+    refresh = () => {
+        this.moreListInst._onRefresh();
+    }
+    searchFn = (item) => {
+        this.setState({
+            classificCode: item.classificCode,
+            search: item.search
+        }, this.refresh)
+    }
+    onChange = (value) => {
+        console.log(value)
+        this.state.cropList.push(value)
+    }
+    render() {
+        return (
+            <LoadMoreList
+                ref={ref => this.moreListInst = ref}
+                getData={DiagnosisAction.GetPlantByLivingMatter}
+                searchParams={{ classificCode: this.state.classificCode, search: this.state.search }}
+                rowItem={(data) => {
+                    return <CheckboxItem key={data.crop} onChange={() => this.onChange(data.nameCn)}>
+                        {data.nameCn}
+                    </CheckboxItem>
+                }}
+            />
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+        cropData: CropStore.getCropData()
+    };
+}
+module.exports = connect(mapStateToProps)(ERPDiaList);
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+});

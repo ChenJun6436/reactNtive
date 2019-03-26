@@ -1,0 +1,120 @@
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ * @flow
+ */
+
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Dimensions,
+} from 'react-native';
+import { Button, List } from 'antd-mobile-rn';
+const { connect } = require('remx');
+import store from 'root/src/stores/account';
+import Icon from 'react-native-vector-icons/FontAwesome';
+const Item = List.Item;
+type Props = {};
+@navigatorDecorator
+class App extends Component<Props> {
+
+  render() {
+    console.log(this.props.userInfo)
+    return (
+      <View style={styles.container}>
+        <View style={styles.baseinfo}>
+          <Icon
+            name='user-circle-o'
+            color='green'
+            size={50}
+            style={{ marginRight: 10 }}
+          />
+          <View>
+            <Text style={{ fontSize: 22, color: 'green' }}>欢迎您</Text>
+            <Text>{this.props.userInfo.loginName}</Text>
+          </View>
+        </View>
+        <View style={styles.list}>
+          <List>
+            <Item
+              thumb={<Icon
+                name='user'
+                color='#ffab00'
+                size={25}
+                style={{ marginRight: 15, width: 25, height: 25 }}
+              />}
+              onClick={() => {
+                // this.showModal(Constants.Screens.PassModify_TAB, App.rootNavigator);
+                this.pushPage({
+                  component: {
+                    ...Global.Screens.FarmersPortrait,
+                  }
+                });
+                // App.rootNavigator.toggleDrawer({
+                //   side: 'left', // the side of the drawer since you can have two, 'left' / 'right'
+                //   animated: true, // does the toggle have transition animation or does it happen immediately (optional)
+                //   to: 'closed' // optional, 'open' = open the drawer, 'closed' = close it, missing = the opposite of current state
+                // });
+              }}
+            >
+              农户画像
+          </Item>
+            <Item
+              thumb={<Icon
+                name='key'
+                color='#ffab00'
+                size={25}
+                style={{ marginRight: 15, width: 25, height: 25 }}
+              />}
+              onClick={() => {
+                alert('修改密码')
+              }}
+            >
+              密码修改
+          </Item>
+            <Item
+              thumb={<Icon
+                name='power-off'
+                color='#666'
+                size={25}
+                style={{ marginRight: 15, width: 25, height: 25 }}
+              />}
+              onClick={() => {
+                storage.remove('token');
+                Global.Navigate.startLoginScreen();
+              }}
+            >
+              注销
+          </Item>
+          </List>
+        </View>
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    // width: Dimensions.get('window').width,
+  },
+  baseinfo: {
+    flex: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 20
+  },
+  list: {
+    flex: 7,
+  }
+});
+function mapStateToProps() {
+  return {
+    userInfo: store.getAccount()
+  };
+}
+
+module.exports = connect(mapStateToProps)(App);

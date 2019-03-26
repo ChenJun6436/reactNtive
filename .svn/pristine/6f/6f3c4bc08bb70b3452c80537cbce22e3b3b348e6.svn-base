@@ -1,0 +1,95 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ScrollView,
+  Dimensions,
+  TouchableWithoutFeedback
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar ,WingBlank, Tabs  } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import BrTag from '../baseComon/BrTag.js'
+import VedioLeftText2Right from '../baseComon/VedioLeftText2Right.js'
+import LoadMoreList from '../baseComon/LoadMoreList.js'
+import * as purchasePaperAction from 'root/src/actions/account';
+import Icon from 'react-native-vector-icons/Feather';
+const { connect } = require('remx');
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+});
+
+
+@navigatorDecorator
+class AgMic extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+  }
+
+  async componentDidMount() {
+    //requestPermission();
+  }
+  changeTab(tab,ind) {
+    console.log(tab+''+ind)
+  }
+  render() {
+    let a = 'root/img/product.png'
+    const tabs = [
+      { title: '种植微课' },
+      { title: '养殖微课' },
+    ]
+    return (
+      <View style={styles.container}>
+        <Tabs tabs={tabs} initialPage={1} onTabClick={this.changeTab}>
+          <View>
+            <WingBlank size='sm'>
+              <VedioLeftText2Right img={ require(a)  } title={'农业资讯111'}/>
+              <VedioLeftText2Right img={ require(a)  } title={'农业资讯111'}/>
+              <VedioLeftText2Right img={ require(a)  } title={'农业资讯111'}/>
+              <VedioLeftText2Right img={ require(a)  } title={'农业资讯111'}/>
+            </WingBlank>
+          </View>
+          <View>
+            <WingBlank size='sm'>
+              <VedioLeftText2Right img={ require(a)  } title={'农业资讯111'}/>
+              <VedioLeftText2Right img={ require(a)  } title={'农业资讯111'}/>
+              <VedioLeftText2Right img={ require(a)  } title={'农业资讯111'}/>
+              <VedioLeftText2Right img={ require(a)  } title={'农业资讯111'}/>
+            </WingBlank>
+          </View>
+        </Tabs>
+      {/* <LoadMoreList
+            ref={ref => this.moreListInst = ref}
+            getData={purchasePaperAction.login}
+            searchParams={{ 
+                storeSupplierName: 1, 
+            }}
+            rowItem={(data) => {
+                return <WingBlank size='sm'>
+                <TextTopImgBottom img={ require(a)  } title={'农业资讯111'}/>
+                <TextTopImgBottom img={ require(a)  } title={'农业资讯111'}/>
+                <ImgLeftText2Right img={ require(a)  } title={'农业资讯111'}/>
+                <ImgLeftText2Right img={ require(a)  } title={'农业资讯111'}/>
+                <ImgLeftText2Right img={ require(a)  } title={'农业资讯111'}/>
+                <ImgLeftText2Right img={ require(a)  } title={'农业资讯111'}/>
+              </WingBlank>
+            }}
+        /> */}
+        
+      </View>
+    );
+  }
+}
+function mapStateToProps() {
+  return {
+    menuList: store.getMenuList()
+  };
+}
+
+module.exports = connect(mapStateToProps)(AgMic);
+

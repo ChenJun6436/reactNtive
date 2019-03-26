@@ -1,0 +1,100 @@
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    Dimensions,
+    TouchableWithoutFeedback,
+    ProgressBarAndroid,
+    TouchableHighlight,
+    StatusBar
+    // TouchableOpacity
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar, WingBlank, WhiteSpace, SwipeAction } from 'antd-mobile-rn'
+import ListItem from 'root/src/screens/baseComon/ListItem'
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import * as MARAction from 'root/src/actions/medicationRecord'
+import pesticidesStore from 'root/src/stores/pesticides';
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const { connect } = require('remx');
+let pageIndex = 1;
+// @loadingDecorator
+@navigatorDecorator
+class PesticidesList extends Component {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+
+        }
+        // Navigation.mergeOptions(this.props.componentId, {
+        //     topBar: {
+        //         rightButtons: [{
+        //             confirmRightBtn, text: '新增'
+        //         }]
+        //     }
+        // });
+        // Navigation.events().bindComponent(this);
+
+    }
+    navigationButtonPressed({ buttonId }) {
+        this.pushPage({
+            component: {
+                ...Global.Screens.AddMAR,
+                options: {
+                    bottomTabs: {
+                        visible: false,
+                        drawBehind: true
+                    }
+                },
+            }
+        });
+    }
+    componentWillMount() {
+    }
+
+    render() {
+        return (<ScrollView style={styles.container}>
+            <LoadMoreList
+                ref={ref => this.moreStoreListInst = ref}
+                getData={MARAction.GoodsSearch}
+                searchParams={{ search: this.state.search }}
+                rowItem={(data) => {
+                    return <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                        onPress={() => {
+                            pesticidesStore.setPesticidesData([data])
+                            this.props.getData && this.props.getData(data, this.props.index)
+                            this.pop()
+                        }}>
+                        <ListItem firstItem={data.registerName} secondItem={data.registerID} thirdItem={data.productSType} fourthItem={data.manufacturerName} />
+                    </TouchableHighlight>
+                }}
+            />
+        </ScrollView >
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+        pesticidesData: pesticidesStore.getPesticidesData()
+    };
+}
+
+module.exports = connect(mapStateToProps)(PesticidesList);
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 180,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    },
+
+});

@@ -1,0 +1,7 @@
+import { Post } from '../utils/request';
+export async function UploadImg(data) {
+    debugger;
+    return Post(`/Api/Images/Upload?OSSDicType=4`, {
+        body: JSON.stringify(data)
+    });
+}

@@ -1,0 +1,108 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ScrollView,
+  Dimensions,
+  TouchableWithoutFeedback,
+  ProgressBarAndroid
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar ,WingBlank, Tabs  } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import BrTag from '../../baseComon/BrTag.js'
+import VideoTopText2Bottom from '../../baseComon/VideoTopText2Bottom.js'
+import UserMessage from '../../baseComon/UserMessage.js'
+import LoadMoreList from '../../baseComon/LoadMoreList.js'
+import BrTagText from '../../baseComon/BrTagText.js'
+import CommentWrite from '../../baseComon/CommentWrite.js'
+import * as AgInfoAction from 'root/src/actions/agInfo'
+import * as purchasePaperAction from 'root/src/actions/account';
+import Icon from 'react-native-vector-icons/Feather';
+const { connect } = require('remx');
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+});
+
+
+@navigatorDecorator
+class AgMicDetail extends Component {
+  constructor(props: {}) {
+    super(props);
+    this.state = {
+      AgInfo: null
+    }
+    const { App, navigator, Message } = this.props;
+  }
+  componentWillMount() {
+    AgInfoAction.getAgDetail({ input: { contentId: this.props.id} }).then(({ suc, data }) => {
+      this.setState({
+        AgInfo: data
+      })
+    })
+    
+  }
+  async componentDidMount() {
+    //requestPermission();
+  }
+  _commentClick = (user) => {
+    this.pushPage({
+      component: {
+        ...Global.Screens.CommentDetail,
+        passProps: { user }
+      }
+    });
+  }
+  //评论列表
+  _fresh = () => {
+    this.moreListInst._onRefresh();
+  }
+  render() { 
+    const tabs = [
+      { title: '种植微课' },
+      { title: '养殖微课' },
+    ]
+    const content = this.state.AgInfo
+    {console.log(this.state.AgInfo)}
+    return (
+      <View style={styles.container}>
+      {this.state.AgInfo?(
+        <ScrollView>
+          <VideoTopText2Bottom size={'big'} content={this.state.AgInfo} />   
+            <BrTagText title={'视频简介'}/>
+            <View style={{paddingLeft: 10,paddingRight: 10}}>
+              <Text style={{fontSize: 15, lineHeight: 18}}>{content.title}</Text>
+            </View>
+            <BrTagText title={'热门评论'}/>
+            <View>
+              <LoadMoreList
+                ref={ref => this.moreListInst = ref}
+                getData={AgInfoAction.getAgComment}
+                searchParams={{ contentId: this.props.id }}
+                rowItem={(data) => {
+                  return <UserMessage commentClick={ this._commentClick }  content={data}/>
+                }}
+              />
+            </View>
+            {this.state.AgInfo.allowComment?(
+              <CommentWrite fresh={this._fresh} id={this.props.id}  type={0}/>
+            ):null}
+        </ScrollView>
+      ):<ProgressBarAndroid/>}
+        
+      </View>
+    );
+  }
+}
+function mapStateToProps() {
+  return {
+    menuList: store.getMenuList()
+  };
+}
+
+module.exports = connect(mapStateToProps)(AgMicDetail);
+

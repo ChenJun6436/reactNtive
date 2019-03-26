@@ -1,0 +1,18 @@
+import * as CommonService from '../services/mine';
+
+//获取土地种植养殖列表
+export async function GetPlantList( input ) {
+    const { data, msg, success } = await CommonService.GetPlantList(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true, data, msg };
+}
+
+//获取土地种植养殖列表
+export async function AddPlant({ input }) {
+    console.log(input)
+    const { data, msg, success } = await CommonService.AddPlant(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true, data, msg };
+}

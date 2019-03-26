@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace } from 'antd-mobile-rn';
 import * as MineAction from 'root/src/actions/mine';
-import Icon from 'react-native-vector-icons/Feather';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import { bold } from 'ansi-colors';
 import moment from 'moment';
 const { connect } = require('remx');
@@ -35,6 +35,7 @@ let initError = {
 class PublishAdd extends Component {
     constructor(props) {
         super(props);
+        this.loading = false
         this.state = {
             plantList: [initData],
             plantError: [initError],
@@ -55,40 +56,59 @@ class PublishAdd extends Component {
         Navigation.events().bindComponent(this);
     }
     navigationButtonPressed() {
+        if (this.loading) {
+            return false
+        }
+        const ret = /^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/;
         let nowName = ''
+        let nowToast = ''
         let nowError = this.state.plantError
         this.state.plantList.map((i, index) => {
-            if (!i.plantName) {
-                nowName = 'plantName'
-                nowError[index][nowName] = true
-            }
-            if (!i.area) {
-                nowName = 'area'
-                nowError[index][nowName] = true
-            }
-            if (!i.period) {
-                nowName = 'period'
-                nowError[index][nowName] = true
-            }
             if (!this.state.title) {
                 nowName = '1'
                 this.setState({
                     titleError: true
                 })
-            }
-            if (!this.state.description) {
+                nowToast = '请填写标题'
+            } else if (!this.state.description) {
                 nowName = '2'
                 this.setState({
                     descriptionError: true
                 })
+                nowToast = '请填写描述'
+            } else if (!i.plantName) {
+                nowName = 'plantName'
+                nowError[index][nowName] = true
+                nowToast = '请填写作物名称'
+            } else if (!i.area) {
+                nowName = 'area'
+                nowError[index][nowName] = true
+                nowToast = '请填写面积'
+            } else if (!ret.test(i.area)) {
+                nowName = 'area'
+                nowError[index][nowName] = true
+                nowToast = '面积应大于0，且最多两位小数的数字'
+            } else if (!i.period) {
+                nowName = 'period'
+                nowError[index][nowName] = true
+                nowToast = '请填写生长周期'
+            } else if (!ret.test(i.period)) {
+                nowName = 'period'
+                nowToast = '生长周期应大于0，且最多两位小数的数字'
+            } else if (!ret.test(i.outPut)) {
+                nowName = 'outPut'
+                nowToast = '预计产量应大于0，且最多两位小数的数字'
             }
         })
+
+
         if (nowName) {
-            MyToast.info('请完整填写发布信息');
+            MyToast.info(nowToast)
             this.setState({
                 plantError: nowError
             })
         } else {
+            this.loading = true
             let plantList = this.state.plantList
             let startTime = moment(this.state.startTime).format('YYYY-MM-DD');
             let endTime = moment(this.state.endTime).format('YYYY-MM-DD');
@@ -102,10 +122,8 @@ class PublishAdd extends Component {
                 endTime,
                 plantList
             }
-            console.log(postData)
             MineAction.AddPublish({ input: postData }).then((data) => {
-                console.log(data)
-                if (data.suc==1) {
+                if (data.suc == 1) {
                     MyToast.success('发布成功');
                     initData = {
                         plantName: '',
@@ -117,14 +135,12 @@ class PublishAdd extends Component {
                         unit: "亩"
                     }
                     setTimeout(() => {
-                        this.pushPage({
-                            component: {
-                                ...Global.Screens.MinePublish,
-                            }
-                        });
+                        this.pop();
+                        this.props.refresh && this.props.refresh()
                     }, 2000)
                 } else {
-                    MyToast.info('发布失败，请稍后再试');
+                    this.loading = false
+                    MyToast.info(data.msg)
                 }
             })
         }
@@ -136,6 +152,9 @@ class PublishAdd extends Component {
         let nowList = this.state.plantList
         let nowError = this.state.plantError
         let textNew = text
+        if (text[0] == '-' && text.length > 1) {
+            textNew = ''
+        }
         nowList[index][name] = textNew
         if (!text) {
             nowError[index][name] = true
@@ -226,7 +245,7 @@ class PublishAdd extends Component {
                         <DatePicker
                             value={this.state.startTime}
                             mode="date"
-                            minDate={new Date('2018-01-01')}
+                            minDate={new Date()}
                             onChange={(text) => {
                                 this.setState({
                                     startTime: text
@@ -241,7 +260,7 @@ class PublishAdd extends Component {
                         <DatePicker
                             value={this.state.endTime}
                             mode="date"
-                            minDate={new Date('2018-01-01')}
+                            minDate={new Date(this.state.startTime)}
                             onChange={(text) => {
                                 this.setState({
                                     endTime: text
@@ -270,7 +289,7 @@ class PublishAdd extends Component {
                                                 })
                                             }}>
                                                 <View>
-                                                    <Text style={{ textAlign: 'center', fontSize: 18, color: '#000', lineHeight: 50, marginRight: 15 }}><Icon color='red' name='trash-2' size={18} /></Text>
+                                                    <Text style={{ textAlign: 'center', fontSize: 18, color: '#000', lineHeight: 50, marginRight: 15 }}><Icon color='red' name='trash' size={18} /></Text>
                                                 </View>
                                             </TouchableWithoutFeedback>
                                         )}
@@ -349,7 +368,7 @@ class PublishAdd extends Component {
                                         }}
                                         placeholder="输入预计产量"
                                         value={i.outPut}
-                                        extra="kg"
+                                        extra="斤"
                                     >预计产量
                                     </InputItem>
                                 </List>

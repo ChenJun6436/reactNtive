@@ -1,0 +1,54 @@
+import * as remx from 'remx';
+
+//remx.registerLoggerForDebug(console.log);
+
+const initialState = {
+  cropData: null,
+  pestData: null,
+  cropList: null,
+  pestList: null,
+  cropsList:null
+};
+
+const state = remx.state(initialState);
+
+const getters = remx.getters({
+  getCropData() {
+    return state.cropData
+  },
+  getPestData() {
+    return state.pestData
+  },
+  getCropList() {
+    return state.cropList
+  },
+  getPestList(){
+    return state.pestList
+  },
+  getCropsList(){
+    return state.cropsList
+  }
+});
+
+const setters = remx.setters({
+  setCropData(cropData) {
+    state.cropData = cropData;
+  },
+  setPestData(pestData) {
+    state.pestData = pestData;
+  },
+  setCropList(value) {
+    state.cropList = value
+  },
+  setPestList(value) {
+    state.pestList = value
+  },
+  setCropsList(value) {
+    state.cropsList = value
+  },
+});
+
+export default store = {
+  ...setters,
+  ...getters
+};

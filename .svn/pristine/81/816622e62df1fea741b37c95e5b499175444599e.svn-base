@@ -1,0 +1,52 @@
+import * as AcountService from '../services/account';
+import AccountStore from '../stores/account';
+
+//登陆
+export async function login({ input }) {
+    const { data, msg, success } = await AcountService.login(input)
+    if (!success)
+        return { suc: false };
+    AccountStore.setAccount(data.info);
+    AccountStore.setMenuList(data.menuList);
+    return { suc: true };
+}
+
+//注册
+export async function register({ input }) {
+    const { data, msg, success } = await AcountService.register(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true };
+}
+
+//忘记密码
+export async function forgetPwd({ input }) {
+    const { data, msg, success } = await AcountService.forgetPwd(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true };
+}
+
+//发送验证码
+export async function sendVerifiedCode({ input }) {
+    const { data, msg, success } = await AcountService.sendVerifiedCode(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true };
+}
+
+//获取用户信息
+export async function getUserInfo({ input }) {
+    const { data, msg, success } = await AcountService.getUserInfo(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true, data };
+}
+
+//完善用户信息
+export async function editUserInfo({ input }) {
+    const { data, msg, success } = await AcountService.editUserInfo(input)
+    if (!success)
+        return { suc: false };
+    return { suc: true };
+}

@@ -1,0 +1,201 @@
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ * @flow
+ */
+
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    TouchableOpacity,
+    Dimensions,
+    Animated,
+    TouchableHighlight
+} from 'react-native';
+import moment from 'moment';
+import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
+import { Button, SwipeAction, InputItem, WhiteSpace } from 'antd-mobile-rn';
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+import StoreList from './StoreList'
+import HotProduct from './HotProduct'
+import StoreItem from '../baseComon/storeItem'
+import * as StoreAction from 'root/src/actions/store'
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+const { connect } = require('remx');
+import AppStore from 'root/src/stores/app';
+// @loadingDecorator
+@navigatorDecorator
+class BuyProduct extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            routes: [
+                { key: 'first', title: '周边农资店' },
+                { key: 'second', title: '热销农资' },
+            ],
+        };
+
+    }
+    componentWillMount() {
+
+    }
+    render() {
+        let content1 = {
+            img: require('root/img/ZFbanner2.jpg'),
+            name: '农资产品（规格）',
+            storeName: '农资店名',
+            phone: '13540901962',
+            address: '乐山市嘉州大道258号',
+            price: '25~35元'
+        }
+        // let FirstRoute = () => (
+        //     // <View>
+        //     <StoreList />
+        //     {/* </View> */ }
+        // );
+        // let SecondRoute = () => (
+        //     <HotProduct />
+        // );
+        let FirstRoute = () => (
+            <View style={[styles.container]} >
+                {/* <View style={[styles.searchBtn]}>
+                    <Button style={styles.btn}>距离</Button>
+                    <Button style={styles.btn}>销量</Button>
+                    <Button style={styles.btn}>查看量</Button>
+                </View> */}
+                <LoadMoreList
+                    ref={ref => this.moreListInst = ref}
+                    getData={StoreAction.SearchNearByStore}
+                    searchParams={{ longitude: storage.get('longitude'), latitude: storage.get('latitude') }}
+                    rowItem={(data) => {
+                        return <SwipeAction autoClose style={{ backgroundColor: 'transparent', flex: 1 }} right={[
+                            {
+                                text: '详情',
+                                onPress: () => {
+                                    this.pushPage({
+                                        component: {
+                                            ...Global.Screens.StoreDetail,
+                                            // title: data.name
+                                        }
+                                    });
+                                },
+                                style: { backgroundColor: 'orange', color: 'white' },
+                            }
+                        ]} >
+                            <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                                onPress={() => {
+                                    this.pushPage({
+                                        component: {
+                                            passProps: { id: data.id },
+                                            ...Global.Screens.StoreDetail,
+                                            options: {
+                                                topBar: {
+                                                    title: {
+                                                        text: data.name
+                                                    }
+                                                }
+                                            },
+                                        }
+                                    });
+                                }}>
+                                <StoreItem content={data} />
+                            </TouchableHighlight>
+                        </SwipeAction>
+                    }}
+                />
+            </View>
+        );
+        let SecondRoute = () => (
+            <View style={[styles.container]} >
+                <LoadMoreList
+                    ref={ref => this.moreListInst = ref}
+                    getData={StoreAction.SearchGoods}
+                    searchParams={{  regionId: storage.get('regionId') }}
+                    rowItem={(data) => {
+                        return <SwipeAction autoClose style={{ backgroundColor: 'transparent', flex: 1 }} right={[
+                            {
+                                text: '详情',
+                                onPress: () => {
+                                    this.pushPage({
+                                        component: {
+                                            ...Global.Screens.ProductDetail
+                                        }
+                                    });
+                                },
+                                style: { backgroundColor: 'orange', color: 'white' },
+                            }
+                        ]} >
+                            <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                                onPress={() => {
+                                    this.pushPage({
+                                        component: {
+                                            passProps: { id: data.id },
+                                            ...Global.Screens.ProductDetail,
+                                            options: {
+                                                topBar: {
+                                                    title: {
+                                                        text: data.name
+                                                    }
+                                                }
+                                            },
+                                        }
+                                    });
+                                }}>
+                                <HotProduct content={data} />
+                            </TouchableHighlight>
+                        </SwipeAction>
+                    }}
+                />
+            </View>
+        );
+        return (
+            // <View style={styles.container}>
+            <TabView
+                navigationState={{ ...this.state, index: this.props.buyProductTopIndex }}
+                renderScene={
+                    SceneMap({
+                        first: FirstRoute,
+                        second: SecondRoute,
+                    })
+                }
+                onIndexChange={index => AppStore.setBuyProductTopIndex( index )}
+                initialLayout={{ width: SCREEN_WIDTH }}
+            />
+            // </View>
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    tabBar: {
+        flexDirection: 'row',
+        // paddingTop: Constants.statusBarHeight,
+        backgroundColor: 'green'
+    },
+    tabItem: {
+        flex: 1,
+        alignItems: 'center',
+        padding: 16,
+    },
+    searchBtn: {
+        width: '100%',
+        flexDirection: 'row',
+    },
+    btn: {
+        width: '33.3%'
+    }
+});
+function mapStateToProps() {
+    return {
+        buyProductTopIndex: AppStore.getBuyProductTopIndex()
+    };
+}
+
+module.exports = connect(mapStateToProps)(BuyProduct);

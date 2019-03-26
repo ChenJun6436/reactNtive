@@ -1,0 +1,211 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace } from 'antd-mobile-rn';
+import * as MineAction from 'root/src/actions/mine';
+import Icon from 'react-native-vector-icons/Feather';
+import { bold } from 'ansi-colors';
+import InputWriteSelect from 'root/src/screens/baseComon/InputWriteSelect.js'
+import moment from 'moment';
+import CropStore from 'root/src/stores/crop';
+// import { runInThisContext } from 'vm';
+const { connect } = require('remx');
+const Item = List.Item;
+@navigatorDecorator
+class AddCrop extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            plantList: [
+                // {
+                //     plantName : '',
+                //     area : '',
+                //     period: '',
+                //     year: new Date(),
+                //     outPut: '',
+                //     iscurrent: true,
+                //     unit: "亩"
+                // }
+            ],
+            plantError: [
+                {
+                    plantName: false,
+                    area: false,
+                    period: false,
+                }
+            ],
+        }
+        console.log(this.props)
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                title: {
+                    text: this.props.isNow=='true'?'当前栽养品':'计划栽养品'
+                },
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+        let nowName = ''
+        let nowError = this.state.plantError
+        this.state.plantList.map((i, index) => {
+            if (!i.plantName) {
+                nowName = 'plantName'
+                nowError[index][nowName] = true
+            }
+            if (!i.area) {
+                nowName = 'area'
+                nowError[index][nowName] = true
+            }
+            if (!i.period) {
+                nowName = 'period'
+                nowError[index][nowName] = true
+            }
+        })
+        if (nowName) {
+            MyToast.info('请填写作物信息');
+            this.setState({
+                plantError: nowError
+            })
+        } else {
+            let plantList = this.state.plantList
+            plantList.forEach(i => {
+                i.year = moment(i.yearStr).format('YYYY-MM-DD');
+            });
+            MineAction.AddPlant({ input: this.state.plantList }).then((data) => {
+                if (data.suc) {
+                    MyToast.info('保存成功');
+                } else {
+                    MyToast.info('保存失败，请稍后再试');
+                }
+            })
+        }
+    }
+    componentWillMount() {
+        if (this.props.isLogin) {
+            const vm = this
+            let nowError = this.state.plantError
+            this.iscurrent = this.props.isNow
+            MineAction.GetPlantList(this.props.isNow).then((data) => {
+                if (data.data.length > 0) {
+                    let nowList = data.data
+                    nowList.forEach((i, index) => {
+                        if (i.yearStr) {
+                            i.yearStr = new Date(i.yearStr)
+                        }
+                        if (index > 0) {
+                            nowError.push(
+                                {
+                                    plantName: false,
+                                    area: false,
+                                    period: false,
+                                }
+                            )
+                        }
+                    })
+                    vm.setState({
+                        plantList: nowList,
+                        plantError: nowError
+                    })
+                } else {
+                    this.setState({
+                        plantList: [
+                            {
+                                plantName: '',
+                                area: '',
+                                period: '',
+                                year: new Date(),
+                                outPut: '',
+                                iscurrent: this.props.isNow,
+                                unit: "亩"
+                            }
+                        ],
+                    })
+                }
+            })
+        }
+    }
+    changeData(text, index, name) {
+        let nowList = this.state.plantList
+        let nowError = this.state.plantError
+        let textNew = text
+        nowList[index][name] = textNew
+        if (!text) {
+            nowError[index][name] = true
+            switch (name) {
+                case 'plantName':
+                    MyToast.info('作物名称不能为空');
+                    break;
+                case 'area':
+                    MyToast.info('面积不能为空');
+                    break;
+                case 'period':
+                    MyToast.info('生长周期不能为空');
+                    break;
+            }
+            this.setState({
+                plantError: nowError,
+            })
+        } else {
+            debugger;
+            nowError[index][name] = false
+            this.setState({
+                plantList: nowList,
+                plantError: nowError,
+            })
+        }
+    }
+
+    onErrorClick = () => {
+        MyToast.info('请填写正确的信息，且不能为空');
+    }
+    render() {
+        return (
+            <View style={{ backgroundColor: '#f5f5f5' }}>
+                <List>
+                    <InputWriteSelect _name={'作物名称'} _value={this.props.cropData} _type={'crop'}  _selectCrop={()=>{
+                        this.pushPage({
+                            component: {
+                                passProps: { isSelect: true },
+                                ...Global.Screens.ERPDiagnosis
+                            }
+                        })
+                    }}/>
+                </List>
+                <List>
+                    <InputWriteSelect _name={'病害名称'} _value={this.props.pestData} _type={'pest'}  _selectCrop={()=>{
+                        this.pushPage({
+                            component: {
+                                passProps: { cropName: this.props.cropData , isSelect: true},
+                                ...Global.Screens.ERPDiagnosisDetail
+                            }
+                        })
+                    }}/>
+                </List>
+            </View>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+        cropData: CropStore.getCropData(),
+        pestData: CropStore.getPestData()
+    };
+}
+
+module.exports = connect(mapStateToProps)(AddCrop);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

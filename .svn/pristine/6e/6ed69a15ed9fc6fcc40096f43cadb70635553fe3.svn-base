@@ -1,0 +1,301 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    // Button,
+    ScrollView,
+    TextInput,
+    Alert,
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button } from 'antd-mobile-rn';
+import * as AccountAction from 'root/src/actions/account';
+import * as CommonAction from 'root/src/actions/common';
+import * as EnumsAction from 'root/src/actions/enums';
+import store from 'root/src/stores/account';
+import moment from 'moment';
+const { connect } = require('remx');
+const Item = List.Item;
+
+@navigatorDecorator
+class Mine extends Component {
+    static get options() {
+        return {
+            topBar: {
+                rightButtons: [
+                    {
+                        id: 'comfirmer',
+                        title: '确定',
+                        color: '#fff'
+                    }
+                ],
+            }
+        };
+    }
+    constructor(props) {
+        super(props);
+        this.state = {
+            files2: [],
+            id: '',
+            userName: '',
+            avatar: '',
+            email: '',
+            address: '',
+            provinceCode: '',
+            provinceName: '',
+            cityCode: '',
+            cityName: '',
+            townCode: '',
+            townName: '',
+            countyCode: '',
+            countyName: '',
+            regionId: '',
+            regionName: '',
+            sex: '',
+            birthDate: new Date(),
+            idCardNumber: '',
+            userType: '',
+            plantingCrop: '',
+            plantingArea: '',
+            plantingYield: '',
+            nextYearPlant: '',
+        }
+        Navigation.events().registerNativeEventListener((event, params) => {
+            if (event === "buttonPressed" && params && params.buttonId === "comfirmer") {
+                console.log(params)
+                this.stepHome();
+            }
+        });
+    }
+
+    componentWillMount() {
+        console.log(this.props.userInfo.userID)
+        AccountAction.getUserInfo().then((data) => {
+            console.log(data)
+            if (data.suc) {
+                this.setState({
+                    id: data.data.id,
+                    userName: data.data.userName,
+                    avatar: data.data.avatar,
+                    email: data.data.email,
+                    address: data.data.address,
+                    provinceCode: data.data.provinceCode,
+                    provinceName: data.data.provinceName,
+                    cityCode: data.data.cityCode,
+                    cityName: data.data.cityName,
+                    townCode: data.data.townCode,
+                    townName: data.data.townName,
+                    countyCode: data.data.countyCode,
+                    countyName: data.data.countyName,
+                    regionId: data.data.regionId,
+                    regionName: data.data.provinceName + ',' + data.data.cityName + ',' + data.data.townName + ',' + data.data.countyName,
+                    sex: data.data.sex,
+                    birthDate: data.data.birthDate,
+                    idCardNumber: data.data.idCardNumber,
+                    userType: data.data.userType,
+                    plantingCrop: data.data.plantingCrop,
+                    plantingArea: data.data.plantingArea,
+                    plantingYield: data.data.plantingYield,
+                    nextYearPlant: data.data.nextYearPlant,
+                })
+            }
+        })
+    }
+    componentWillReceiveProps(nextProps) {
+        // console.log(this.props.userInfo)
+        // console.log(nextProps.userInfo)
+    }
+    stepHome = () => {
+        // this.state.id = this.props.userId
+        // this.state.birthDate = null;
+        this.state.sex = this.state.sex;
+        console.log(this.state.sex)
+        this.state.birthDate = moment(this.state.birthDate).format('YYYY-MM-DD');
+        console.log(this.state, '3333')
+        AccountAction.modifyUser({ input: this.state }).then((suc) => {
+            if (suc.suc) {
+                Global.Navigate.startIndexScreen()
+            }
+        })
+    }
+    handleFile2Change = (files, type, index) => {
+        if (type == 'add') {
+            var formData = new FormData();
+            let file = { uri: files[0].url, type: 'application/octet-stream', name: 'image.jpg' };
+            formData.append('avatar', file);
+            CommonAction.UploadImg({ input: formData }).then((suc) => {
+                if (suc.suc) {
+                    this.setState({
+                        avatar: suc.Data.url,
+                    })
+                    this.setState({
+                        files: [{
+                            url: suc.Data.url,
+                            id: suc.Data.url,
+                        }],
+                    });
+                }
+                else {
+                    Toast.info('上传头像失败', 2)
+                }
+            })
+        }
+        else {
+            this.setState({
+                files,
+                avatar: ''
+            });
+        }
+    }
+    getAears = (data) => {
+        if (data) {
+            this.setState({
+                provinceCode: data.regionId[0],
+                provinceName: data.regionName[0],
+                cityCode: data.regionId[1],
+                cityName: data.regionName[1],
+                townCode: data.regionId[3],
+                townName: data.regionName[3],
+                countyCode: data.regionId[2],
+                countyName: data.regionName[2],
+                regionId: data.regionId.join('/'),
+                regionName: data.regionName.join(','),
+                address: data.address,
+
+            })
+        }
+    }
+    userType = (type, name) => {
+        this.setState({
+            userType: type,
+            typeName: name
+        })
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#F5FCFF' }}>
+                <View style={{ alignItems: 'center', padding: 15 }}>
+                    <ImagePicker
+                        length="1"
+                        onChange={this.handleFile2Change}
+                        files={this.state.files}
+                    />
+                </View>
+                <List>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ userName: text })}
+                        placeholder="姓名"
+                        value={this.state.userName}
+                    >姓名
+                    </InputItem>
+                    <Picker
+                        data={[{ value: '0', label: '男' }, { value: '1', label: '女' }]}
+                        cols={1}
+                        onChange={text => this.setState({ sex: text })}
+                        value={this.state.sex + ''}>
+                        <Item arrow="horizontal">性别</Item>
+                    </Picker>
+                    <DatePicker
+                        value={new Date(this.state.birthDate)}
+                        mode="date"
+                        minDate={new Date('1918-01-01')}
+                        onChange={text => this.setState({ birthDate: text })}
+                        format="YYYY-MM-DD"
+                    >
+                        <Item arrow="horizontal" >出生日期</Item>
+                    </DatePicker>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ idCardNumber: text })}
+                        placeholder="身份证号"
+                        value={this.state.idCardNumber}
+                        labelNumber={9}
+                    >身份证号
+                    </InputItem>
+
+
+                    <Item arrow="horizontal" wrap extra={this.state.userType == 1 ? '农户' : this.state.userType == 2 ? '合作社' : this.state.userType == 3 ? '企业' : '其他'} onClick={() => {
+                        this.pushPage({
+                            component: {
+                                ...Global.Screens.MineType,
+                                passProps: { userType: this.userType },
+                            }
+                        })
+                    }}>用户类型</Item>
+
+                    <Item arrow="horizontal" wrap extra={this.state.regionName} onClick={() => {
+                        this.pushPage({
+                            component: {
+                                ...Global.Screens.MineRegion,
+                                passProps: { getAears: this.getAears },
+                            }
+                        })
+                    }}>所在区域</Item>
+
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ plantingCrop: text })}
+                        placeholder="请输入主栽品、主养殖"
+                        value={this.state.plantingCrop}
+                        labelNumber={9}
+                    >主栽（养）品
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ nextYearPlant: text })}
+                        placeholder="请输入计划主栽品、主养殖"
+                        value={this.state.nextYearPlant}
+                        labelNumber={9}
+                    >明年计划主栽（养）品
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        type='number'
+                        clear
+                        onChangeText={text => this.setState({ plantingArea: text })}
+                        placeholder="请输入土地面积"
+                        value={this.state.plantingArea + ''}
+                        labelNumber={9}
+                    >土地面积
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        type='number'
+                        clear
+                        onChangeText={text => this.setState({ plantingYield: text })}
+                        placeholder="请输入产量"
+                        value={this.state.plantingYield + ''}
+                        labelNumber={9}
+                    >产量
+                    </InputItem>
+                </List>
+                {/* <View style={{ marginVertical: 10, width: '100%', alignItems: 'center', }}>
+                    <Button
+                        style={{ height: 40, width: '90%', backgroundColor: 'green', borderWidth: 2, borderColor: 'white', borderRadius: 5 }}
+                        onClick={this.stepHome}
+                    >
+                        <Text style={{ fontWeight: 'bold', color: 'white' }}>下一步</Text>
+                    </Button>
+                </View> */}
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+        userInfo: store.getAccount(),
+        userId: store.getUserId()
+    };
+}
+
+module.exports = connect(mapStateToProps)(Mine);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

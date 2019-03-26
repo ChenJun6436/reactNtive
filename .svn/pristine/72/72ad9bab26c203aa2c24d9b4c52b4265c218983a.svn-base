@@ -1,0 +1,310 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, Button, WhiteSpace } from 'antd-mobile-rn';
+import * as MineAction from 'root/src/actions/workRecord';
+import * as GardenAction from 'root/src/actions/garden';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { bold } from 'ansi-colors';
+import moment from 'moment';
+const { connect } = require('remx');
+const Item = List.Item;
+
+@navigatorDecorator
+class TestRecordAdd extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            workDay: new Date(),
+            workDays:'',
+            remark: '',
+            workCost: '',
+            baseList:[],
+            landList: [],
+            gardenList: [],
+            gardenCropList: [],
+            baseState: '',
+            landState: '',
+            gardenCropState: '',
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+       
+    }
+    componentWillMount() {
+       //获取所有基地
+       GardenAction.GetAllBase().then((data) => {
+           console.log(data)
+           if (data.suc) {
+               let model = data.data
+               let arrInt = []
+               model.forEach((i, index) => {
+                   arrInt[index] = {}
+                   arrInt[index].label = i.name + ''
+                   arrInt[index].value = i.id + ''
+               });
+               this.setState({
+                   baseList: arrInt,
+               })
+           } else {
+               MyToast.info('数据获取失败，稍后尝试');
+           }
+       })
+       //获取所有园区
+       GardenAction.GetAllGarden().then((data) => {
+           console.log(1111)
+           console.log(data)
+           if (data.suc) {
+               let model = data.data
+               let arrInt = []
+               model.forEach((i, index) => {
+                   arrInt[index] = {}
+                   arrInt[index].label = i.name + ''
+                   arrInt[index].value = i.id + ''
+               });
+               this.setState({
+                   gardenList: arrInt,
+               })
+           } else {
+               MyToast.info('数据获取失败，稍后尝试');
+           }
+       })
+       let input = {
+            plantBaseId:'',
+            plantBaseLandId: '',
+       }
+       GardenAction.GetAllCrop({input}).then((data) => {
+           if (data.suc) {
+               this.setState({
+                   gardenCropList: data.data,
+               })
+           } else {
+               MyToast.info('数据获取失败，稍后尝试');
+           }
+       })
+    }
+    GetAllLand(id) {
+        //获取所有地块
+        GardenAction.GetAllLand(id).then((data) => {
+            console.log(id)
+            console.log(11111111)
+            console.log(data)
+            if (data.suc) {
+                let model = data.data
+                let arrInt = []
+                model.forEach((i, index) => {
+                    arrInt[index] = {}
+                    arrInt[index].label = i.landName + ''
+                    arrInt[index].value = i.id + ''
+                });
+                this.setState({
+                    landList: arrInt,
+                })
+            } else {
+                MyToast.info('数据获取失败，稍后尝试');
+            }
+        })
+    }
+    onErrorClick = () => {
+        MyToast.info('请填写正确的信息，且不能为空');
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#f5f5f5' }}>
+                <View>
+                    <List>
+                        <DatePicker
+                            value={this.state.workDay  }
+                            mode="date"
+                            minDate={new Date('2018-01-01')}
+                            onChange={(text) => {
+                                this.setState({
+                                    workDay  : text
+                                })
+                            }}
+                            format="YYYY-MM-DD"
+                        >
+                            <Item arrow="horizontal" >日期</Item>
+                        </DatePicker>
+                    </List>
+                    < List >
+                        <Picker
+                            registerNumber="基地"
+                            data={this.state.baseList}
+                            cols={1}
+                            value={this.state.baseState}
+                            onOk={(val) => {
+                                this.setState({ baseState: val })
+                                this.GetAllLand(val[0])
+                            }}
+                            style={{ color: '#000' }}
+                        >
+                            <Item><Text style={{ fontSize: 17, color: '#000' }}>基地</Text></Item>
+                        </Picker>
+                    </List>
+                    {this.state.baseState && !this.props.id ? (
+                        <List>
+                            <Picker
+                                registerNumber="区块"
+                                data={this.state.landList}
+                                cols={1}
+                                value={this.state.landState}
+                                onOk={(val) => {
+                                    this.setState({ landState: val })
+                                }}
+                                style={{ color: '#000' }}
+                            >
+                                <Item><Text style={{ fontSize: 17, color: '#000' }}>区块</Text></Item>
+                            </Picker>
+                        </List>
+                    ) : (null)}
+                    <List>
+                        <Picker
+                            registerNumber="园址"
+                            data={this.state.gardenList}
+                            cols={1}
+                            value={this.state.gardenState}
+                            onOk={
+                                (val) => {
+                                    this.setState({ gardenState: val })
+                                }
+                            }
+                            style={{ color: '#000' }}
+                        >
+                            <Item><Text style={{ fontSize: 17, color: '#000' }}>标准园</Text></Item>
+                        </Picker>
+                    </List>
+                    <List>
+                        <Picker
+                            registerNumber="园区作物"
+                            data={this.state.gardenCropList}
+                            cols={2}
+                            value={this.state.gardenCropState}
+                            onOk={
+                                (val) => {
+                                    this.setState({ gardenCropState: val })
+                                }
+                            }
+                            style={{ color: '#000' }}
+                        >
+                            <Item><Text style={{ fontSize: 17, color: '#000' }}>产品</Text></Item>
+                        </Picker>
+                    </List>
+                    <List>
+                        <InputItem
+                            type='number'
+                            textAlign="right"
+                            clear
+                            labelNumber={7}
+                            onChangeText={(text) => {
+                                this.setState({
+                                    workDays: text
+                                }, () => {
+                                    if (!this.state.workDays) {
+                                        this.setState({
+                                            workDaysError: true
+                                        })
+                                    } else {
+                                        this.setState({
+                                            workDaysError: false
+                                        })
+                                    }
+                                })
+                            }}
+                            error={this.state.workDaysError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="用工数量"
+                            value={this.state.workDays}
+                        >用工数量(人/天)
+                        </InputItem>
+                    </List>
+                    <List>
+                        <InputItem
+                            type='number'
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    workCost: text
+                                }, () => {
+                                    if (!this.state.workCost) {
+                                        this.setState({
+                                            workCostError: true
+                                        })
+                                    } else {
+                                        this.setState({
+                                            workCostError: false
+                                        })
+                                    }
+                                })
+                            }}
+                            error={this.state.workCostError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="成本"
+                            value={this.state.workCost}
+                        >成本(元)
+                        </InputItem>
+                    </List>
+                    <List>
+                        <InputItem
+                            type='number'
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    remark: text
+                                }, () => {
+                                    if (!this.state.remark) {
+                                        this.setState({
+                                            remarkError: true
+                                        })
+                                    } else {
+                                        this.setState({
+                                            remarkError: false
+                                        })
+                                    }
+                                })
+                            }}
+                            error={this.state.remarkError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="备注"
+                            value={this.state.remark}
+                        >备注
+                        </InputItem>
+                    </List>
+                    
+                </View>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+
+    };
+}
+
+module.exports = connect(mapStateToProps)(TestRecordAdd);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

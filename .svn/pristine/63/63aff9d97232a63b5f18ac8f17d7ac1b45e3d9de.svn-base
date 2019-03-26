@@ -1,0 +1,13 @@
+import { Post } from '../utils/request';
+
+//获取土地的主要种植（养殖）
+export async function GetPlantList(data) {
+    return Post(`/Api/Plant/GetPlantList?iscurrent=${data}`);
+}
+//搜索农资
+export async function AddPlant(data) {
+    console.log(data)
+    return Post(`/Api/Plant/Submit`, {
+        body: JSON.stringify(data)
+    });
+}

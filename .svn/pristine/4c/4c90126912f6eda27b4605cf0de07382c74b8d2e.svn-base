@@ -1,0 +1,28 @@
+import * as remx from 'remx';
+
+//remx.registerLoggerForDebug(console.log);
+
+const initialState = {
+    pesticidesData: null,
+};
+
+const state = remx.state(initialState);
+
+const getters = remx.getters({
+  getPesticidesData() {
+    return state.pesticidesData
+  },
+
+});
+
+const setters = remx.setters({
+
+  setPesticidesData(pesticidesData) {
+    state.pesticidesData = pesticidesData;
+  }
+});
+
+export default store = {
+  ...setters,
+  ...getters
+};

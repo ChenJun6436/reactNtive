@@ -1,0 +1,88 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Button
+} from 'react-native';
+import { WingBlank } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import Icon from 'react-native-vector-icons/Feather';
+const { connect } = require('remx');
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 10,
+  },
+});
+@navigatorDecorator
+export default class BrTag extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+  }
+  async componentDidMount() {
+  }
+  _onPressButton = ()=> {
+    this.pushPage(
+      component: {
+        ...Global.Screens.Login
+      }
+    )
+  }
+  _likeNews = () => {
+    
+  }
+  _unlikeNews = () => {
+
+  }
+  render() {
+    const news = this.props.news
+    return (
+      <View style={styles.container}>
+        {/* 头部 */}
+        <View style={{borderBottomColor: '#ccc',borderBottomWidth:1,paddingBottom:10}}>
+          <Text numberOfLines={2} style={{fontSize:17,letterSpacing:2}}>{news.title}</Text>
+          <View style={{marginTop:5,marginBottom:5}}>
+            <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+              <Text style={{fontSize:12,lineHeight:20}}>{news.source}</Text>
+              <Text style={{fontSize:12,lineHeight:20}}>{news.createTime}</Text>
+            </View>
+            <Text style={{fontSize:12,lineHeight:20}}>{news.author }</Text>
+          </View>
+          {/* 文字 */}
+          <Text style={{lineHeight:25,letterSpacing:2}}>{news.body }</Text>  
+          <Text style={{fontSize:14,lineHeight: 20,paddingTop: 10}}>相关搜索</Text>
+          <View style={{marginTop:5,marginBottom:5}}>
+            <View style={{flexDirection:'row',justifyContent:'space-between', flexWrap:'wrap'}}>
+              <TouchableOpacity onPress={this._onPress}>
+                <Text numberOfLines={1}  style={{lineHeight:25, width:'50%'}}>来源：人民121111111日报</Text>
+              </TouchableOpacity>
+              <Text numberOfLines={1}  style={{lineHeight:25, width:'50%'}}>来源：2222222222211111112222报</Text>
+              <Text numberOfLines={1}  style={{lineHeight:25, width:'50%'}}>来源：人民12312321日报</Text>
+              <Text style={{lineHeight:25, width:'50%'}}>46545</Text>
+              <Text style={{lineHeight:25, width:'50%'}}>来源：人民日报</Text>
+              <Text style={{lineHeight:25, width:'50%'}}>来源：人民日报</Text>
+            </View>
+            <View style={{justifyContent:'space-around',flexDirection:'row',paddingTop: 10}}>
+              <TouchableOpacity onPress={this._likeNews}>
+                <View style={{backgroundColor:'#fff',height:30,borderRadius:10,borderColor:'red',borderWidth: 1,paddingLeft:5,paddingRight:5}}>
+                  <Text style={{lineHeight:30,textAlign:'center',color:'red'}}><Icon name='thumbs-up' size={12}/>{news.likeCount}</Text>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={this._unlikeNews}>
+                <View style={{backgroundColor:'#fff',height:30,width:80,borderRadius:10,borderColor:'#999',borderWidth: 1}}>
+                  <Text style={{lineHeight:30,textAlign:'center',color:'#999'}}>不喜欢</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>    
+        </View>
+        {/* 推介 */}
+        {/* 赞 */}
+      </View>
+    );
+  }
+}

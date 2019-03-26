@@ -1,0 +1,308 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  ImageBackground,
+  Dimensions,
+  Image,
+  findNodeHandle,
+  Alert,
+  AsyncStorage,
+  TouchableOpacity
+} from 'react-native';
+
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { Input } from 'react-native-elements';
+import { Button, InputItem } from 'antd-mobile-rn';
+import * as AccountAction from 'root/src/actions/account';
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const BG_IMAGE = require('root/img/login1.png');
+const LOGO_IMAGE = require('root/img/logo.png');
+
+@navigatorDecorator
+export default class RegisterScreen extends Component {
+  constructor(props: Props) {
+    super(props);
+    this.time = 60;
+    this.tt;
+    this.state = {
+      viewRef: null,
+    };
+
+  }
+  componentWillMount() {
+
+  }
+
+  sendCode = () => {
+    if (!this.state.phone) {
+      Toast.info('请填写手机号', 3);
+      return;
+    }
+    this.setState({ sendLoading: true })
+    AccountAction.sendVerifiedCode({ input: { phone: this.state.phone, sendType: 1 } }).then((data) => {
+      this.startCodeTimer(() => {
+        this.setState({ sendLoading: false })
+      })
+      Toast.info('验证码发送成功', 3);
+    })
+  }
+  startCodeTimer = (callback) => {
+    let self = this;
+    self.tt = setInterval(() => {
+      self.setState({ time: self.time-- })
+      if (self.time == -1) {
+        self.time = 60;
+        self.setState({ time: undefined })
+        clearInterval(self.tt);
+        callback && callback();
+      }
+    }, 1000)
+  }
+  register = () => {
+    if (!this.state.phone) {
+      Toast.info('请填写手机号', 3);
+      return;
+    }
+    if (!this.state.password) {
+      Toast.info('请填写密码', 3);
+      return;
+    }
+    if (!this.state.confirmPassword) {
+      Toast.info('请填写密码确认', 3);
+      return;
+    }
+    if (!this.state.verificationCode) {
+      Toast.info('请填写验证码', 3);
+      return;
+    }
+    this.setState({ submitLoading: true })
+    AccountAction.register({ input: this.state }).then(({ suc, data }) => {
+      if (suc) {
+        clearInterval(this.tt);
+        this.pop();
+        Toast.info('注册成功', 3);
+      }
+      this.setState({ submitLoading: false })
+    })
+
+  }
+
+  imageLoaded = () => {
+    this.setState({ viewRef: findNodeHandle(this.backgroundImage) });
+  }
+  render() {
+    const { Account, navigator } = this.props;
+    return (
+      <View style={styles.container}>
+        <Image
+          ref={(img) => { this.backgroundImage = img; }}
+          source={BG_IMAGE}
+          style={styles.bgImage}
+          onLoadEnd={this.imageLoaded}
+        />
+        <View style={styles.back}>
+          <TouchableOpacity style={styles.backTitle} onPress={() => {
+            clearInterval(this.tt);
+            this.pop()
+          }}>
+            <Text style={{ color: 'white', fontSize: 16 }}>&lt;返回</Text>
+          </TouchableOpacity>
+          <Text style={styles.title}>新用户注册</Text>
+        </View>
+        <View style={styles.loginView}>
+          <View style={styles.loginInput}>
+            <View style={{ marginVertical: 20 }}>
+              <Input
+                containerStyle={{ width: 230 }}
+                leftIcon={
+                  <Icon
+                    name='user'
+                    color='rgba(171, 189, 219, 1)'
+                    size={25}
+                  />
+                }
+                inputStyle={{ marginLeft: 10, color: 'white', paddingBottom: 7 }}
+                keyboardAppearance="light"
+                placeholder="手机号"
+                autoFocus={false}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="phone-pad"
+                returnKeyType="done"
+                blurOnSubmit={true}
+                placeholderTextColor="white"
+                onChangeText={(text) => this.setState({ phone: text })}
+                value={this.state.phone}
+              />
+            </View>
+            <View style={{ marginVertical: 20 }}>
+              <Input
+                containerStyle={{ width: 230 }}
+                leftIcon={
+                  <Icon
+                    name='lock'
+                    color='rgba(171, 189, 219, 1)'
+                    size={25}
+                  />
+                }
+                inputStyle={{ marginLeft: 12, color: 'white', paddingBottom: 8 }}
+                secureTextEntry={true}
+                keyboardAppearance="light"
+                placeholder="密码"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="default"
+                returnKeyType="done"
+                blurOnSubmit={true}
+                placeholderTextColor="white"
+                onChangeText={(text) => this.setState({ password: text })}
+                value={this.state.password}
+              />
+            </View>
+            <View style={{ marginVertical: 20 }}>
+              <Input
+                containerStyle={{ width: 230 }}
+                leftIcon={
+                  <Icon
+                    name='lock'
+                    color='rgba(171, 189, 219, 1)'
+                    size={25}
+                  />
+                }
+                inputStyle={{ marginLeft: 12, color: 'white', paddingBottom: 8 }}
+                secureTextEntry={true}
+                keyboardAppearance="light"
+                placeholder="密码确认"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="default"
+                returnKeyType="done"
+                blurOnSubmit={true}
+                placeholderTextColor="white"
+                onChangeText={(text) => this.setState({ confirmPassword: text })}
+                value={this.state.confirmPassword}
+              />
+            </View>
+            <View style={{ marginVertical: 20, flexDirection: 'row' }}>
+              <Input
+                containerStyle={{ width: 132 }}
+                leftIcon={
+                  <Icon
+                    name='user'
+                    color='rgba(171, 189, 219, 1)'
+                    size={25}
+                  />
+                }
+                inputStyle={{ marginLeft: 10, color: 'white', paddingBottom: 7 }}
+                keyboardAppearance="light"
+                placeholder="验证码"
+                autoFocus={false}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="phone-pad"
+                returnKeyType="done"
+                blurOnSubmit={true}
+                placeholderTextColor="white"
+                onChangeText={(text) => this.setState({ verificationCode: text })}
+                value={this.state.verificationCode}
+              />
+              <View style={{ width: 90, justifyContent: 'flex-end', alignItems: 'flex-end' }}>
+                <Button disabled={this.state.sendLoading}
+                  size="small" style={{ height: 30, backgroundColor: 'transparent' }} onClick={this.sendCode}>
+                  <Text style={{ fontSize: 12, fontWeight: 'bold', color: 'white' }}>发送验证码 {this.state.time}</Text>
+                </Button>
+              </View>
+            </View>
+          </View>
+          <View style={styles.loginButton}>
+            <Button disabled={this.state.submitLoading}
+              style={{ height: 40, width: 250, backgroundColor: 'transparent', borderWidth: 2, borderColor: 'white', borderRadius: 30, marginTop: 70 }}
+              onClick={this.register}
+            >
+              <Text style={{ fontWeight: 'bold', color: 'white' }}>注册</Text>
+            </Button>
+          </View>
+        </View>
+
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 30,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  back: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
+  backTitle: {
+    alignSelf: 'flex-start',
+    marginLeft: 30,
+    marginTop: 30,
+  },
+  title: {
+    color: 'white',
+    marginTop: 20,
+    fontSize: 24
+  },
+  bgImage: {
+    position: "absolute",
+    flex: 1,
+    top: 0,
+    left: 0,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT
+  },
+  loginView: {
+    width: 250,
+    height: 500,
+    marginTop: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  travelText: {
+    color: '#ffffff',
+    fontSize: 32,
+    fontFamily: 'bold',
+    textAlign: 'center',
+    width: '100%',
+    height: 50,
+    lineHeight: 50,
+    marginTop: 20
+  },
+  loginInput: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 40,
+  },
+  loginButton: {
+    flex: 1,
+  },
+  footerView: {
+    width: 230,
+    marginTop: 20,
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  absolute: {
+    position: "absolute",
+    top: 0, left: 0, bottom: 0, right: 0,
+  },
+})
+

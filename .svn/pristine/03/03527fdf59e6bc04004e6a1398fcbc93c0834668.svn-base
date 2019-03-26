@@ -1,0 +1,121 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    TouchableOpacity,
+    Dimensions,
+    TouchableHighlight,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { List, InputItem, Button, SwipeAction, WhiteSpace } from 'antd-mobile-rn';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { iconsMap, iconsLoaded } from 'root/src/utils/IconLoader';
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import * as MineAction from 'root/src/actions/mine';
+const { connect } = require('remx');
+@navigatorDecorator
+class MinePublish extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            storeName: '',
+            classificCode: '',
+            keyword: '',
+        }
+    }
+    refresh = () => {
+        this.moreListInst._onRefresh();
+    }
+    render() {
+        console.log(this.props.input)
+        return (
+            <ScrollView style={styles.container}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', }}>
+                    <LoadMoreList
+                        ref={ref => this.moreListInst = ref}
+                        getData={MineAction.GetPublish}
+                        searchParams={{ keyword : this.state.keyword }}
+                        rowItem={(item) => {
+                            return <SwipeAction autoClose style={{ backgroundColor: 'transparent', flex: 1 }} right={[
+                                {
+                                    text: '删除',
+                                    onPress: () => {
+                                        MineAction.DeletePublish(item.id).then((data)=>{
+                                            console.log(data)
+                                            if(data.suc){
+                                                this.refresh()
+                                            }else{
+                                                Toast.info('操作失败，请稍后再试', 3);
+                                            }
+                                        })
+                                    },
+                                    style: { backgroundColor: 'red', color: 'white' },
+                                }
+                            ]} >
+                                <TouchableWithoutFeedback activeOpacity={0.3} underlayColor={'#eee'}
+                                    onPress={() => {
+                                        this.pushPage({
+                                            component: {
+                                                passProps: { id: item.id },
+                                                ...Global.Screens.PublishDetail,
+                                            }
+                                        });
+                                    }}>
+                                    <View style={{borderBottomColor:'#e3e3e3',borderBottomWidth:1,paddingLeft:10,paddingRight:10,paddingTop:10}}>
+                                        <Text numberOfLines={2} style={{fontSize:17,height:40}}>{item.title}</Text>
+                                        <WhiteSpace />
+                                        <View style={{justifyContent:'flex-end',flexDirection:'row'}}>
+                                            {
+                                                item.state==1?(
+                                                    <Button onClick={()=>{
+                                                        MineAction.SetPublish({input:{id:item.id,state: 1}}).then((data)=>{
+                                                            if(data.suc){
+                                                                this.refresh()
+                                                                Toast.info('已取消发布', 3);
+                                                            }else{
+                                                                Toast.info('操作失败，请稍后再试', 3);
+                                                            }
+                                                        })
+                                                    }} style={{width:100}} size="small">取消发布</Button>
+                                                ):(
+                                                    <Button onClick={()=>{
+                                                        MineAction.SetPublish({input:{id:item.id,state: 1}}).then((data)=>{
+                                                            if(data.suc){
+                                                                this.refresh()
+                                                                Toast.info('发布成功', 3);
+                                                            }else{
+                                                                Toast.info('发布失败，请稍后再试', 3);
+                                                            }
+                                                        })
+                                                    }} style={{width:100}} size="small" type="primary">发布</Button>
+                                                )
+                                            }
+                                        </View>
+                                        <Text style={{textAlign:'right',lineHeight:30}}>{item.createTime}</Text>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                            </SwipeAction>
+                        }}
+                    />
+                </View>
+
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    // return {
+    // };
+}
+module.exports = connect(mapStateToProps)(MinePublish);
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingTop: 60
+    },
+});

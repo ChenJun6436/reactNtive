@@ -1,0 +1,430 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace } from 'antd-mobile-rn';
+import * as MineAction from 'root/src/actions/garden';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { bold } from 'ansi-colors';
+import moment from 'moment';
+const { connect } = require('remx');
+const Item = List.Item;
+let initData = {
+    plantName: '',
+    area: '',
+    period: '',
+    year: new Date(),
+    outPut: '',
+    iscurrent: true,
+    unit: "亩"
+}
+let initError = {
+    plantName: false,
+    area: false,
+    period: false,
+}
+let model = null
+let breedName = null
+@navigatorDecorator
+class GardenCropAdd extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            cropState: '',
+            cropList: [],
+            baseState: '',
+            baseList: [],
+            gardenList: [],
+            gardenState: '',
+            landList: [],
+            landState: [],
+            cropName: '',
+            remark: '',
+            plantDay: new Date(),
+            breedSource: ''
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+        let nowName = ''
+        let nowError = this.state.plantError
+
+        if (nowName) {
+            MyToast.info('请完整填写发布信息');
+            this.setState({
+                plantError: nowError
+            })
+        } else {
+            let plantDay = moment(this.state.plantDay).format('YYYY-MM-DD');
+            let postData = {
+                plantBaseId: this.state.baseState[0],
+                plantBaseLandId: this.state.landState[0],
+                // cropId: this.state.cropState[0],
+                // breedId: this.state.cropState[0],
+                plantGardenId: this.state.gardenState[0],
+                
+                cropName: this.state.cropName,
+                breedName: this.state.breedName,
+                remark: this.state.remark,
+                plantDay,
+                breedSource: this.state.breedSource
+            }
+            if (this.props.id) {
+                postData.id = this.props.id
+                console.log(postData)
+                MineAction.EditGarden({ input: postData }).then((data) => {
+                    if (data.suc == 1) {
+                        MyToast.success('发布成功');
+                        initData = {
+                            investmentType: '',
+                            registerNumber: '',
+                            registerName: '',
+                            expirationDay: new Date(),
+                            investmentName: '',
+                            packUnit: true,
+                            quantity: "亩",
+                            manufacturer: '',
+                            saleUnity: '',
+                            remark: '',
+                        }
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.GardenCrop,
+                                }
+                            });
+                        }, 2000)
+                    } else {
+                        MyToast.info('发布失败，请稍后再试');
+                    }
+                })
+            } else {
+                console.log(postData)
+                MineAction.AddGardenCrop({ input: postData }).then((data) => {
+                    if (data.suc == 1) {
+                        MyToast.success('发布成功');
+                        initData = {
+                            investmentType: '',
+                            registerNumber: '',
+                            registerName: '',
+                            expirationDay: new Date(),
+                            investmentName: '',
+                            packUnit: true,
+                            quantity: "亩",
+                            manufacturer: '',
+                            saleUnity: '',
+                            remark: '',
+                        }
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.GardenCrop,
+                                }
+                            });
+                        }, 2000)
+                    } else {
+                        MyToast.info('发布失败，请稍后再试');
+                    }
+                })
+            }
+        }
+    }
+    componentWillMount() {
+        //获取所有基地
+        MineAction.GetAllBase().then((data) => {
+            console.log(data)
+            if (data.suc) {
+                let model = data.data
+                let arrInt = []
+                model.forEach((i, index) => {
+                    arrInt[index] = {}
+                    arrInt[index].label = i.name + ''
+                    arrInt[index].value = i.id + ''
+                });
+                this.setState({
+                    baseList: arrInt,
+                })
+            } else {
+                MyToast.info('数据获取失败，稍后尝试');
+            }
+        })
+        //获取所有园区
+        MineAction.GetAllGarden().then((data) => {
+            console.log(1111)
+            console.log(data)
+            if (data.suc) {
+                let model = data.data
+                let arrInt = []
+                model.forEach((i, index) => {
+                    arrInt[index] = {}
+                    arrInt[index].label = i.name + ''
+                    arrInt[index].value = i.id + ''
+                });
+                this.setState({
+                    gardenList: arrInt,
+                })
+            } else {
+                MyToast.info('数据获取失败，稍后尝试');
+            }
+        })
+        //获取所有作物
+        // MineAction.GetAllCrop({}).then((data) => {
+        //     console.log(data)
+        //     if (data.suc) {
+        //         let model = data.data
+        //         let arrInt = []
+        //         model.forEach((i, index) => {
+        //             arrInt[index] = {}
+        //             arrInt[index].label = i.cropName + '/' + i.breedName
+        //             arrInt[index].value = i.id + ''
+        //         });
+        //         this.setState({
+        //             cropList: arrInt,
+        //         })
+        //     } else {
+        //         MyToast.info('数据获取失败，稍后尝试');
+        //     }
+        // })
+        if (this.props.id) {
+            MineAction.GetGardenCrop(this.props.id).then((data) => {
+                console.log(data)
+                if (data.suc) {
+                    let mode = data.data
+                    this.setState({
+                        baseState: [mode.plantBaseId + ''],
+                        gardenState: [mode.plantGardenId + ''],
+                        landState: [mode.plantBaseLandId + ''],
+                        cropName: mode.cropName+'',
+                        remark:  mode.remark+'',
+                        plantDay: new Date(mode.plantDay),
+                        breedSource:  mode.breedSource+''
+                    })
+                } else {
+                    MyToast.info('数据获取失败，稍后尝试');
+                }
+            })
+        }
+    }
+    GetAllLand(id) {
+        //获取所有地块
+        MineAction.GetAllLand(id).then((data) => {
+            console.log(id)
+            console.log(11111111)
+            console.log(data)
+            if (data.suc) {
+                let model = data.data
+                let arrInt = []
+                model.forEach((i, index) => {
+                    arrInt[index] = {}
+                    arrInt[index].label = i.landName + ''
+                    arrInt[index].value = i.id + ''
+                });
+                this.setState({
+                    landList: arrInt,
+                })
+            } else {
+                MyToast.info('数据获取失败，稍后尝试');
+            }
+        })
+    }
+    onErrorClick = () => {
+        MyToast.info('请填写正确的信息，且不能为空');
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#f5f5f5' }}>
+                <View>
+                    <List>
+                        <Picker
+                            registerNumber="基地"
+                            data={this.state.baseList}
+                            cols={1}
+                            value={this.state.baseState}
+                            onOk={(val) => {
+                                this.setState({ baseState: val })
+                                this.GetAllLand(val[0])
+                            }}
+                            style={{ color: '#000' }}
+                        >
+                            <Item><Text style={{ fontSize: 17, color: '#000' }}>基地</Text></Item>
+                        </Picker>
+                    </List>
+                    {this.state.baseState && !this.props.id ? (
+                        <List>
+                            <Picker
+                                registerNumber="区块"
+                                data={this.state.landList}
+                                cols={1}
+                                value={this.state.landState}
+                                onOk={(val) => {
+                                    this.setState({ landState: val })
+                                }}
+                                style={{ color: '#000' }}
+                            >
+                                <Item><Text style={{ fontSize: 17, color: '#000' }}>区块</Text></Item>
+                            </Picker>
+                        </List>
+                    ) : (null)}
+                    {/* <List>
+                        <Picker
+                            registerNumber="土壤类型"
+                            data={this.state.cropList}
+                            cols={1}
+                            value={this.state.cropState}
+                            onOk={
+                                (val,text) => {
+                                    console.log(text)
+                                    this.setState({ cropState: val })
+                                }
+                            }
+                            style={{ color: '#000' }}
+                        >
+                            <Item><Text style={{ fontSize: 17, color: '#000' }}>作物品种</Text></Item>
+                        </Picker>
+                    </List> */}
+                    <List>
+                        <InputItem
+                            labelNumber={8}
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    cropName: text
+                                })
+                            }}
+                            error={this.state.registerNumberError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="作物名"
+                            value={this.state.cropName}
+                        >作物名
+                        </InputItem>
+                    </List>
+                    <List>
+                        <InputItem
+                            labelNumber={8}
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    breedName: text
+                                })
+                            }}
+                            error={this.state.registerNumberError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="品种名"
+                            value={this.state.breedName}
+                        >品种名
+                        </InputItem>
+                    </List>
+                    <List>
+                        <Picker
+                            registerNumber="园址"
+                            data={this.state.gardenList}
+                            cols={1}
+                            value={this.state.gardenState}
+                            onOk={
+                                (val) => {
+                                    this.setState({ gardenState: val })
+                                }
+                            }
+                            style={{ color: '#000' }}
+                        >
+                            <Item><Text style={{ fontSize: 17, color: '#000' }}>标准园</Text></Item>
+                        </Picker>
+                    </List>
+                    <List>
+                        <DatePicker
+                            value={this.state.plantDay}
+                            mode="date"
+                            minDate={new Date('2018-01-01')}
+                            onChange={(text) => {
+                                this.setState({
+                                    plantDay: text
+                                })
+                            }}
+                            format="YYYY-MM-DD"
+                        >
+                            <Item arrow="horizontal" >种植移栽时间</Item>
+                        </DatePicker>
+                    </List>
+                    <List>
+                        <InputItem
+                            labelNumber={8}
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    breedSource: text
+                                })
+                            }}
+                            error={this.state.registerNumberError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="苗木来源"
+                            value={this.state.breedSource}
+                        >苗木来源
+                        </InputItem>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    remark: text
+                                }, () => {
+                                    if (!this.state.remark) {
+                                        this.setState({
+                                            remarkError: true
+                                        })
+                                    } else {
+                                        this.setState({
+                                            remarkError: false
+                                        })
+                                    }
+                                })
+                            }}
+                            error={this.state.remarkError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="输入备注"
+                            value={this.state.remark}
+                        >备注
+                        </InputItem>
+                    </List>
+                </View>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+
+    };
+}
+
+module.exports = connect(mapStateToProps)(GardenCropAdd);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

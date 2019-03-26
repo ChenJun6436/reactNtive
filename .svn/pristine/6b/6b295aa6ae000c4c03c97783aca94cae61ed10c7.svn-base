@@ -1,0 +1,469 @@
+// @flow
+
+
+export default {
+  Login: {
+    name: 'Login',
+    options: {
+      statusBar: {
+        drawBehind: true,
+        backgroundColor: '#00000000',
+      },
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  Disclaimer: {
+    name: 'Disclaimer',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  Register: {
+    name: 'Register',
+    options: {
+      statusBar: {
+        drawBehind: true,
+        backgroundColor: '#00000000',
+      },
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  ForgetPassword: {
+    name: 'ForgetPassword',
+    options: {
+      statusBar: {
+        drawBehind: true,
+        backgroundColor: '#00000000',
+      },
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      },
+    }
+  },
+  Home: {
+    name: 'Home',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  Test: {
+    name: 'Test',
+    options: {
+      topBar: {
+        title: {
+          text: '注销页1',
+          drawBehind: true,
+          visible: false,
+          animate: false
+        }
+      }
+    }
+  },
+  Mine: {
+    name: 'Mine',
+    options: {
+      topBar: {
+        title: {
+          text: '个人信息'
+        }
+      }
+    }
+  },
+  MineType: {
+    name: 'MineType',
+    options: {
+      topBar: {
+        title: {
+          text: '用户类型'
+        }
+      }
+    }
+  },
+  MineRegion: {
+    name: 'MineRegion',
+    options: {
+      topBar: {
+        title: {
+          text: '详细地址'
+        }
+      }
+    }
+  },
+  MineEditor: {
+    name: 'MineEditor',
+    options: {
+      topBar: {
+        title: {
+          text: '完善个人信息'
+        }
+      }
+    }
+  },
+  MinePlant: {
+    name: 'MinePlant',
+    options: {
+      topBar: {
+        title: {
+          text: '主栽（养）品'
+        }
+      }
+    }
+  },
+  MinePublish: {
+    name: 'MinePublish',
+    options: {
+      topBar: {
+        title: {
+          text: '我的发布'
+        },
+        drawBehind: true,
+        animate: false
+      }
+    }
+  },
+  PublishAdd: {
+    name: 'PublishAdd',
+    options: {
+      topBar: {
+        title: {
+          text: '新增发布'
+        },
+      }
+    }
+  },
+  PublishDetail: {
+    name: 'PublishDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '发布详情'
+        },
+      }
+    }
+  },
+  EditUserInfo: {
+    name: 'EditUserInfo',
+    options: {
+      topBar: {
+        title: {
+          text: '填写个人信息'
+        }
+      }
+    }
+  },
+  UserType: {
+    name: 'UserType',
+    options: {
+      topBar: {
+        title: {
+          text: '用户类型'
+        }
+      }
+    }
+  },
+  UserRegion: {
+    name: 'UserRegion',
+    options: {
+      topBar: {
+        title: {
+          text: '详细地址'
+        }
+      }
+    }
+  },
+  SetRegisterCode: {
+    name: 'SetRegisterCode',
+    options: {
+      topBar: {
+        title: {
+          text: '验证手机号',
+        }
+      }
+    }
+  },
+  SetRegisterPwd: {
+    name: 'SetRegisterPwd',
+    options: {
+      topBar: {
+        title: {
+          text: '设置登录密码',
+        }
+      }
+    }
+  },
+  SetNewCode: {
+    name: 'SetNewCode',
+    options: {
+      topBar: {
+        title: {
+          text: '验证手机号',
+        }
+      }
+    }
+  },
+  SetNewPwd: {
+    name: 'SetNewPwd',
+    options: {
+      topBar: {
+        title: {
+          text: '设置登录密码',
+        }
+      }
+    }
+  },
+  AgMic: {
+    name: 'AgMic',
+    options: {
+      topBar: {
+        title: {
+          text: '农技微课'
+        }
+      },
+      bottomTabs: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      },
+    }
+  },
+  AgMicDetail: {
+    name: 'AgMicDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '农技微课'
+        }
+      },
+      bottomTabs: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      },
+    }
+  },
+  AgInfo: {
+    name: 'AgInfo',
+    options: {
+      topBar: {
+        title: {
+          text: '农技资讯'
+        }
+      },
+      bottomTabs: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      },
+    }
+  },
+  AgInfoDetail: {
+    name: 'AgInfoDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '资讯详情'
+        }
+      },
+      bottomTabs: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      },
+    }
+  },
+  CommentDetail: {
+    name: 'CommentDetail',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      },
+      bottomTabs: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      },
+    }
+  },
+
+  //农户画像
+  FarmStore: {
+    name: 'FarmStore',
+    options: {
+      topBar: {
+        title: {
+          text: '农资店列表'
+        }
+      }
+    }
+  },
+  PurchaseRecord: {
+    name: 'PurchaseRecord',
+    options: {
+      topBar: {
+        title: {
+          text: '购买记录'
+        }
+      }
+    }
+  },
+  RecordDetail: {
+    name: 'RecordDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '购买详情'
+        }
+      }
+    }
+  },
+  Taxonomy: {
+    name: 'Taxonomy',
+    options: {
+      topBar: {
+        title: {
+          text: '购买占比图'
+        }
+      }
+    }
+  },
+  FarmersPortrait: {
+    name: 'FarmersPortrait',
+    options: {
+      topBar: {
+        title: {
+          text: '农户画像'
+        }
+      }
+    }
+  },
+  Diagnosis: {
+    name: 'Diagnosis',
+    options: {
+      topBar: {
+        title: {
+          text: '智能诊单1'
+        }
+      }
+    }
+  },
+  BuyProduct: {
+    name: 'BuyProduct',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  StoreDetail: {
+    name: 'StoreDetail',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  ProductDetail: {
+    name: 'ProductDetail',
+    options: {
+      topBar: {
+        drawBehind: true,
+        visible: false,
+        animate: false
+      }
+    }
+  },
+  ERPDiagnosis: {
+    name: 'ERPDiagnosis',
+    options: {
+      topBar: {
+        title: {
+          text: '智能诊单'
+        }
+      }
+    }
+  },
+  ERPDiagnosisDetail: {
+    name: 'ERPDiagnosisDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '智能诊单详情'
+        }
+      }
+    }
+  },
+  ERPDiaDetail: {
+    name: 'ERPDiaDetail',
+    options: {
+      topBar: {
+        title: {
+          text: '智能诊单选择病虫草害'
+        }
+      }
+    }
+  },
+  ERPDiaDetailSearch: {
+    name: 'ERPDiaDetailSearch',
+    options: {
+      topBar: {
+        title: {
+          text: '智能诊单查询'
+        }
+      }
+    }
+  },
+  DiaSearchList: {
+    name: 'DiaSearchList',
+    options: {
+      topBar: {
+        title: {
+          text: '智能诊单查询列表'
+        }
+      }
+    }
+  },
+  BarcodeScanner: {
+    name: 'BarcodeScanner',
+    options: {
+      topBar: {
+        drawBehind: false,
+        visible: true,
+        animate: true
+      }
+    }
+  },
+  BarcodeWeb: {
+    name: 'BarcodeWeb',
+    options: {
+      topBar: {
+        title: {
+          text: '二维码扫描结果'
+        }
+      }
+    }
+  },
+}

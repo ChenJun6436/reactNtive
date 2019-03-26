@@ -1,0 +1,5 @@
+import inputItemStyle from 'antd-mobile-rn/lib/input-item/style/index.native';
+export default {
+    ...inputItemStyle,
+    input: { ...inputItemStyle.input, color: '#fff' }
+}

@@ -1,0 +1,152 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ScrollView,
+  Dimensions,
+  TouchableWithoutFeedback,
+  ProgressBarAndroid
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar, WingBlank, WhiteSpace } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import BrTag from '../baseComon/BrTag.js'
+import moment from "moment/moment"
+import storage from 'react-native-sync-storage';
+import ImgLeftText2Right from '../baseComon/ImgLeftText2Right.js'
+import VideoTopText2Bottom from '../baseComon/VideoTopText2Bottom'
+import * as AgInfoAction from 'root/src/actions/agInfo'
+const { connect } = require('remx');
+let pageIndex = 1;
+let pageSize = 3;
+
+@navigatorDecorator
+class Main extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+    this.state = {
+      AgInfoList: 'loading',
+      AgInfoZhongList: 'loading',
+      AgInfoYangList: [],
+      weatherData: 1,
+      cityName: storage.get('cityName'),
+    }
+  }
+
+  render() {
+    let data = [
+      {
+        icon: <Image source={require('root/img/product.png')} style={styles.icon} />,
+        text: '个人信息',
+        uri: 'MineEditor'
+      },
+      {
+        icon: <Image source={require('root/img/unit.png')} style={styles.icon} />,
+        text: '我的发布',
+      },
+      {
+        icon: <Image source={require('root/img/yao.png')} style={styles.icon} />,
+        text: '消息中心'
+      },
+      {
+        icon: <Image source={require('root/img/check.png')} style={styles.icon} />,
+        text: '设置'
+      },
+      {
+        icon: <Image source={require('root/img/check.png')} style={styles.icon} />,
+        text: '切换账号'
+      },
+    ]
+    
+    return (
+      <ScrollView style={styles.container}>
+        <View style={{}}></View>
+        <WingBlank size='sm'>
+          <View>
+            <View style={styles.head}>
+              <View>
+                <Image source={require('root/img/product.png')} style={styles.headIcon} />
+                <Text style={styles.headTetx}>优农帮</Text>
+              </View>
+            </View>
+            <WhiteSpace size="sm" />
+            <View style={styles.main}>
+              {data.map((i)=>{
+                return( 
+                  <TouchableWithoutFeedback onPress={()=>{this.pushPage({
+                    component: {
+                      ...Global.Screens[i.uri],
+                    }})}}>
+                    <View style={styles.boxBox}>
+                      <View style={styles.imgBox}>{i.icon}</View>
+                      <Text style={styles.imgTetx}>{i.text}</Text>
+                    </View>
+                  </TouchableWithoutFeedback>
+                )
+              })}
+            </View>
+          </View>
+        </WingBlank>
+      </ScrollView>
+    );
+  }
+}
+function mapStateToProps() {
+  return {
+    // menuList: store.getMenuList()
+  };
+}
+
+module.exports = connect(mapStateToProps)(Main);
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  head: {
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    width:'100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 150,
+  },
+  headIcon: {
+    width: 75,
+    height: 75,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  headTetx: {
+    textAlign:'center',
+    fontSize: 16,
+  },
+  main: {
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    justifyContent:'space-between',
+    flexWrap:'wrap',
+    paddingBottom: 10,
+  },
+  boxBox :{
+    width: '25%',
+  },
+  imgBox: {
+    justifyContent: 'center',
+    width:'100%',
+    flexDirection: 'row',
+    height: 75,
+  },
+  imgTetx: {
+    textAlign:'center',
+  },
+  icon: {
+    width: 55,
+    height: 55,
+    marginTop: 15,
+    marginBottom: 10,
+  },
+});

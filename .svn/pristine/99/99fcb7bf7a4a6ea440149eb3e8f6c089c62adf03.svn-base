@@ -1,0 +1,12 @@
+import * as CommonService from '../services/common';
+
+//登陆
+export async function UploadImg({ input }) {
+    console.log(input,'12345')
+    const { data, msg, success } = await CommonService.UploadImg(input)
+    console.log(data)
+    if (!success)
+        return { suc: false };
+
+    return { suc: true, data, msg };
+}

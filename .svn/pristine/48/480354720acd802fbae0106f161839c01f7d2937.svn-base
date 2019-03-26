@@ -1,0 +1,62 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ScrollView,
+  Dimensions,
+  TouchableOpacity
+} from 'react-native';
+import { Button, Grid, Carousel, SearchBar ,WingBlank } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import UserMessage from '../baseComon/UserMessage.js'
+import Icon from 'react-native-vector-icons/Feather';
+import { runInThisContext } from 'vm';
+const { connect } = require('remx');
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+});
+
+
+@navigatorDecorator
+class CommentDetail extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+  }
+
+  async componentDidMount() {
+    //requestPermission();
+  }
+  _back = () => {
+    console.log(111)
+  }
+  render() {
+    let a = 'root/img/product.png'
+    return (
+      <ScrollView style={styles.container}>
+        <View style={{height: 35}}>
+          <TouchableOpacity onPress={this._back}>
+            <View>
+              <Text style={{lineHeight: 35, marginLeft: 15}}><Icon name='x' size={25}/>1111</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+         <UserMessage commentClick={this._commentClick} comment={'1'} img={ require(a)  } title={'UserMessage'}/>
+      </ScrollView>
+    );
+  }
+}
+function mapStateToProps() {
+  console.info(store)
+  return {
+    menuList: store.getMenuList()
+  };
+}
+
+module.exports = connect(mapStateToProps)(CommentDetail);
+

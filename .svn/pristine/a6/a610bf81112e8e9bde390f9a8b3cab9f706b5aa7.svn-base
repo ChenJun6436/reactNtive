@@ -1,0 +1,8 @@
+import { Post } from '../utils/request';
+
+//获取基地列表
+export async function getBaseList(data) {
+    return Post(`/Api/BaseLand/Search`, {
+        body: JSON.stringify(data)
+    });
+}

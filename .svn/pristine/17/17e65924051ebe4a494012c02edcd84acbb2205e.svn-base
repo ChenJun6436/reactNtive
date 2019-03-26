@@ -1,0 +1,56 @@
+import React, { Component } from 'react';
+import requestPermission from 'root/src/utils/requestPermissions';//获取相机及其他权限
+//该方式可执行父类同名方法
+const NavigatorDecorator = (superclass) => class extends superclass {
+    constructor(props: Props) {
+        super(props);
+        Navigation.events().registerComponentDidDisappearListener(({componentId, componentName}) => {
+            setTimeout(() => {
+                this.changingPage = false;
+            }, 300)
+        });
+    }
+    //页面跳转
+    pushPage = (param) => {
+        if (!this.changingPage) {
+            this.changingPage = true;
+            Navigation.push(this.props.componentId, param);
+            requestPermission();
+        }
+    }
+    //返回
+    pop = (param) => {
+        Navigation.pop(this.props.componentId);
+    }
+    //返回到指定位置
+    popTo = (componentId) => {
+        Navigation.popTo(componentId);
+    }
+    //弹窗
+    showModal = (param) => {
+        if (!this.changingPage) {
+            this.changingPage = true;
+            Navigation.showModal(param)
+        }
+    }
+    //关闭弹窗
+    dismissModal = (param) => {
+        Navigation.dismissModal(this.props.componentId)
+    }
+    //回到登陆界面
+    startLoginScreen = () => {
+        if (!this.changingPage) {
+            this.changingPage = true;
+            Global.Navigate.startLoginScreen()
+        }
+    }
+    //进入首页
+    startIndexScreen = () => {
+        if (!this.changingPage) {
+            this.changingPage = true;
+            Global.Navigate.startIndexScreen()
+        }
+    }
+};
+
+export default NavigatorDecorator;

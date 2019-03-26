@@ -1,0 +1,68 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    TouchableHighlight
+} from 'react-native';
+import ChooseAddressCom from 'root/src/screens/components/ChooseAddress'
+import { Geolocation } from "react-native-amap-geolocation"
+@navigatorDecorator
+export default class ChooseAddress extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            areasData: [],
+            regionId: [],
+            address: null,
+            location: null,
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+
+    }
+    navigationButtonPressed({ buttonId }) {
+        this.props.onChooseAddress(this.coordinate, this.name)
+        this.pop();
+    }
+    onChoosed = (coordinate, name) => {
+        this.coordinate = coordinate;
+        this.name = name;
+    }
+    componentWillMount = async () => {
+        await Geolocation.init({
+            android: AMapAndroidAk
+        })
+
+        Geolocation.setOptions({
+            interval: 8000,
+            distanceFilter: 20,
+            reGeocode:true
+        })
+
+        Geolocation.addLocationListener(location => {  this.cityCode = location.cityCode })
+        Geolocation.start()
+    }
+    render() {
+        return <ChooseAddressCom onSearch={(cityCode) => {
+            console.info(cityCode)
+            this.pushPage({
+                component: {
+                    ...Global.Screens.AddressAutoComplete,
+                    passProps: { onChooseAddress: this.props.onChooseAddress, cityCode },
+                }
+            })
+        }} onChoosed={this.onChoosed}
+        />
+    }
+}
+

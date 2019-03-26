@@ -1,0 +1,312 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace } from 'antd-mobile-rn';
+import * as MineAction from 'root/src/actions/testRecord';
+import * as CommonAction from 'root/src/actions/common';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { bold } from 'ansi-colors';
+import moment from 'moment';
+const { connect } = require('remx');
+const Item = List.Item;
+
+@navigatorDecorator
+class TestRecordAdd extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            examinDay: new Date(),
+            typeList:[
+                {
+                    label:'自检',
+                    value:'1',
+                },
+                {
+                    label:'委托检测',
+                    value:'2',
+                },
+                {
+                    label:'监管抽查',
+                    value:'3',
+                },
+            ],
+            examinType: ['1'],
+            examiningList: [
+                {
+                    label:'合格',
+                    value:'1',
+                },
+                {
+                    label:'不合格',
+                    value:'2',
+                }
+            ],
+            examining: ['1'],
+            files: [],
+            avatar: '',
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+       let input = {}
+       input.examinProduct = [
+           {
+               cropName: 'cropName',
+               cropId: "cropId",
+               breedId: "breedId",
+               breedName: this.state.breedName,
+               traceCode: this.state.traceCode,
+           }
+       ]
+       let files = this.state.files
+       input.examinFile = files
+       input.examinDay = this.state.examinDay
+       input.examinType = this.state.examinType[0]
+       input.examining = this.state.examining[0]
+       input.examinStandard = this.state.examinStandard
+       input.examinUnit = this.state.examinUnit
+       MineAction.AddUse({input}).then((data) => {
+            console.log(data)
+       })
+    }
+    componentWillMount() {
+       
+    }
+    handleFile2Change = (files, type, index) => {
+        if (type == 'add') {
+            var formData = new FormData();
+            let file = {
+                uri: files[files.length-1].url,
+                type: 'application/octet-stream',
+                name: 'image.jpg'
+            };
+            formData.append('avatar', file);
+            CommonAction.UploadImg({
+                input: {
+                    formData,
+                    type: 4
+                }
+            }).then((suc) => {
+                if (suc.suc) {
+                    this.setState({
+                        avatar: suc.Data.url,
+                    })
+                    let item = this.state.files
+                    item.push({
+                        url: ImgUrl + suc.Data.url,
+                        id: suc.Data.url,
+                    })
+                    this.setState({
+                        files:item,
+                    });
+                } else {
+                    MyToast.info('上传头像失败')
+                }
+            })
+        } else if (type == 'remove') {
+            let item = this.state.files
+            item.splice(index,1)
+            this.setState({
+                files: item,
+            })
+        }
+    }
+    onErrorClick = () => {
+        MyToast.info('请填写正确的信息，且不能为空');
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#f5f5f5' }}>
+                <View>
+                    <List>
+                        <DatePicker
+                            value={this.state.examinDay  }
+                            mode="date"
+                            minDate={new Date('2018-01-01')}
+                            onChange={(text) => {
+                                console.log(text)
+                                this.setState({
+                                    examinDay  : text
+                                })
+                            }}
+                            format="YYYY-MM-DD"
+                        >
+                            <Item arrow="horizontal" >送检日期</Item>
+                        </DatePicker>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    breedName: text
+                                }, () => {
+                                    if (!this.state.breedName) {
+                                        this.setState({
+                                            breedNameError: true
+                                        })
+                                    } else {
+                                        this.setState({
+                                            breedNameError: false
+                                        })
+                                    }
+                                })
+                            }}
+                            error={this.state.breedNameError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="产品品种"
+                            value={this.state.breedName}
+                        >产品品种
+                        </InputItem>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    traceCode: text
+                                }, () => {
+                                    if (!this.state.traceCode) {
+                                        this.setState({
+                                            traceCodeError: true
+                                        })
+                                    } else {
+                                        this.setState({
+                                            traceCodeError: false
+                                        })
+                                    }
+                                })
+                            }}
+                            error={this.state.traceCodeError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="产品批次"
+                            value={this.state.traceCode }
+                        >产品批次
+                        </InputItem>
+                    </List>
+                    <List>
+                        <Picker
+                            registerNumber="作物"
+                            data={this.state.typeList}
+                            cols={1}
+                            value={this.state.examinType }
+                            onOk={(val) => this.setState({ examinType : val })}
+                            style={{color:'#000'}}
+                        >
+                            <Item><Text style={{fontSize:17,color:'#000'}}>检测方式</Text></Item>
+                        </Picker>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    examinUnit: text
+                                }, () => {
+                                    if (!this.state.examinUnit) {
+                                        this.setState({
+                                            examinUnitError: true
+                                        })
+                                    } else {
+                                        this.setState({
+                                            examinUnitError: false
+                                        })
+                                    }
+                                })
+                            }}
+                            error={this.state.examinUnitError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="检测机构"
+                            value={this.state.examinUnit }
+                        >检测机构
+                        </InputItem>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    examinStandard: text
+                                }, () => {
+                                    if (!this.state.examinStandard) {
+                                        this.setState({
+                                            examinStandardError: true
+                                        })
+                                    } else {
+                                        this.setState({
+                                            examinStandardError: false
+                                        })
+                                    }
+                                })
+                            }}
+                            error={this.state.examinStandardError}
+                            onErrorClick={this.onErrorClick}
+                            maxLength={50}
+                            placeholder="检测标准"
+                            value={this.state.examinStandard }
+                        >检测标准
+                        </InputItem>
+                    </List>
+                    <List>
+                        <Picker
+                            data={this.state.examiningList}
+                            cols={1}
+                            value={this.state.examining }
+                            onOk={(val) => this.setState({ examining : val })}
+                            style={{color:'#000'}}
+                        >
+                            <Item><Text style={{fontSize:17,color:'#000'}}>检测结果</Text></Item>
+                        </Picker>
+                    </List>
+                    <List>
+                        <Item>
+                            <Text style={{fontSize:17,color:'#000'}}>检测文件上传</Text>
+                        </Item>
+                        <View style={{ alignItems: 'center', padding: 15 }}>
+                            <ImagePicker
+                                selectable={this.state.files.length < 3}
+                                accept="image/gif,image/jpeg,image/jpg,image/png"
+                                onChange={this.handleFile2Change}
+                                files={this.state.files}
+                            />
+                        </View>
+                    </List>
+                    
+                </View>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+
+    };
+}
+
+module.exports = connect(mapStateToProps)(TestRecordAdd);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

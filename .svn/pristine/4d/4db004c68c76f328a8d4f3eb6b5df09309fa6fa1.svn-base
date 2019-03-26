@@ -1,0 +1,123 @@
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ * @flow
+ */
+
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    TouchableOpacity,
+    Dimensions,
+    Animated,
+    TouchableHighlight
+} from 'react-native';
+import moment from 'moment';
+import { TabView, TabBar, SceneMap, PagerPan, SwipeAction } from 'react-native-tab-view';
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import * as PortraitAction from 'root/src/actions/farmersPortrait';
+import StoreList from 'root/src/screens/baseComon/StoreList.js';
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+// import Taxonomy from './Taxonomy'
+// import PurchaseRecord from './PurchaseRecord'
+import FarmStore from './FarmStore'
+// @loadingDecorator
+@navigatorDecorator
+
+export default class FarmersPortrait extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            index: 0,
+            routes: [
+                { key: 'first', title: '农资店' },
+                { key: 'second', title: '购买记录' },
+            ],
+        };
+    }
+    componentWillMount() {
+    }
+
+    render() {
+        const FirstRoute = () => (
+            <View style={[styles.container]} >
+                <FarmStore />
+            </View>
+        );
+        const SecondRoute = () => (
+            <View style={[styles.container]} >
+                <LoadMoreList
+                    ref={ref => this.moreListInstw = ref}
+                    getData={PortraitAction.getMemberOrder}
+                    searchParams={{ storeId: this.state.storeId }}
+                    rowItem={(data) => {
+                        return <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}
+                            onPress={() => {
+                                this.pushPage({
+                                    component: {
+                                        passProps: { id: data.id },
+                                        ...Global.Screens.RecordDetail
+                                    }
+                                });
+                            }}>
+
+                            <StoreList
+                                firstItem={data.orderNo}
+                                secondItem={'实付金额：' + data.actualPayAmount}
+                                thirdItem={'购买数量：' + data.goodsQuantity}
+                                fourthItem={data.orderTime}
+                            />
+                        </TouchableHighlight>
+                    }}
+                />
+            </View>
+        );
+        return (
+            <TabView
+                navigationState={this.state}
+                renderScene={SceneMap({
+                    first: FirstRoute,
+                    second: SecondRoute,
+                })}
+                renderTabBar={props =>
+                    <TabBar
+                        {...props}
+                        style={{ backgroundColor: '#fff' }}
+                        labelStyle={{ color: '#999' }}
+                        indicatorStyle={{ backgroundColor: '#7bb046' }}
+                    />
+
+                }
+                renderPager={props =>
+                    <PagerPan
+                        {...props}
+                        swipeEnabled={false}
+                    />
+                }
+                onIndexChange={index => this.setState({ index })}
+                initialLayout={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT }}
+            />
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    tabBar: {
+        flexDirection: 'row',
+        // paddingTop: Constants.statusBarHeight,
+    },
+    tabItem: {
+        flex: 1,
+        alignItems: 'center',
+        padding: 16,
+    },
+});
+
+// AppRegistry.registerComponent('Statistics', () => Statistics);

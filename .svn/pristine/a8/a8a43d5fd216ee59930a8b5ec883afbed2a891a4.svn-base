@@ -1,0 +1,69 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  TextInput,
+  KeyboardAvoidingView 
+} from 'react-native';
+import { WingBlank } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+import Icon from 'react-native-vector-icons/Feather';
+import { Button, Grid, Carousel, SearchBar , Checkbox,InputItem } from 'antd-mobile-rn'
+const { connect } = require('remx');
+const CheckboxItem = Checkbox.CheckboxItem;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    flexDirection:'row',
+    justifyContent:'space-around',
+  },
+});
+@navigatorDecorator
+export default class BrTag extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+    this.state = {
+      text: '11111111111'
+    }
+  }
+  async componentDidMount() {
+  }
+  _onPressButton = ()=> {
+    const next = Global.Screens[this.props.url]
+    this.pushPage({
+      component: next
+    })
+  }
+  _trunClick = ()=> {
+
+  }
+  render() {
+    return (
+      // bottom: 0,position:'absolute',
+      <View style={{ bottom: 0,position:'absolute',backgroundColor:'#fff',width:'100%',height:100}}>
+        <View style={{flexDirection:'row',paddingTop: 5,paddingBottom:5,paddingLeft: 5, paddingRight: 5, justifyContent:'space-between', backgroundColor:'#fff',borderColor:'#e3e3e3', borderBottomWidth: 1, borderTopWidth: 1}}>
+          <View  style={{height: 40,width:250,borderColor:'#e3e3e3',borderWidth:1,borderRadius: 15}}>
+            <InputItem
+              onChangeText={(text) => this.setState({text})}
+              value={this.state.text}
+              style={{height: 40,  width:220, marginLeft:15}}
+            />
+          </View>
+          <Icon name='message-circle' size={30} style={{lineHeight: 40}}/>
+          <Button type="primary" style={{height: 40, width: 80}}>发送</Button>
+          {/* <Icon name='star' size={30} style={{lineHeight: 40}}/> */}
+          {/* <Icon name='share' size={30} style={{lineHeight: 40}}/> */}
+        </View>
+          <View>
+            <CheckboxItem key="disabled" data-seed="logId" >
+              <Text style={{fontSize:15,lineHeight:20}}>同时转发</Text>
+            </CheckboxItem>
+          </View>
+      </View>
+    );
+  }
+}

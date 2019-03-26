@@ -1,0 +1,19 @@
+import * as StoreService from '../services/store';
+
+//搜索附近农资店
+export async function SearchNearByStore({ input }) {
+  
+    const { data, totalCount, msg, success } = await StoreService.SearchNearByStore(input)
+    if (!success)
+        return { suc: false };
+    return { data, totalCount };
+}
+
+//搜索农资
+export async function SearchGoods({ input }) {
+    console.log(input, 'input')
+    const { data, totalCount, msg, success } = await StoreService.SearchGoods(input)
+    if (!success)
+        return { suc: false };
+    return { data, totalCount };
+}

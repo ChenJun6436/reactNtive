@@ -1,0 +1,8 @@
+import { Post } from '../utils/request';
+
+//新增关注作物
+export async function AddAttentionCrop(data) {
+    return Post(`/Api/AttentionCrop/Add`, {
+        body: JSON.stringify(data)
+    });
+}

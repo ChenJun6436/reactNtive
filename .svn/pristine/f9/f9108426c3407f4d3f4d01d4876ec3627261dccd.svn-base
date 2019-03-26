@@ -1,0 +1,279 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableOpacity
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, Toast } from 'antd-mobile-rn';
+import ImageCropPicker from 'react-native-image-crop-picker';
+import * as PestImageAction from 'root/src/actions/pestImage';
+import * as CommonAction from 'root/src/actions/common';
+import store from 'root/src/stores/account';
+import moment from 'moment';
+import inputItemStyle from 'antd-mobile-rn/lib/input-item/style/index.native';
+import InputWriteSelect from 'root/src/screens/baseComon/InputWriteSelect.js'
+import CropStore from 'root/src/stores/crop';
+const inputStyle = {
+    ...inputItemStyle,
+    input: { ...inputItemStyle.input, borderWidth: 0, margin: 0, padding: 0 }
+}
+const { connect } = require('remx');
+const Item = List.Item;
+@navigatorDecorator
+class ERPUploadImage extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            crop: this.props.crop ? this.props.crop : null,
+            pestList: this.props.pestList ? this.props.pestList : null,
+            imageUrl: '',
+            takePicMonth: new Date(),
+            takePicAddress: '',
+            takePicWaether: '',
+            temperature: '',
+            humiDity: '',
+            ground: '',
+            files: []
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+
+    }
+    navigationButtonPressed({ buttonId }) {
+
+        if (!this.state.imageUrl) {
+            MyToast.info('请上传图片！')
+        }
+        else if (!this.state.crop) {
+            MyToast.info('请填写作物！')
+        }
+        else if (!this.state.pestList || !this.state.pestList[0]) {
+            MyToast.info('请填写病虫害！')
+        }
+        else {
+            this.state.takePicWaether = this.state.takePicWaether ? this.state.takePicWaether[0] : '';
+            this.state.takePicMonth = moment(this.state.takePicMonth).format('YYYY-MM-DD');
+            let input = {
+                imageUrl: this.state.imageUrl,
+                pestId: this.props.pestId,
+                pestName: this.state.pestList[0],
+                plantName: this.state.crop,
+                takePicMonth: this.state.takePicMonth,
+                takePicAddress: this.regionName ? this.regionName : "",
+                takePicWaether: this.state.takePicWaether,
+                temperature: this.state.temperature,
+                humiDity: this.state.humiDity,
+                ground: this.state.ground,
+            }
+            PestImageAction.UploadPestImage({ input: input }).then((suc) => {
+                if (suc.suc) {
+                    MyToast.success('上传成功')
+                    this.pop()
+                }
+                else {
+                    MyToast.info(suc.msg)
+                }
+            })
+        }
+    }
+    componentDidMount() {
+        const areasData = getAreas()
+        this.setState({ areasData })
+    }
+    componentWillReceiveProps(nextProps) {
+    }
+
+    handleFile2Change = (files, type, index) => {
+        if (type == 'add') {
+            var formData = new FormData();
+            let file = { uri: files[0].url, type: 'application/octet-stream', name: 'image.jpg' };
+            formData.append('avatar', file);
+            CommonAction.UploadImg({ input: formData }).then((suc) => {
+                if (suc.suc) {
+                    this.setState({
+                        imageUrl: suc.Data.url,
+                    })
+                    this.setState({
+                        files: [{
+                            url: ImgUrl + suc.Data.url,
+                            id: suc.Data.url,
+                        }],
+                    });
+                }
+                else {
+                    MyToast.info('上传头像失败')
+                }
+            })
+        }
+        else {
+            this.setState({
+                files: [],
+                imageUrl: ''
+            });
+        }
+    }
+
+    format = (value) => {
+        if (value && value.length > 0) {
+            // this.setState({
+            //     regionName: value,
+            // })
+            this.regionName = value.join(',')
+            return value.join(',')
+        }
+        else {
+            return value
+        }
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#F5FCFF' }}>
+                <View style={{ alignItems: 'center', padding: 15 }}>
+                    <ImagePicker
+                        accept="image/gif,image/jpeg,image/jpg,image/png"
+                        onChange={this.handleFile2Change}
+                        files={this.state.files}
+                        selectable={this.state.files.length < 1}
+                    />
+                </View>
+                <List>
+                    <InputWriteSelect
+                        _name={'作物名称'}
+                        _value={this.state.crop}
+                        _type={'ERPCrop'}
+                        _selectCrop={() => {
+                            this.pushPage({
+                                component: {
+                                    passProps: {
+                                        changeCropData: (crop) => {
+                                            this.setState({
+                                                crop
+                                            })
+                                        },
+                                        crop: this.state.crop
+                                    },
+                                    ...Global.Screens.ERPDiaList
+                                }
+                            })
+                        }} />
+                    <InputWriteSelect
+                        _name={'病害名称'}
+                        _value={this.state.pestList && this.state.pestList.length > 0 ? this.state.pestList[0] : ''}
+                        _type={'ERPPest'}
+                        _selectCrop={() => {
+                            if (!this.state.crop) {
+                                MyToast.info("请先选择作物名称")
+                                return;
+                            }
+                            this.pushPage({
+                                component: {
+                                    passProps: {
+                                        crop: this.state.crop, pestList: this.state.pestList, isSolo: true, changePestData: (pestList) => {
+                                            this.setState({
+                                                pestList
+                                            })
+                                        },
+                                    },
+                                    ...Global.Screens.ERPDiaPest
+                                }
+                            })
+                        }} />
+                    <DatePicker
+                        value={new Date(this.state.takePicMonth)}
+                        mode="date"
+                        minDate={new Date('1918-01-01')}
+                        maxDate={new Date()}
+                        onChange={text => this.setState({ takePicMonth: text })}
+                        format="YYYY-MM-DD"
+                    >
+                        <Item arrow="horizontal" ><Text style={{ color: 'gray' }}>时间</Text></Item>
+                    </DatePicker>
+                    <Picker
+                        style={{ height: 40, width: '100%', backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: '#999', }}
+                        title="地点"
+                        data={this.state.areasData}
+                        cols={4}
+                        value={this.state.takePicAddress}
+                        format={this.format}
+                        onChange={(v: any) => this.setState({ takePicAddress: v })}
+                        onOk={(v: any) => this.setState({ takePicAddress: v })}
+                    >
+                        <Item arrow="horizontal"><Text style={{ color: 'gray' }}>地点</Text></Item>
+                    </Picker>
+                    <Picker
+                        data={[{ value: '晴天', label: '晴天' }, { value: '阴天', label: '阴天' }, { value: '雨天', label: '雨天' }]}
+                        cols={1}
+                        onChange={text => { this.setState({ takePicWaether: text }) }}
+                        value={this.state.takePicWaether}>
+                        <Item arrow="horizontal"><Text style={{ color: 'gray' }}>天气</Text></Item>
+                    </Picker>
+
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ temperature: text })}
+                        placeholder="温度"
+                        value={this.state.temperature}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>温度</Text>
+                    </InputItem>
+
+
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ humiDity: text })}
+                        placeholder="湿度"
+                        value={this.state.humiDity}
+                        labelNumber={9}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>湿度</Text>
+                    </InputItem>
+                    <InputItem
+                        textAlign="right"
+                        clear
+                        onChangeText={text => this.setState({ ground: text })}
+                        placeholder="土壤"
+                        value={this.state.ground}
+                        labelNumber={9}
+                        placeholderTextColor='#cccccc'
+                    ><Text style={{ color: 'gray' }}>土壤</Text>
+                    </InputItem>
+                </List>
+            </ScrollView >
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+        userInfo: store.getAccount(),
+        userId: store.getUserId(),
+    };
+}
+
+module.exports = connect(mapStateToProps)(ERPUploadImage);
+const styles = StyleSheet.create({
+    photos: {
+        width: 90,
+        height: 90,
+        borderRadius: 45,
+    },
+    imgStyle: {
+        width: 100,
+        height: 100,
+        borderRadius: 5,
+    },
+});

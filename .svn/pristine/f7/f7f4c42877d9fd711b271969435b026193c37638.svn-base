@@ -1,0 +1,36 @@
+import * as MARService from '../services/medicationRecord';
+//新增
+export async function Add({ input }) {
+    const { data, msg, success, totalCount } = await MARService.Add(input)
+    if (!success)
+        return { suc: false, msg };
+    return { data, totalCount };
+}
+//修改
+export async function Update({ input }) {
+    const { data, msg, success, totalCount } = await MARService.Update(input)
+    if (!success)
+        return { suc: false, msg };
+    return { data, totalCount };
+}
+//列表
+export async function GetPageList({ input }) {
+    const { data, msg, success, totalCount } = await MARService.GetPageList(input)
+    if (!success)
+        return { suc: false, msg };
+    return { data, totalCount };
+}
+//删除
+export async function Delete({ input }) {
+    const { data, msg, success, totalCount } = await MARService.Delete(input)
+    if (!success)
+        return { suc: false, msg };
+    return { data, totalCount };
+}
+//详情
+export async function GetDetail({ id }) {
+    const { data, msg, success } = await MARService.GetDetail(id)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data, msg };
+}

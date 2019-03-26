@@ -1,0 +1,20 @@
+import ScollInputItem from 'root/src/screens/components/ScollInputItem.js'
+import { Toast } from 'antd-mobile-rn';
+global.ScollInputItem = ScollInputItem;
+global.MyToast = {
+    loading: () => {
+        Toast.loading('加载数据中', 10, null, false)
+    },
+    fail: () => {
+        Toast.fail('系统出错', 3, null, false)
+    },
+    success: (content) => {
+        Toast.fail(content ? content : '操作成功', 3, null, false)
+    },
+    submiting: () => {
+        Toast.loading('正在提交', 10, null, true)
+    },
+    hide: () => {
+        Toast.hide()
+    },
+}

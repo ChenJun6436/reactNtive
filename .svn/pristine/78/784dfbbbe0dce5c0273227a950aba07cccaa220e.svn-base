@@ -1,0 +1,71 @@
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ * @flow
+ */
+
+import React, { Component } from 'react';
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  TouchableHighlight,
+  FlatList
+} from 'react-native';
+import { Button } from 'antd-mobile-rn';
+const { connect } = require('remx');
+import store from 'root/src/stores/account';
+import * as EnumsAction from 'root/src/actions/enums';
+import LoadMoreList from 'root/src/screens/components/LoadMoreList'
+const instructions = Platform.select({
+  ios: 'Press Cmd+R to reload,\n' +
+    'Cmd+D or shake for dev menu',
+  android: 'Double tap R on your keyboard to reload,\n' +
+    'Shake or press menu button for dev menu',
+});
+
+type Props = {};
+class App extends Component<Props> {
+  render() {
+    return (
+      <View style={styles.container}>
+        <LoadMoreList
+          getData={EnumsAction.getPlantingHabits}
+          rowItem={(data) => {
+            return <TouchableHighlight activeOpacity={0.3} underlayColor={'#eee'}>
+              <Text>123</Text>
+            </TouchableHighlight>
+
+          }}
+        />
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#F5FCFF',
+    },
+    welcome: {
+      fontSize: 20,
+      textAlign: 'center',
+      margin: 10,
+    },
+    instructions: {
+      textAlign: 'center',
+      color: '#333333',
+      marginBottom: 5,
+    },
+  });
+function mapStateToProps() {
+  return {
+    userInfo: store.getAccount()
+  };
+}
+
+module.exports = connect(mapStateToProps)(App);

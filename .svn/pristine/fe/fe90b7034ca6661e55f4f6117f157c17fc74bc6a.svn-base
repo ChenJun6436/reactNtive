@@ -1,0 +1,53 @@
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
+import { WingBlank } from 'antd-mobile-rn'
+import store from 'root/src/stores/account';
+const { connect } = require('remx');
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    flexDirection:'row',
+    justifyContent:'space-around',
+  },
+});
+@navigatorDecorator
+export default class ImgLeftText2Right extends Component {
+  constructor(props: {}) {
+    super(props);
+    const { App, navigator, Message } = this.props;
+  }
+  async componentDidMount() {
+  }
+  _onPressButton = ()=> {
+    console.log(1)
+  }
+  render() {
+    // const img = require( this.props.img )
+    return (
+      <WingBlank size={'lg'} style={{paddingTop: 10,paddingBottom: 10}}>
+          <TouchableOpacity onPress={this._onPressButton}>
+            <View style={{flexDirection:'row',justifyContent:'flex-start',borderBottomColor:'#e0e0e0',borderBottomWidth: 1,paddingBottom:10}}>
+              {this.props.img?<Image style={{width:150,height:80,marginRight:20}} source={this.props.img}/>:null}
+              <View style={{justifyContent:'space-between',flex:1,height: this.props.img?80:60}}>
+                <Text numberOfLines={2}  style={{fontSize:16}}>泰州研究院姜小三院长获江苏省最1美教是奖</Text>
+                <View>
+                </View>
+                <View style={{flexDirection:'row'}}>
+                  <Text numberOfLines={1} style={{fontSize:14,lineHeight:19,maxWidth:80,}}>优农帮乐山分公司优农帮乐山分公司</Text>
+                  <Text>阅读 5110</Text>
+                  <Text style={{marginLeft:10}}>评论 7788</Text>
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+      </WingBlank>
+    );
+  }
+}

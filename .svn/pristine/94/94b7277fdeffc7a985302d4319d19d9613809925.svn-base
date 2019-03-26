@@ -1,0 +1,50 @@
+import * as DiagnosisService from '../services/diagnosis';
+//查询只能诊单
+export async function GetPlantByLivingMatter({ input }) {
+    const { data, totalCount, msg, success } = await DiagnosisService.GetPlantByLivingMatter(input)
+    if (!success)
+        return { suc: false, msg };
+    return { data, totalCount };
+}
+
+//搜索农资
+export async function GetPlantClassifyByNode({ input }) {
+    const { data, totalCount, msg, success } = await DiagnosisService.GetPlantClassifyByNode(input)
+    if (!success)
+        return { suc: false, msg };
+    return { suc: true, data, totalCount };
+}
+
+//查询只能诊单
+export async function GetPlantPest({ input }) {
+    const { data, msg, success, totalCount } = await DiagnosisService.GetPlantPest(input)
+    if (!success)
+        return { suc: false, msg };
+    return { data, totalCount };
+}
+
+//根据具体的作物查询病虫害
+export async function GetPestByPlant({ input }) {
+    const { data, msg, success, totalCount } = await DiagnosisService.GetPestByPlant(input)
+    if (!success)
+        return { suc: false, msg };
+    return { data: data.listPestImg, totalCount };
+}
+
+export async function GetSolutionDetail({ input }) {
+    const { data, msg, success, totalCount } = await DiagnosisService.GetSolutionDetail(input)
+    if (!success)
+        return { suc: false, msg };
+    return { data, totalCount };
+}
+
+export async function GetPestByCrops({ input }) {
+    debugger;
+    console.log(input)
+    const { data, msg, success, totalCount } = await DiagnosisService.GetPestByCrops(input)
+    console.log(data, 'data')
+    // MyToast.info(JSON.stringify(data))
+    if (!success)
+        return { suc: false, msg };
+    return { data, suc: success };
+}

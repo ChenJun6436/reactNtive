@@ -1,0 +1,128 @@
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    // Image,
+    ScrollView,
+    TextInput,
+    Alert,
+    // Dimensions,
+    // TouchableWithoutFeedback,
+    // ProgressBarAndroid,
+    // TouchableHighlight,
+    // StatusBar
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, Accordion, SwipeAction } from 'antd-mobile-rn'
+// import ListItem from 'root/src/screens/baseComon/ListItem'
+// import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import DetailItem from 'root/src/screens/baseComon/DetailItem.js';
+import * as DataAction from 'root/src/actions/dataAuthentication';
+// import CropStore from 'root/src/stores/crop';
+// import pesticidesStore from 'root/src/stores/pesticides';
+// const SCREEN_WIDTH = Dimensions.get('window').width;
+// const SCREEN_HEIGHT = Dimensions.get('window').height;
+const { connect } = require('remx');
+const Item = List.Item;
+// let pageIndex = 1;
+
+// @loadingDecorator
+
+//企业情况
+@navigatorDecorator
+class EnterpriseSituation extends Component {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+            data:{},
+            enterpriseId:null
+        }
+        // Navigation.mergeOptions(this.props.componentId, null);
+        Navigation.events().bindComponent(this)
+
+    }
+    navigationButtonPressed({ buttonId }) {
+        if (this.props.enterpriseNotReady){
+            Alert.alert(
+                '提示',
+                "确定绑定企业吗？",
+                [{
+                        text: '取消',
+                        onPress: () => {
+                            
+                        }
+                    },
+                    {
+                        text: '确定',
+                        onPress: () => {
+                            DataAction.AddEnterprise({ idList: [this.state.enterpriseId] }).then((datas)=>{
+                                if (datas.suc) {
+                                    // storage.cache.account.enterpriseId = this.state.enterpriseId
+                                    storage.set('enterpriseId',this.state.enterpriseId)
+                                    MyToast.success('绑定成功');
+                                    setTimeout(() => {
+                                        this.props.reloadPage()
+                                        this.pop()
+                                    }, 2000)
+                                } else {
+                                    MyToast.info(datas.msg);
+                                }
+                            })
+                        }
+                    }
+                ]
+            );
+            
+        }else{
+        }
+        
+    }
+    componentWillMount() {
+        console.log('this.props.enterpriseId', this.props.enterpriseId)
+        this.setState({
+            enterpriseId: this.props.enterpriseId
+        }, () => this.getEnterpriseSituation(this.state.enterpriseId))
+        
+    }
+    
+    //获取企业详情
+    getEnterpriseSituation = (id) => {
+        DataAction.GetEnterpriseSituation(id).then((data) => {
+            if (data.suc) {
+                this.setState({
+                    data: data.data
+                })
+            }else{
+                MyToast.info(data.msg);
+            }
+        })
+    }
+    render() {
+        return (
+            <ScrollView style={styles.container}>
+                <List>
+                    <DetailItem title="名称" content={this.state.data.name} />
+                    <DetailItem title="组织结构代码" content={this.state.data.orgainzingCode} />
+                    <DetailItem title="法人代表" content={this.state.data.legalPerson} />
+                    <DetailItem title="会员数量" content={this.state.data.memberAmount} />
+                    <DetailItem title="品牌" content={this.state.data.brand} />
+                    <DetailItem title="联系电话" content={this.state.data.contact} />
+                </List>
+            </ScrollView >
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+
+    };
+}
+
+module.exports = connect(mapStateToProps)(EnterpriseSituation);
+
+const styles = StyleSheet.create({
+    container: {
+        backgroundColor: '#F5FCFF'
+    },
+
+});

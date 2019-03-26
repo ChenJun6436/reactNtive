@@ -1,0 +1,52 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    Image
+} from 'react-native';
+export default class StoreItem extends Component {
+    render() {
+        const content = this.props.content
+        return (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', paddingBottom: 15, paddingTop: 15, alignItems: 'center', backgroundColor: '#fff', paddingRight: 12, paddingLeft: 12, borderBottomColor: '#f1f1f1', borderBottomWidth: 0.4 }}>
+                <View style={{ width: '30%', height: 100 }}>
+                    {
+                        content.img ? <Image
+                            source={{ uri: content.img }}
+                            style={{ width: '100%', height: '100%', borderRadius: 5 }}
+                        /> : <Image
+                                source={require('root/img/nopic.gif')}
+                                style={{ width: '100%', height: '100%', borderRadius: 5 }}
+                            />
+                    }
+                </View>
+                <View style={{ marginLeft: 15, width: '60%' }}>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', width: '100%' }}>
+                        <Text style={{ lineHeight: 33, fontSize: 16, fontWeight: 'bold' }}>{content.name}</Text>
+                        <Text style={{ lineHeight: 33 }}>{content.distance ? (content.distance.toFixed(2) + 'km') : '0km'}</Text>
+                    </View>
+                    <Text style={{ lineHeight: 33 }}>{content.viewAmount}次</Text>
+                    <Text style={{ lineHeight: 33 }}>{content.address}</Text>
+                </View>
+            </View>
+        );
+    }
+}
+
+// const styles = StyleSheet.create({
+//     container: {
+//         flex: 1,
+//         paddingHorizontal: 16,
+//         paddingVertical: 6,
+//         borderBottomWidth: StyleSheet.hairlineWidth,
+//         borderColor: '#d9d9d9',
+//     },
+//     row: {
+//         flexDirection: 'row',
+//         justifyContent: 'space-between'
+//     }
+// });

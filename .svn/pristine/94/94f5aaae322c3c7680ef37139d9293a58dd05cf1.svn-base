@@ -1,0 +1,87 @@
+// @flow
+
+import Login from './Login';
+import Disclaimer from './Login/Disclaimer';//免责申明
+import Register from './Register';
+import SetRegisterCode from './Register/SetRegisterCode';//注册获取验证码
+import SetRegisterPwd from './Register/SetRegisterPwd';//注册设置密码
+import SetNewCode from './ForgetPassword/SetNewCode';//忘记密码获取验证码
+import SetNewPwd from './ForgetPassword/SetNewPwd';//忘记密码设置密码
+import ForgetPassword from './ForgetPassword';
+import Home from './Home';
+import Test from './Test';
+import Mine from './Mine';
+import MineRegion from './Mine/MineRegion';
+import MineType from './Mine/MineType';
+
+import EditUserInfo from './EditUserInfo';//完善个人信息
+import AgInfo from './AgInfo';
+import AgInfoDetail from './AgInfo/AgInfoDetail';
+import AgMic from './AgMic';
+import AgMicDetail from './AgMic/AgMicDetail';
+import UserRegion from './EditUserInfo/UserRegion';
+import UserType from './EditUserInfo/UserType';
+import CommentDetail from './CommentDetail'
+//农户画像
+import FarmersPortrait from './FarmersPortrait';//农资店列表
+import FarmStore from './FarmersPortrait/FarmStore';//农资店列表
+import PurchaseRecord from './FarmersPortrait/PurchaseRecord';//购买记录
+import RecordDetail from './FarmersPortrait/PurchaseRecord/RecordDetail'
+import Taxonomy from './FarmersPortrait/Taxonomy';//购买记录
+import Diagnosis from './Diagnosis';//智能诊单
+import ERPDiagnosis from './ERPDiagnosis';//智能诊单 
+import ERPDiagnosisDetail from './ERPDiagnosis/ERPDiagnosisDetail';
+import ERPDiaDetail from './ERPDiagnosis/ERPDiagnosisDetail/Details';
+import BuyProduct from './BuyProduct';//智能诊单  
+import StoreDetail from './BuyProduct/StoreList/StoreDetail';
+import ProductDetail from './BuyProduct/HotProduct/ProductDetail';
+import BarcodeScanner from './BarcodeScanner';//智能诊单  
+import BarcodeWeb from './BarcodeScanner/Web';
+export function registerScreens() {
+  Navigation.registerComponent(Global.Screens.Login.name, () => Login);
+  Navigation.registerComponent(Global.Screens.Disclaimer.name, () => Disclaimer);
+  Navigation.registerComponent(Global.Screens.Register.name, () => Register);
+  Navigation.registerComponent(Global.Screens.SetRegisterCode.name, () => SetRegisterCode);
+  Navigation.registerComponent(Global.Screens.SetRegisterPwd.name, () => SetRegisterPwd);
+
+  Navigation.registerComponent(Global.Screens.ForgetPassword.name, () => ForgetPassword);
+  Navigation.registerComponent(Global.Screens.SetNewCode.name, () => SetNewCode);
+  Navigation.registerComponent(Global.Screens.SetNewPwd.name, () => SetNewPwd);
+
+  Navigation.registerComponent(Global.Screens.Mine.name, () => Mine);
+  Navigation.registerComponent(Global.Screens.MineRegion.name, () => MineRegion);
+  Navigation.registerComponent(Global.Screens.MineType.name, () => MineType);
+
+  Navigation.registerComponent(Global.Screens.EditUserInfo.name, () => EditUserInfo);
+  Navigation.registerComponent(Global.Screens.Test.name, () => Test);
+
+  Navigation.registerComponent(Global.Screens.UserRegion.name, () => UserRegion);
+  Navigation.registerComponent(Global.Screens.UserType.name, () => UserType);
+  //首页
+  Navigation.registerComponent(Global.Screens.Home.name, () => Home);
+  //农业资讯主页
+  Navigation.registerComponent(Global.Screens.AgInfo.name, () => AgInfo);
+  //农业资讯详情
+  Navigation.registerComponent(Global.Screens.AgInfoDetail.name, () => AgInfoDetail);
+  //农技微课主页
+  Navigation.registerComponent(Global.Screens.AgMic.name, () => AgMic);
+  //农技微课详情
+  Navigation.registerComponent(Global.Screens.AgMicDetail.name, () => AgMicDetail);
+  //回复
+  Navigation.registerComponent(Global.Screens.CommentDetail.name, () => CommentDetail);
+  //农资店
+  Navigation.registerComponent(Global.Screens.FarmersPortrait.name, () => FarmersPortrait);
+  Navigation.registerComponent(Global.Screens.FarmStore.name, () => FarmStore);
+  Navigation.registerComponent(Global.Screens.PurchaseRecord.name, () => PurchaseRecord);
+  Navigation.registerComponent(Global.Screens.RecordDetail.name, () => RecordDetail);
+  Navigation.registerComponent(Global.Screens.Taxonomy.name, () => Taxonomy);
+  Navigation.registerComponent(Global.Screens.Diagnosis.name, () => Diagnosis);
+  Navigation.registerComponent(Global.Screens.BuyProduct.name, () => BuyProduct);
+  Navigation.registerComponent(Global.Screens.StoreDetail.name, () => StoreDetail);
+  Navigation.registerComponent(Global.Screens.ProductDetail.name, () => ProductDetail);
+  Navigation.registerComponent(Global.Screens.ERPDiagnosis.name, () => ERPDiagnosis);
+  Navigation.registerComponent(Global.Screens.ERPDiagnosisDetail.name, () => ERPDiagnosisDetail);
+  Navigation.registerComponent(Global.Screens.ERPDiaDetail.name, () => ERPDiaDetail);
+  Navigation.registerComponent(Global.Screens.BarcodeScanner.name, () => BarcodeScanner);
+  Navigation.registerComponent(Global.Screens.BarcodeWeb.name, () => BarcodeWeb);
+}

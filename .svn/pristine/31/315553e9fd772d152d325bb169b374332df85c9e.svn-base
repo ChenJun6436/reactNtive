@@ -1,0 +1,106 @@
+import { Post } from '../utils/request';
+
+//新增 采收
+export async function AddProductRecovery(data) {
+    return Post(`/Api/ProductPick/Add`, {
+        body: JSON.stringify(data)
+    });
+}
+//查询 采收
+export async function ListProductRecovery(data) {
+    return Post(`/Api/ProductPick/GetPageList`, {
+        body: JSON.stringify(data)
+    });
+}
+//详情--采收
+export async function GetProductRecovery(data) {
+    return Post(`/Api/ProductPick/GetDetail?id=`+ data);
+}
+//编辑--采收
+export async function EditProductRecovery(data) {
+    return Post(`/Api/ProductPick/Update `, {
+        body: JSON.stringify(data)
+    });
+}
+//删除--采收
+export async function DeleteProductRecovery(data) {
+    return Post(`/Api/ProductPick/Delete?id=`+ data, {
+        body: JSON.stringify(data)
+    });
+}
+
+//查询所有基地
+export async function GetAllBase() {
+    return Post(`/Api/BaseLand/List`);
+}
+
+
+//查询土地类型
+export async function GetAllType() {
+    return Post(`/Api/ProductRecovery/Type`);
+}
+//查询工人和客户
+export async function GetAllPeople(data) {
+    console.log(data)
+    return Post(`/Api/Staff/List?type=`+ data)
+}
+//查询天气
+export async function GetAllWeather() {
+    return Post(`/Api/ProductPick/GetWeather`);
+}
+//查询所有园区
+
+export async function GetAllGarden(data) {
+    return Post(`/Api/Garden/List?name=`+ data);
+}
+//根据Id获取区块
+export async function GetAllLand(data) {
+    return Post(`/Api/BaseLand/Land?id=`+ data);
+}
+//查询所有未采摘作物
+export async function GetAllCrop(data) {
+    return Post(`/Api/GardenCrop/List`, {
+        body: JSON.stringify(data)
+    });
+}
+
+
+//获取库存作物列表
+export async function GetAllPackCrop() {
+    return Post(`/Api/ProductStock/GetStockList`);
+}
+
+//根据作物ID查询批次
+export async function GetAllCropTrace(data) {
+    return Post(`/Api/ProductStock/GetCropTraceCodes?cropId=`+ data);
+}
+
+//新增 销售
+export async function AddProductSale(data) {
+    return Post(`/Api/ProductSale/Add`, {
+        body: JSON.stringify(data)
+    });
+}
+//查询 销售
+export async function ListProductSale(data) {
+    return Post(`/Api/ProductSale/GetPageList`, {
+        body: JSON.stringify(data)
+    });
+}
+//详情--销售
+export async function GetProductSale(data) {
+    return Post(`/Api/ProductSale/GetDetail?id=`+ data);
+}
+//编辑--销售
+export async function EditProductSale(data) {
+    return Post(`/Api/ProductSale/Update`, {
+        body: JSON.stringify(data)
+    });
+}
+//删除--销售
+export async function DeleteProductSale(data) {
+    console.log(data)
+    return Post(`/Api/ProductSale/Delete`, {
+        body: JSON.stringify(data)
+    });
+}

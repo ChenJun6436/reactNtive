@@ -1,0 +1,122 @@
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ * @flow
+ */
+
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    TouchableOpacity,
+    Dimensions,
+    TouchableHighlight,
+    Animated,
+    ScrollView,
+    Platform,
+    Image
+} from 'react-native';
+import moment from 'moment';
+import Icon from 'react-native-vector-icons/Feather';
+import LoadMoreList from 'root/src/screens/baseComon/LoadMoreList.js';
+import DetailItem from 'root/src/screens/baseComon/DetailItem.js';
+import * as LandAction from 'root/src/actions/land'
+@navigatorDecorator 
+// @loadingDecorator
+export default class DigDetail extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            typeList: [],
+            fresh: true
+        };
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                rightButtons: [
+                    {
+                        id: 'editor',
+                        text: '编辑',
+                        color: '#fff',
+                        fontSize: 16,
+                    }
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed({ buttonId }) {
+        this.pushPage({
+            component: {
+                ...Global.Screens.AddLand,
+                passProps: { data: this.props.data , _fresh: this._fresh},
+                options: {
+                    topBar: {
+                        title: {
+                            text: '编辑土地'
+                        }
+                    },
+                    bottomTabs: {
+                        visible: false,
+                        drawBehind: true
+                    }
+                },
+            }
+        });
+    }
+    _fresh=()=>{
+        this.setState({
+            fresh: false
+        })
+    }
+    componentWillMount() {
+        this.item = this.props.data
+    }
+    shouldComponentUpdate(nextProps,nextState){
+        if(nextState.fresh == false){
+            LandAction.Get(this.props.data.id).then((res) => {
+                if (res.suc) {
+                    this.item = res.data
+                    this.setState({
+                        fresh: !this.state.fresh
+                    })
+                } else {
+                    MyToast.info('系统异常，请稍后再试');
+                }
+                return true
+            })
+        }else{
+            return true
+        }
+    }
+    render() {
+        let item = this.item
+        return (
+            <ScrollView style={styles.container}>
+                <View style={styles.content}>
+                    <DetailItem title="地址" content={item.adress} />
+                    <DetailItem title="类型" content={item.type} />
+                    <DetailItem title="面积" content={item.area} />
+                    <DetailItem title="地块/棚号" content={item.number} />
+                    <DetailItem title="创建时间" content={item.createTime} />
+                </View>
+            </ScrollView>
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    imgStyle: {
+        // 设置宽度
+        width: Dimensions.get('window').width,
+        // 设置高度
+        height: 200,
+        // 设置图片填充模式
+        resizeMode: 'stretch'
+    },
+});
+
