@@ -71,7 +71,7 @@ export async function GetAllGarden(input ) {
         return { suc: false, msg };
     return { suc: true, data, dataExtend };
 }
-//获取 -所有地块
+//获取 -所有区块
 export async function GetAllLand( input ) {
     const { data, msg, success, dataExtend } = await StoreService.GetAllLand(input)
     if (!success)

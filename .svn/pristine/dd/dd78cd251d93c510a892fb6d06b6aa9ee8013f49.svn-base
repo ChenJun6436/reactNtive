@@ -1,0 +1,204 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    Image,
+    Dimensions,
+    ScrollView,
+    Alert,
+    TouchableWithoutFeedback
+} from 'react-native';
+import { Grid } from 'antd-mobile-rn'
+import * as MineAction from 'root/src/actions/dataAuthentication';
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    text: {
+        color: '#fff',
+        fontSize: 36,
+    },
+    icon: {
+        width: 55,
+        height: 55
+    },
+    title: {
+        fontSize: 16,
+        color: 'white',
+        width: '100%',
+        position: 'absolute',
+        top: 15,
+        zIndex: 999,
+        textAlign: 'center'
+    },
+});
+const data = [
+    {
+        icon: <Image source={require('root/img/MinePlant.png')} style={styles.icon} />,
+        text: '种植信息',
+        route: 'GardenCrop',
+    },
+    {
+        icon: <Image source={require('root/img/product.png')} style={styles.icon} />,
+        text: '基地',
+        route: 'Base',
+    },
+    {
+        icon: <Image source={require('root/img/check.png')} style={styles.icon} />,
+        text: '标准园信息',
+        route: 'Garden',
+    },
+    {
+        icon: <Image source={require('root/img/chouyang.png')} style={styles.icon} />,
+        text: '投入品购买记录',
+        route: 'IntBuyRecord',
+    },
+    {
+        icon: <Image source={require('root/img/chufa.png')} style={styles.icon} />,
+        text: '投入品使用记录',
+        route: 'IntUseRecord',
+    },
+    {
+        icon: <Image source={require('root/img/company.png')} style={styles.icon} />,
+        text: '采收记录',
+        route: 'ProductRecovery',
+    },
+    // {
+    //     icon: <Image source={require('root/img/Distinguish.png')} style={styles.icon} />,
+    //     text: '贮存记录'
+    // },
+    {
+        icon: <Image source={require('root/img/ERPUploadImage.png')} style={styles.icon} />,
+        text: '销售记录',
+        route: 'ProductSale',
+    },
+    {
+        icon: <Image source={require('root/img/FarmersPortrait.png')} style={styles.icon} />,
+        text: '管理用工记录',
+        route: 'WorkRecord',
+    },
+    {
+        icon: <Image source={require('root/img/guanzhu.png')} style={styles.icon} />,
+        text: '检测记录',
+        route: 'TestRecord',
+    },
+    // {
+    //     icon: <Image source={require('root/img/jihuazaiyang.png')} style={styles.icon} />,
+    //     text: '消费者扫码记录',
+    //     route: 'EnterpriseList',
+    // },
+    {
+        icon: <Image source={require('root/img/MinePlantM.png')} style={styles.icon} />,
+        text: '企业情况',
+        route: 'EnterpriseList',
+    },
+    {
+        icon: <Image source={require('root/img/MedicationRecord.png')} style={styles.icon} />,
+        text: '人员信息',
+        route: 'Staff'
+    },
+]
+
+@navigatorDecorator
+
+export default class AllMenu extends Component {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+            nowState: null
+        };
+        Navigation.events().registerComponentDidAppearListener(({ componentId, componentName }) => {
+            if (componentId == this.props.componentId) {
+                MineAction.GetState().then((data, dataExtend) => {
+                    console.log(data)
+                    if (data.data == 0) {
+                        this.notState()
+                    } else {
+                        this.setState({
+                            nowState: data.data
+                        })
+                        if (data.data == 1) {
+                            storage.set('enterpriseId', data.dataExtend)
+                            storage.set('enterpriseType', 1)   //enterpriseType , 1是个人用户 2是未绑定的企业用户 3是已经绑定成功的企业用户 
+                        }
+                        if (data.data == 2) {
+                            if (data.dataExtend) {
+                                storage.set('enterpriseId', data.dataExtend)
+                                storage.set('enterpriseType', 3)
+                            } else {
+                                storage.set('enterpriseId', '')
+                                storage.set('enterpriseType', 2)
+                            }
+                        }
+                    }
+                })
+            }
+        });
+    }
+    notState = () => {
+        Alert.alert(
+            '提示',
+            "当前未绑定企业，请选择您的用户类型或前往绑定",
+            [{
+                text: '个人用户',
+                onPress: () => {
+                    let postData = {
+                        isUnit: false,
+                        enterpriseId: "",
+                        state: 1,
+                    }
+                    MineAction.SetState({ input: postData }).then((data) => {
+                        if (data.suc) {
+                            this.setState({
+                                nowState : 1
+                            })
+                            storage.set('enterpriseId', data.dataExtend)
+                            storage.set('enterpriseType', 1)   //enterpriseType , 1是个人用户 2是未绑定的企业用户 3是已经绑定成功的企业用户 
+                        } else {
+                            MyToast.info(data.msg)
+                        }
+                    })
+                }
+            },
+            {
+                text: '前往绑定',
+                onPress: () => {
+                    this.pushPage({
+                        component: {
+                            passProps: {},
+                            ...Global.Screens.EnterpriseList,
+                        }
+                    });
+                }
+            }
+            ]
+        );
+    }
+    render() {
+        return (
+            <ScrollView style={styles.container}>
+                <View style={{ backgroundColor: 'white', width: '100%', flex: 1, justifyContent: 'center' }}>
+                    <Grid data={data} columnNum={3} hasLine={false} onClick={(el, index) => {
+                        if (this.state.nowState == 0) {
+                            this.notState()
+                        } else {
+                            this.pushPage({
+                                component: {
+                                    passProps: {},
+                                    ...Global.Screens[el.route],
+                                }
+                            });
+                        }
+                    }} />
+                </View>
+            </ScrollView>
+        );
+    }
+}
+
+

@@ -1,0 +1,85 @@
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    Dimensions,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
+import PropTypes from 'prop-types';
+import QRScannerView from '../components/QRScannerView.js';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import * as QrCodeAction from 'root/src/actions/qrCode';
+import * as MineAction from 'root/src/actions/intRecord';
+import CropStore from 'root/src/stores/crop';
+import AppStore from 'root/src/stores/app';
+const { connect } = require('remx');
+@navigatorDecorator
+export default class BarcodeScanner extends Component {
+    barcodeReceived(e) {
+        if(this.props.nowComponentName == 'BarcodeScannerInt'){
+            return false
+        }
+        let url = e.data;
+        QrCodeAction.searchQRCode({ qrCode: url }).then((suc) => {
+            if (suc.data) {
+                this.pushPage({
+                    component: {
+                        ...Global.Screens.BarcodeWeb,
+                        passProps: { data: suc.data, url: url },
+                    }
+                }
+                this.pop();
+            })
+        } else {
+            QrCodeAction.searchQRCode({ qrCode: url }).then((suc) => {
+                if (suc.data) {
+                    this.pushPage({
+                        component: {
+                            ...Global.Screens.BarcodeWeb,
+                            passProps: { data: suc.data, url: url },
+                        }
+                    })
+                }
+                else {
+                    MyToast.info('失败');
+                }
+            })
+        }
+
+    }
+    _renderTitleBar() {
+        return (
+            <Text style={{ color: 'white', textAlignVertical: 'center', textAlign: 'center', padding: 12 }} ></Text>
+        );
+    }
+
+    _renderMenu() {
+        return (
+            <Text style={{ color: 'white', textAlignVertical: 'center', textAlign: 'center', padding: 12 }} ></Text>
+        )
+    }
+    render() {
+        return (
+
+            < QRScannerView onScanResultReceived={this.barcodeReceived.bind(this)}
+                renderTopBarView={() => this._renderTitleBar()}
+                renderBottomMenuView={() => this._renderMenu()} />
+        )
+    }
+
+}
+function mapStateToProps() {
+    return {
+        nowComponentName: AppStore.getNowComponent(),
+    };
+  }
+  module.exports = connect(mapStateToProps)(BarcodeScanner);
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        flexDirection: 'column',
+        backgroundColor: 'black'
+    },
+});

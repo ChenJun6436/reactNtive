@@ -107,7 +107,7 @@ android {
         targetSdkVersion 25
         missingDimensionStrategy "RNN.reactNativeVersion", "reactNative55" // <- See note below for further instruction regarding compatibility with other React Native versions
         versionCode 1
-        versionName "1.8"
+        versionName "1.9"
         multiDexEnabled true 
         vectorDrawables.useSupportLibrary = true
         ndk {

@@ -64,6 +64,7 @@ class IntBuyRecordAdd extends Component {
             buyDay: new Date(),
             endTime: new Date(),
             remarkError: false,
+            cost: '',
         }
         Navigation.mergeOptions(this.props.componentId, {
             topBar: {
@@ -76,6 +77,9 @@ class IntBuyRecordAdd extends Component {
             }
         });
         Navigation.events().bindComponent(this);
+    }
+    componentWillUnmount(){
+        CropStore.setClickCrop(null)
     }
     navigationButtonPressed() {
         if (this.loading) {
@@ -99,6 +103,9 @@ class IntBuyRecordAdd extends Component {
         } else if (!ret.test(this.state.quantity)) {
             nowName = true
             MyToast.info('购买数量应大于0，且最多两位小数的数字');
+        } else if (!ret.test(this.state.cost)){
+            nowName = true
+            MyToast.info('购买费用应大于0，且最多两位小数的数字');
         }
         if (nowName) {
             return false
@@ -120,12 +127,14 @@ class IntBuyRecordAdd extends Component {
                 spec: this.state.spec,
                 specUnit: this.state.speckState[0],
                 packUnit: this.state.packState[0],
+                cost: this.state.cost,
             }
             if (this.props.id) {
                 postData.id = this.props.id
                 MineAction.EditBuy({ input: postData }).then((data) => {
                     if (data.suc == 1) {
                         MyToast.success('编辑成功');
+                        CropStore.setClickCrop(null)
                         setTimeout(() => {
                             this.pop();
                             this.props.refresh && this.props.refresh()
@@ -134,6 +143,7 @@ class IntBuyRecordAdd extends Component {
                                     ...Global.Screens.IntBuyRecord,
                                 }
                             });
+
                         }, 2000)
                     } else {
                         this.loading = false
@@ -144,7 +154,9 @@ class IntBuyRecordAdd extends Component {
                 MineAction.AddBuy({ input: postData }).then((data) => {
                     if (data.suc == 1) {
                         MyToast.success('新增成功');
+                        CropStore.setClickCrop(null)
                         setTimeout(() => {
+                            this.props.callback && this.props.callback()
                             this.pop();
                             this.props.refresh && this.props.refresh()
                             this.pushPage({
@@ -163,7 +175,7 @@ class IntBuyRecordAdd extends Component {
     }
     componentWillReceiveProps(next, prev) {
         //如果是选择了投入品
-        if (next.cropData && next.cropData != 'none' && next.cropData != prev.cropData) {
+        if (next.cropData && next.cropData != 'none' && next.cropData != 'null' && next.cropData != prev.cropData) {
             let model = next.cropData
             this.setState({
                 speckState: model.specUnit ? [model.specUnit] : ['克'],
@@ -174,7 +186,7 @@ class IntBuyRecordAdd extends Component {
                 registerName: model.registerName ? model.registerName : '',
                 manufacturer: model.manufacturerName ? model.manufacturerName : ''
             })
-        } else if (next.cropData == 'none') {
+        } else if (next.cropData != prev.cropData && next.cropData == 'none' && next.cropData == 'null' ) {
             CropStore.setClickCrop(null)
             MyToast.info('未扫描到相关数据');
         }
@@ -182,7 +194,6 @@ class IntBuyRecordAdd extends Component {
     componentWillMount() {
         if (this.props.id) {
             MineAction.GetBuy(this.props.id).then((data) => {
-                console.log(data)
                 if (data.suc) {
                     let model = data.data
                     this.setState({
@@ -199,6 +210,7 @@ class IntBuyRecordAdd extends Component {
                         remark: model.remark,
                         expirationDay: new Date(model.expirationDay),
                         buyDay: new Date(model.buyDate),
+                        cost: model.cost
                     })
                 } else {
                     MyToast.info('数据获取失败，稍后尝试');
@@ -297,8 +309,8 @@ class IntBuyRecordAdd extends Component {
                                 <TouchableOpacity onPress={() => {
                                     this.pushPage({
                                         component: {
-                                            ...Global.Screens.BarcodeScanner,
-                                            passProps: { type: 'buyGoods', searchType: this.state.publishState[0] },
+                                            ...Global.Screens.BarcodeScannerInt,
+                                            passProps: { searchType: this.state.publishState[0] },
                                             options: {
                                                 topBar: {
                                                     title: {
@@ -413,8 +425,25 @@ class IntBuyRecordAdd extends Component {
                             maxLength={50}
                             placeholder="数量"
                             type='number'
-                            value={this.state.quantity}
+                            value={this.state.quantity + ''}
                         >数量
+                        </InputItem>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    cost : text
+                                })
+                            }}
+                            maxLength={50}
+                            placeholder="费用"
+                            extra={'元'}
+                            type='number'
+                            value={this.state.cost + ''}
+                        >费用
                         </InputItem>
                     </List>
                     <List>

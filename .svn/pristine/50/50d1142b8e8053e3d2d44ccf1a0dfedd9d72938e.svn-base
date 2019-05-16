@@ -1,0 +1,385 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableWithoutFeedback,
+    TouchableOpacity
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace, Flex } from 'antd-mobile-rn';
+import * as MineAction from 'root/src/actions/cure';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { bold } from 'ansi-colors';
+import moment from 'moment';
+let now = moment();
+const year = now.format("YYYY");
+import DetailItem from 'root/src/screens/baseComon/DetailItem';
+const { connect } = require('remx');
+const Item = List.Item;
+let initData = {
+    plantName: '',
+    area: '',
+    period: '',
+    year: new Date(),
+    outPut: '',
+    iscurrent: true,
+    unit: "亩"
+}
+let initError = {
+    plantName: false,
+    area: false,
+    period: false,
+}
+let model = null
+let breedName = null
+@navigatorDecorator
+class CureAdd extends Component {
+    constructor(props) {
+        super(props);
+        this.loading = false
+        this.state = {
+            year:year,
+            cropList: [],
+            cropState: [],
+            detail:null,
+            peopleState: '',
+            peopleList: [],
+            remark: '',
+            saleDay: new Date(),
+            customerName: '',
+            phyPrevention:[],
+            items: [
+                {
+                    preventionType: [],
+                    area: null,
+                    cost: null,
+                }
+            ],
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                title: {
+                    text: this.props.cropName ? '编辑物理防治' : '新增物理防治'
+                },
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+        const ret = /^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/;
+        if (this.loading) {
+            return false
+        }
+        if (!this.state.cropState || this.state.cropState.length == 0) {
+            MyToast.info('请选择作物');
+            return false
+        }
+        let nowName = false
+        this.state.items.forEach((i) => {
+            if (!i.preventionType || i.preventionType.length == 0) {
+                nowName = true
+                MyToast.info('请选择防治类型');
+            } else if (!i.area) {
+                nowName = true
+                MyToast.info('请填写防治面积');
+            } else if (!i.cost) {
+                nowName = true
+                MyToast.info('请填写防治费用');
+            } else if (!ret.test(i.area)){
+                nowName = true
+                MyToast.info('防治面积应大于0，且最多两位小数的数字');
+            } else if (!ret.test(i.cost)) {
+                nowName = true
+                MyToast.info('防治费用应大于0，且最多两位小数的数字');
+            }
+        })
+        if (nowName) {
+            return false
+        } else {
+            this.loading = true
+            let postData = {
+                cropName: this.state.cropState[0],
+                year: moment(this.state.year).format('YYYY')
+            }
+            let list = this.state.items
+            for(let arr of list){
+                arr.preventionType = arr.preventionType[0]
+            }
+            postData.items = list
+            if (this.props.cropName) {
+                MineAction.Editcure({ input: postData }).then((data) => {
+                    if (data.suc == 1) {
+                        MyToast.success('编辑成功');
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.CureList,
+                                }
+                            });
+                        }, 2000)
+                    } else {
+                        this.loading = false
+                        MyToast.info(data.msg)
+                    }
+                })
+            } else {
+                MineAction.AddCure({ input: postData }).then((data) => {
+                    if (data.suc == 1) {
+                        MyToast.success('新增成功');
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                            this.pushPage({
+                                component: {
+                                    ...Global.Screens.CureList,
+                                }
+                            });
+                        }, 2000)
+                    } else {
+                        this.loading = false
+                        MyToast.info(data.msg)
+                    }
+                })
+            }
+        }
+    }
+    componentWillMount() {
+        //获取所有作物
+        MineAction.GetAllCrop().then((data) => {
+            if (data.suc) {
+                if (data.data.length < 1) {
+                    return false
+                }
+                let model = data.data
+                model.forEach((i, index) => {
+                    i.value = i.plantName
+                    i.label = i.plantName
+                });
+                this.setState({
+                    cropList: model,
+                })
+            } else {
+                MyToast.info('作物获取失败，稍后尝试');
+            }
+        })
+        //防治类型
+        MineAction.GetPhyPrevention().then((data) => {
+            if (data.suc) {
+                if (data.data.length < 1) {
+                    return false
+                }
+                let model = data.data
+                model.forEach((i, index) => {
+                    i.value = i.enumValue + ''
+                    i.label = i.enumName
+                });
+                this.setState({
+                    phyPrevention: model,
+                })
+            } else {
+                MyToast.info('作物获取失败，稍后尝试');
+            }
+        })
+        if (this.props.cropName) {
+            let input = {
+                cropName: this.props.cropName,
+                year: this.props.year
+            }
+            MineAction.GetDetail(input).then((data) => {
+                if (data.suc) {
+                    let arr = data.data.items
+                    for(let item of arr){
+                        item.preventionType = [item.preventionType + '']
+                        item.area = item.area + ''
+                        item.cost = item.cost + ''
+                    }
+                    this.setState({
+                        cropState: [data.data.cropName],
+                        year: moment(data.data.year + '').format('YYYY'),
+                        items:arr
+                    })
+                } else {
+                    MyToast.info('数据获取失败，稍后尝试');
+                }
+            })
+        }
+    }
+    
+    changeData(name, index, data) {
+        // if (!data || data.length == 0)
+        //     return;
+        let dataList = this.state.items
+        if (name == 'preventionType') {
+            dataList[index]['preventionType'] = data
+        }
+        if (name == 'area') {
+            dataList[index]['area'] = data
+        }
+        if (name == 'cost') {
+            dataList[index]['cost'] = data
+        }
+        this.setState({
+            items: dataList
+        })
+    }
+    onErrorClick = () => {
+        MyToast.info('请填写正确的信息，且不能为空');
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#f5f5f5' }}>
+                <List>
+                    <Picker
+                        registerNumber="作物"
+                        data={this.state.cropList}
+                        cols={1}
+                        value={this.state.cropState}
+                        onOk={(val) => {
+                            this.setState({
+                                cropState: val
+                            })
+                        }}
+                        style={{ color: '#000' }}
+                    >
+                        <Item><Text style={{ fontSize: 17, color: '#000' }}>作物</Text></Item>
+                    </Picker>
+                    <DatePicker
+                        value={this.state.year ? new Date(this.state.year) : null}
+                        mode="year"
+                        minDate={new Date('2000')}
+                        onChange={text => this.setState({ year: text }, () => {
+                        })}
+                        format={val => moment(val).format("YYYY")}
+                    >
+                        <Item arrow="horizontal" ><Text style={{ fontSize: 17, color: '#000' }}>日期选择</Text></Item>
+                    </DatePicker>
+                </List>
+                <View>
+                    {
+                        this.state.items.map((i, ind) => {
+                            return (
+                                <View key={ind}>
+                                    <List>
+                                        <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
+                                            <Text style={{ lineHeight: 50, fontSize: 18, marginLeft: 15, color: '#00BFFF', fontWeight: 'bold' }}>物理防治（{ind + 1}）</Text>
+                                            {this.state.items.length == 1 || this.props.id ? (null) : (
+                                                <TouchableWithoutFeedback onPress={() => {
+                                                    let nowList = this.state.items
+                                                    nowList.splice(ind, 1)
+                                                    this.setState({
+                                                        items: nowList
+                                                    })
+                                                }}>
+                                                    <View>
+                                                        <Text style={{ textAlign: 'center', fontSize: 18, color: '#000', lineHeight: 50, marginRight: 15 }}><Icon color='red' name='trash' size={18} /></Text>
+                                                    </View>
+                                                </TouchableWithoutFeedback>
+                                            )}
+                                        </View>
+                                    </List>
+                                    <List>
+                                        <Picker
+                                            registerNumber="防治类型"
+                                            data={this.state.phyPrevention}
+                                            cols={1}
+                                            value={this.state.items[ind]['preventionType']}
+                                            onOk={(val) => {
+                                                if (val != this.state.items[ind]['preventionType']) {
+                                                    this.changeData('preventionType', ind, val)
+                                                }
+                                            }}
+                                            style={{ color: '#000' }}
+                                        >
+                                            <Item><Text style={{ fontSize: 17, color: '#000' }}>防治类型</Text></Item>
+                                        </Picker>
+                                    </List>
+                                    <List>
+                                        <InputItem
+                                            labelNumber={12}
+                                            textAlign="right"
+                                            // clear
+                                            onChangeText={(text) => {
+                                                this.changeData('area', ind, text)
+                                            }}
+                                            extra={'亩'}
+                                            onErrorClick={this.onErrorClick}
+                                            maxLength={50}
+                                            placeholder="数量"
+                                            value={this.state.items[ind].area}
+                                            type='number'
+                                        >防治面积
+                                        </InputItem>
+                                    </List>
+                                    <List>
+                                        <InputItem
+                                            labelNumber={8}
+                                            textAlign="right"
+                                            clear
+                                            onChangeText={(text) => {
+                                                this.changeData('cost', ind, text)
+                                            }}
+                                            extra={'元'}
+                                            error={this.state.registerNumberError}
+                                            onErrorClick={this.onErrorClick}
+                                            maxLength={50}
+                                            placeholder="单价"
+                                            type='number'
+                                            value={this.state.items[ind].cost}
+                                        >防治费用
+                                        </InputItem>
+                                    </List>
+                                </View>
+                            )
+                        })
+                    }
+                    {
+                        this.props.id ? (null) : (
+                            <TouchableWithoutFeedback onPress={() => {
+                                let nowList = this.state.items
+                                nowList.push(
+                                    {
+                                        cropId: '',
+                                        breedId: '',
+                                        salePrice: '',
+                                        traceCode: '',
+                                        productStockId: '',
+                                        tag: '',
+                                    }
+                                )
+                                this.setState({
+                                    items: nowList,
+                                })
+                            }}>
+                                <View>
+                                    <Text style={{ textAlign: 'center', fontSize: 18, color: '#000', lineHeight: 50 }}><Icon name='plus-circle' size={18} />添加</Text>
+                                </View>
+                            </TouchableWithoutFeedback>
+                        )
+                    }
+
+
+                </View>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+
+    };
+}
+
+module.exports = connect(mapStateToProps)(CureAdd);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

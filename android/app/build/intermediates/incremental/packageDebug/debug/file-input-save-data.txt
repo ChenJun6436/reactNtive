@@ -1,5 +1,5 @@
 #Internal package file, do not edit.
-#Mon Mar 25 11:38:52 GMT+08:00 2019
+#Thu Apr 25 09:27:07 GMT+08:00 2019
 5.base=C\:\\workFile\\noApp\\android\\app\\build\\intermediates\\transforms\\mergeJniLibs\\debug\\0
 42.base=C\:\\workFile\\noApp\\android\\app\\build\\intermediates\\transforms\\mergeJniLibs\\debug\\0
 22.path=fonts/Zocial.ttf

@@ -52,7 +52,7 @@ export async function GetAllWeather() {
 export async function GetAllGarden(data) {
     return Post(`/Api/Garden/List?name=`+ data);
 }
-//根据Id获取地块
+//根据Id获取区块
 export async function GetAllLand(data) {
     return Post(`/Api/BaseLand/Land?id=`+ data);
 }

@@ -82,8 +82,6 @@ export async function Request(url, options, mock, img) {
     };
   }
   const data = await response.json();
-  console.log(url)
-  console.log(data)
   let success;
   if (data.code == 0) {
     //接口错误给出统一错误提示

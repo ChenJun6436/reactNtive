@@ -998,8 +998,8 @@ kotlin/random/Random.class
 com/facebook/imagepipeline/producers/MediaVariationsFallbackProducer.class
 com/facebook/react/devsupport/JSCHeapCapture.class
 com/facebook/react/bridge/CatalystInstance.class
-com/lwansbrough/RCTCamera/RCTCameraViewManager.class
 cn/qiuxiang/react/amap3d/maps/AMapView$1.class
+com/lwansbrough/RCTCamera/RCTCameraViewManager.class
 com/amap/api/mapcore/util/gv.class
 kotlin/LazyKt__LazyJVMKt.class
 kotlin/Unit.class
@@ -1051,8 +1051,8 @@ com/google/android/gms/iid/InstanceID.class
 com/facebook/react/flat/FlatViewGroup.class
 kotlin/ResultKt.class
 cn/qiuxiang/react/amap3d/maps/AMapMarker.class
-com/facebook/react/modules/netinfo/NetInfoModule.class
 cn/qiuxiang/react/amap3d/maps/AMapInfoWindowAdapter.class
+com/facebook/react/modules/netinfo/NetInfoModule.class
 kotlin/properties/NotNullVar.class
 com/facebook/imagepipeline/producers/LocalContentUriThumbnailFetchProducer.class
 com/facebook/react/uimanager/UIManagerModule.class
@@ -1153,9 +1153,9 @@ kotlin/io/AccessDeniedException.class
 com/facebook/react/views/art/PropHelper.class
 com/facebook/react/bridge/ModuleHolder.class
 kotlin/jvm/functions/Function13.class
-com/loc/u.class
 kotlin/collections/CollectionsKt__IterablesKt$Iterable$1.class
 kotlin/jvm/internal/LocalVariableReferencesKt.class
+com/loc/u.class
 com/facebook/react/views/picker/ReactPickerManager$ReactPickerAdapter.class
 com/facebook/react/views/modal/ReactModalHostView.class
 okio/Segment.class
@@ -1452,8 +1452,8 @@ com/amap/api/mapcore/util/hd.class
 kotlin/coroutines/experimental/ContinuationInterceptor$Key.class
 kotlin/sequences/SequencesKt___SequencesKt$filterIndexed$1.class
 okhttp3/ConnectionSpec$Builder.class
-com/google/android/gms/common/GoogleSignatureVerifier.class
 cn/qiuxiang/react/amap3d/maps/AMapInfoWindowManager.class
+com/google/android/gms/common/GoogleSignatureVerifier.class
 com/google/android/gms/common/data/AbstractDataBuffer.class
 com/facebook/react/bridge/PromiseImpl.class
 com/facebook/react/modules/storage/ReactDatabaseSupplier.class
@@ -1617,8 +1617,8 @@ okhttp3/Cache$2.class
 org/reactnative/camera/CameraViewManager.class
 com/facebook/yoga/YogaNode.class
 kotlin/text/MatcherMatchResult$groups$1.class
-com/facebook/datasource/FirstAvailableDataSourceSupplier$FirstAvailableDataSource.class
 cn/qiuxiang/react/amap3d/maps/AMapView.class
+com/facebook/datasource/FirstAvailableDataSourceSupplier$FirstAvailableDataSource.class
 kotlin/ranges/RangesKt__RangesKt.class
 kotlin/coroutines/experimental/jvm/internal/CoroutineImpl.class
 com/facebook/common/util/UriUtil.class
@@ -1889,8 +1889,8 @@ kotlin/jvm/internal/StringCompanionObject.class
 kotlin/text/Regex$findAll$2.class
 kotlin/UIntArrayKt.class
 kotlin/collections/MapsKt__MapsKt.class
-com/loc/m$a.class
 com/amap/api/mapcore/util/bt.class
+com/loc/m$a.class
 okhttp3/Cookie.class
 com/facebook/react/bridge/queue/ReactQueueConfigurationSpec$Builder.class
 kotlin/UnsignedKt.class
@@ -1919,8 +1919,8 @@ kotlin/collections/ArraysKt___ArraysJvmKt$asList$1.class
 okhttp3/Cache.class
 kotlin/random/PlatformRandom.class
 kotlin/coroutines/jvm/internal/ContinuationImpl.class
-com/facebook/react/views/art/ARTVirtualNode.class
 cn/qiuxiang/react/amap3d/maps/AMapHeatMapManager.class
+com/facebook/react/views/art/ARTVirtualNode.class
 kotlin/collections/ULongIterator.class
 kotlin/ExceptionsKt.class
 com/facebook/datasource/DataSource.class

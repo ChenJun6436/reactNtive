@@ -1,0 +1,290 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableWithoutFeedback,
+    TouchableOpacity
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace, Flex } from 'antd-mobile-rn';
+import * as MineAction from 'root/src/actions/tools';
+import * as CommonAction from 'root/src/actions/common';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { bold } from 'ansi-colors';
+import moment from 'moment';
+const { connect } = require('remx');
+const Item = List.Item;
+
+
+let model = null
+let toolsTypeList = [
+    { label: '施药器械', value: '1' },
+    { label: '种植(播种)器械', value: '2' },
+    { label: '灌溉', value: '3' },
+    { label: '收割', value: '4' },
+]
+let toolsUnitList = [
+    { label: '台', value: '台' },
+    { label: '辆', value: '辆' },
+    { label: '把', value: '把' },
+    { label: '个', value: '个' },
+]
+@navigatorDecorator
+class ToolsAdd extends Component {
+    constructor(props) {
+        super(props);
+        this.loading = false
+        this.state = {
+            intState: [],
+            IntList: [{ label: '工人', value: '1' }, { label: '客户', value: '2' }],
+            intName: '',
+            cropState: [],
+            CropList: [],
+            phone: '',
+            avatar: '',
+            toolsTypeList,
+            toolsTypeState: '',
+            toolsUnitList,
+            toolsUnitState: '',
+            name: '',
+            usage:'',
+            quantity: '',
+            mfd: new Date(),
+            expiringDate: new Date(),
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                title: {
+                    text: this.props.id ? '编辑器械' : '新增器械'
+                },
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+        if (this.loading) {
+            return false
+        }
+        let nowName = false
+        let nowError = this.state.plantError
+        let mfd = moment(this.state.mfd).format('YYYY-MM-DD');
+        let expiringDate = moment(this.state.expiringDate).format('YYYY-MM-DD');
+        const ret = /^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/;
+        if (!this.state.toolsTypeState[0]) {
+            nowName = true
+            MyToast.info('请选择器械类型');
+        } else if (!this.state.name) {
+            nowName = true
+            MyToast.info('请填写器械名称');
+        } else if (!this.state.quantity) {
+            nowName = true
+            MyToast.info('请填写器械数量');
+        } else if (!ret.test(this.state.quantity) ) {
+            nowName = true
+            MyToast.info('器械数量大于0，最多保留两位的数字');
+        } else if (!this.state.toolsUnitState[0]) {
+            nowName = true
+            MyToast.info('请填写器械单位');
+        } else if (!this.state.usage) {
+            nowName = true
+            MyToast.info('请填写器械用途');
+        } else if (mfd>expiringDate){
+            nowName = true
+            MyToast.info('生产日期不能大于失效日期');
+        }
+        
+        if (nowName) {
+            return false
+        } else {
+            let postData = {
+                name : this.state.name,
+                type : this.state.toolsTypeState[0],
+                usage : this.state.usage,
+                quantity : this.state.quantity,
+                unit : this.state.toolsUnitState[0],
+                mfd,
+                expiringDate,
+            }
+            this.loading = true
+            if (this.props.id) {
+                postData.id = this.props.id
+                MineAction.ToolsEditor({ input: postData }).then((data) => {
+                    if (data.suc) {
+                        MyToast.success('编辑成功');
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                        }, 2000)
+                    } else {
+                        this.loading = false
+                        MyToast.info(data.msg)
+                    }
+                })
+            } else {
+                MineAction.ToolsAdd({ input: postData }).then((data) => {
+                    if (data.suc) {
+                        MyToast.success('新增成功');
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                        }, 2000)
+                    } else {
+                        this.loading = false
+                        MyToast.info(data.msg)
+                    }
+                })
+            }
+        }
+    }
+    componentWillMount() {
+        //判断是否是编辑
+        if (this.props.id) {
+            MineAction.ToolsDetail(this.props.id).then((data) => {
+                if (data.suc) {
+                    let model = data.data
+                    this.setState({
+                        toolsTypeState: [model.type + ''],
+                        toolsUnitState: [model.unit + ''],
+                        mfd: new Date(model.mfd),
+                        expiringDate: new Date(model.expiringDate),
+                        name : model.name,
+                        quantity : model.quantity + '',
+                        usage : model.usage,
+                    })
+                } else {
+                    MyToast.info('数据获取失败，稍后尝试');
+                }
+            })
+        }
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#f5f5f5' }}>
+                <View>
+                    <List style={{ display: 'flex', justifyContent: 'space-around' }}>
+                        <Picker
+                            registerNumber="类型"
+                            data={this.state.toolsTypeList}
+                            cols={1}
+                            value={this.state.toolsTypeState}
+                            onOk={(val) => this.setState({ toolsTypeState: val })}
+                            style={{ color: '#000' }}
+                        >
+                            <Item><Text style={{ fontSize: 17, color: '#000' }}>类型</Text></Item>
+                        </Picker>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    name: text
+                                })
+                            }}
+                            maxLength={50}
+                            placeholder="请输入名称"
+                            value={this.state.name}
+                        >器械名称
+                        </InputItem>
+                    </List>
+                    <List>
+                        <View style={{ flexDirection: 'row' }}>
+                            <View style={{ width: '50%' }}>
+                                <InputItem
+                                    textAlign="right"
+                                    clear
+                                    onChangeText={(text) => {
+                                        this.setState({
+                                            quantity: text
+                                        })
+                                    }}
+                                    maxLength={50}
+                                    placeholder="输入数量"
+                                    type='number'
+                                    value={this.state.quantity}
+                                >数量
+                                </InputItem>
+                            </View>
+                            <View style={{ width: '50%' }}>
+                                <Picker
+                                    registerNumber="单位"
+                                    data={this.state.toolsUnitList}
+                                    cols={1}
+                                    value={this.state.toolsUnitState}
+                                    onOk={(val) => this.setState({ toolsUnitState: val })}
+                                // style={{ color: '#000', width: '40%' }}
+                                >
+                                    <Item><Text style={{ fontSize: 17, color: '#000' }}>单位:</Text></Item>
+                                </Picker>
+                            </View>
+                        </View>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    usage: text
+                                })
+                            }}
+                            maxLength={50}
+                            placeholder="请输入用用途"
+                            value={this.state.usage}
+                        >用途
+                        </InputItem>
+                    </List>
+                    <List>
+                        <DatePicker
+                            value={this.state.mfd}
+                            mode="date"
+                            minDate={new Date('2000-01-01')}
+                            onChange={(text) => {
+                                this.setState({
+                                    mfd: text
+                                })
+                            }}
+                            format="YYYY-MM-DD"
+                        >
+                            <Item arrow="horizontal" >生产日期</Item>
+                        </DatePicker>
+                    </List>
+                    <List>
+                        <DatePicker
+                            value={this.state.expiringDate}
+                            mode="date"
+                            minDate={new Date('2000-01-01')}
+                            onChange={(text) => {
+                                this.setState({
+                                    expiringDate: text
+                                })
+                            }}
+                            format="YYYY-MM-DD"
+                        >
+                            <Item arrow="horizontal" >失效日期</Item>
+                        </DatePicker>
+                    </List>
+                </View>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+
+    };
+}
+
+module.exports = connect(mapStateToProps)(ToolsAdd);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});

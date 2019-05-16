@@ -1,0 +1,265 @@
+// @flow
+
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TextInput,
+    Alert,
+    TouchableWithoutFeedback,
+    TouchableOpacity
+} from 'react-native';
+import { List, InputItem, TextareaItem, DatePicker, Picker, ImagePicker, Button, WhiteSpace, Flex } from 'antd-mobile-rn';
+import * as MineAction from 'root/src/actions/staff';
+import * as CommonAction from 'root/src/actions/common';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { bold } from 'ansi-colors';
+import moment from 'moment';
+const { connect } = require('remx');
+const Item = List.Item;
+
+
+let model = null
+let toolsTypeList = [
+    { label: '施药器械', value: '1' },
+    { label: '种植(播种)器械', value: '2' },
+    { label: '灌溉', value: '3' },
+    { label: '收割', value: '4' },
+]
+let toolsUnitList = [
+    { label: '台', value: '1' },
+    { label: '辆', value: '2' },
+    { label: '把', value: '3' },
+    { label: '个', value: '4' },
+]
+@navigatorDecorator
+class StaffAdd extends Component {
+    constructor(props) {
+        super(props);
+        this.loading = false
+        this.state = {
+            intState: [],
+            IntList: [{ label: '工人', value: '1' }, { label: '客户', value: '2' }],
+            intName: '',
+            cropState: [],
+            CropList: [],
+            name: '',
+            phone: '',
+            avatar: '',
+            toolsTypeList,
+            toolsTypeState: [''],
+            toolsUnitList,
+            toolsUnitState: [''],
+            plantDay: new Date(),
+        }
+        Navigation.mergeOptions(this.props.componentId, {
+            topBar: {
+                title: {
+                    text: this.props.id ? '编辑人员' : '新增人员'
+                },
+                rightButtons: [
+                    confirmRightBtn
+                ]
+            }
+        });
+        Navigation.events().bindComponent(this);
+    }
+    navigationButtonPressed() {
+        if (this.loading) {
+            return false
+        }
+        let nowName = false
+        let nowError = this.state.plantError
+        let plantDay = moment(this.state.plantDay).format('YYYY-MM-DD');
+        const ret = /^(([1-9][0-9]*)|(([0]\.\d{1,2}|[1-9][0-9]*\.\d{1,2})))$/;
+        if (!this.state.intState[0]) {
+            nowName = true
+            MyToast.info('请选择类型');
+        } else if (!this.state.name) {
+            nowName = true
+            MyToast.info('请填写人员名字');
+        }
+        if (nowName) {
+            return false
+        } else {
+            let postData = {
+                enterpriseId: storage.get('enterpriseId'),
+                type: this.state.intState[0],
+                name: this.state.name,
+                phone: this.state.phone ? this.state.phone : '',
+            }
+            this.loading = true
+            if (this.props.id) {
+                postData.id = this.props.id
+                MineAction.StaffEditor({ input: postData }).then((data) => {
+                    if (data.suc) {
+                        MyToast.success('编辑成功');
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.refresh && this.props.refresh()
+                        }, 2000)
+                    } else {
+                        this.loading = false
+                        MyToast.info(data.msg)
+                    }
+                })
+            } else {
+                MineAction.StaffAdd({ input: postData }).then((data) => {
+                    if (data.suc) {
+                        MyToast.success('新增成功');
+                        setTimeout(() => {
+                            this.pop();
+                            this.props.callback && this.props.callback()
+                            this.props.refresh && this.props.refresh()
+                        }, 2000)
+                    } else {
+                        this.loading = false
+                        MyToast.info(data.msg)
+                    }
+                })
+            }
+        }
+    }
+    componentWillMount() {
+        //判断是否是编辑
+        if (this.props.id) {
+            MineAction.StaffDetail(this.props.id).then((data) => {
+                if (data.suc) {
+                    let model = data.data
+                    this.setState({
+                        intState: [model.type + ''],
+                        name: model.name + '',
+                        phone: model.phone ? model.phone : '--',
+                        plantDay: new Date(mode.plantDay),
+                    })
+                } else {
+                    MyToast.info('数据获取失败，稍后尝试');
+                }
+            })
+        }
+    }
+    render() {
+        return (
+            <ScrollView style={{ backgroundColor: '#f5f5f5' }}>
+                <View>
+                    <List style={{ display: 'flex', justifyContent: 'space-around' }}>
+                        <Picker
+                            registerNumber="类型"
+                            data={this.state.toolsTypeList}
+                            cols={1}
+                            value={this.state.toolsTypeState}
+                            onOk={(val) => this.setState({ toolsTypeState: val })}
+                            style={{ color: '#000' }}
+                        >
+                            <Item><Text style={{ fontSize: 17, color: '#000' }}>类型</Text></Item>
+                        </Picker>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    name: text
+                                })
+                            }}
+                            maxLength={50}
+                            placeholder="请输入用用途"
+                            value={this.state.name}
+                        >用途
+                        </InputItem>
+                    </List>
+                    <List>
+                        <View style={{ flexDirection: 'row' }}>
+                            <View style={{ width: '40%' }}>
+                                <InputItem
+                                    textAlign="right"
+                                    clear
+                                    onChangeText={(text) => {
+                                        this.setState({
+                                            phone: text
+                                        })
+                                    }}
+                                    maxLength={50}
+                                    placeholder="输入数量"
+                                    type='number'
+                                    value={this.state.phone}
+                                >数量
+                                </InputItem>
+                            </View>
+                            <View style={{ width: '60%' }}>
+                                <Picker
+                                    registerNumber="单位"
+                                    data={this.state.toolsUnitList}
+                                    cols={1}
+                                    value={this.state.toolsUnitState}
+                                    onOk={(val) => this.setState({ toolsUnitState: val })}
+                                // style={{ color: '#000', width: '40%' }}
+                                >
+                                    <Item><Text style={{ fontSize: 17, color: '#000' }}>单位:</Text></Item>
+                                </Picker>
+                            </View>
+                        </View>
+                    </List>
+                    <List>
+                        <InputItem
+                            textAlign="right"
+                            clear
+                            onChangeText={(text) => {
+                                this.setState({
+                                    name: text
+                                })
+                            }}
+                            maxLength={50}
+                            placeholder="请输入用用途"
+                            value={this.state.name}
+                        >用途
+                        </InputItem>
+                    </List>
+                    <List>
+                        <DatePicker
+                            value={this.state.plantDay}
+                            mode="date"
+                            minDate={new Date('2018-01-01')}
+                            onChange={(text) => {
+                                this.setState({
+                                    plantDay: text
+                                })
+                            }}
+                            format="YYYY-MM-DD"
+                        >
+                            <Item arrow="horizontal" >生产日期</Item>
+                        </DatePicker>
+                    </List>
+                    <List>
+                        <DatePicker
+                            value={this.state.plantDay}
+                            mode="date"
+                            minDate={new Date('2018-01-01')}
+                            onChange={(text) => {
+                                this.setState({
+                                    plantDay: text
+                                })
+                            }}
+                            format="YYYY-MM-DD"
+                        >
+                            <Item arrow="horizontal" >失效日期</Item>
+                        </DatePicker>
+                    </List>
+                </View>
+            </ScrollView>
+        );
+    }
+}
+function mapStateToProps() {
+    return {
+
+    };
+}
+
+module.exports = connect(mapStateToProps)(StaffAdd);
+const styles = StyleSheet.create({
+    // userInfo: store.getAccount()
+});
